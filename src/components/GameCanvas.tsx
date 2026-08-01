@@ -115,9 +115,15 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             const rad = snapped * Math.PI / 180;
 
             const dist = Math.max(Math.abs(dr), Math.abs(dc));
+            // Unit step per grid cell in the snapped direction -- e.g. for a
+            // diagonal, sin/cos of 45deg is ~0.707, which is a Euclidean
+            // component, not a whole grid step, so it must be rounded to
+            // +-1 *before* scaling by dist rather than after.
+            const unitR = Math.round(Math.sin(rad));
+            const unitC = Math.round(Math.cos(rad));
             cell = {
-                r: dragRef.current.startCell.r + Math.round(Math.sin(rad) * dist),
-                c: dragRef.current.startCell.c + Math.round(Math.cos(rad) * dist)
+                r: dragRef.current.startCell.r + unitR * dist,
+                c: dragRef.current.startCell.c + unitC * dist
             };
 
             cell.c = Math.max(0, Math.min(gridSize - 1, cell.c));

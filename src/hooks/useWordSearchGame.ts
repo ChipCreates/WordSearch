@@ -40,6 +40,7 @@ export function useWordSearchGame() {
     const [stars, setStars] = useState(() => Number(localStorage.getItem(STARS_STORAGE_KEY)) || 0);
     const [status, setStatus] = useState("Loading...");
     const [levelComplete, setLevelComplete] = useState(false);
+    const [category, setCategory] = useState("");
 
     const [gridSize, setGridSize] = useState(12);
     const [gridData, setGridData] = useState<string[][]>([]);
@@ -63,11 +64,22 @@ export function useWordSearchGame() {
     const initGame = async () => {
         setStatus("Generating puzzle...");
         setLevelComplete(false);
-        const size = Math.min(12 + Math.floor(level / 2), 20);
-        const count = Math.min(5 + level * 2, 25);
+        // Grid size caps at 10x10: real word-search games (Vita Word Search's
+        // 4->5->6->8 progression; the imoark/WordSoup/Android-Word-Search open
+        // source projects, capping at 10-12) all keep the grid small and let
+        // cell size float, rather than shrinking cells to fit a bigger grid.
+        const size = Math.min(4 + Math.ceil((level - 1) / 2), 10);
+        // Vita's own level 4 (6x6 grid) ships exactly 5 words -> count = size - 1.
+        const count = Math.max(3, size - 1);
         setGridSize(size);
 
-        const words: string[] = await invoke("get_puzzle_words", { count: count + 10, maxLength: size });
+        const puzzle: { category: string; words: string[] } = await invoke("get_puzzle_words", {
+            count: count + Math.min(count, 8),
+            maxLength: size,
+            level,
+        });
+        setCategory(puzzle.category);
+        const words = puzzle.words;
         const mainWords = words.slice(0, count);
         const bonusWords = words.slice(count);
 
@@ -168,7 +180,7 @@ export function useWordSearchGame() {
     };
 
     return {
-        level, stars, status, levelComplete,
+        level, stars, status, levelComplete, category,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, nextLevel, restart,
     };

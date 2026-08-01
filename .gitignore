@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 src-tauri/target/
+
+# Raw staging images downloaded for background art review; only the
+# processed/optimized picks in public/backgrounds/ ship with the app.
+/background-images/
