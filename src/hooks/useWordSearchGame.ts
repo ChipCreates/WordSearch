@@ -15,14 +15,40 @@ function canPlaceWord(grid: string[][], size: number, word: string, row: number,
     return true;
 }
 
-function placeWord(grid: string[][], size: number, word: string) {
-    let attempts = 0;
-    while (attempts < 500) {
-        const dir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
-        const row = Math.floor(Math.random() * size);
-        const col = Math.floor(Math.random() * size);
+// array.sort(() => Math.random() - 0.5) is a well-known-biased shuffle (sort
+// comparator ordering isn't a uniform permutation) -- Fisher-Yates is the
+// correct way to get every ordering with equal probability.
+function shuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
 
-        if (canPlaceWord(grid, size, word, row, col, dir)) {
+function placeWord(grid: string[][], size: number, word: string) {
+    // Sampling (direction, row, col) uniformly at random -- the previous
+    // approach -- silently favors horizontal/vertical: when a word's length
+    // is close to the grid size (typical on small 4x4/5x5 boards, since
+    // maxLength == size), a diagonal has far fewer valid starting cells than
+    // a horizontal/vertical does (e.g. a 4-letter word on a 4x4 grid has 1
+    // valid start per diagonal direction but 4 per horizontal/vertical), so
+    // random sampling lands on the roomier directions far more often. Picking
+    // the direction uniformly first, then a random valid position within it,
+    // gives every direction an equal shot regardless of how cramped it is.
+    const shuffledDirs = shuffle(DIRECTIONS);
+    for (const dir of shuffledDirs) {
+        const validStarts: [number, number][] = [];
+        for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                if (canPlaceWord(grid, size, word, row, col, dir)) {
+                    validStarts.push([row, col]);
+                }
+            }
+        }
+        if (validStarts.length > 0) {
+            const [row, col] = validStarts[Math.floor(Math.random() * validStarts.length)];
             for (let i = 0; i < word.length; i++) {
                 const r = row + (i * dir[1]);
                 const c = col + (i * dir[0]);
@@ -30,7 +56,6 @@ function placeWord(grid: string[][], size: number, word: string) {
             }
             return true;
         }
-        attempts++;
     }
     return false;
 }
