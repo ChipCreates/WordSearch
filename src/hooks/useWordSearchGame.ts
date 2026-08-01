@@ -71,7 +71,6 @@ export function useWordSearchGame() {
         const size = Math.min(4 + Math.ceil((level - 1) / 2), 10);
         // Vita's own level 4 (6x6 grid) ships exactly 5 words -> count = size - 1.
         const count = Math.max(3, size - 1);
-        setGridSize(size);
 
         const puzzle: { category: string; words: string[] } = await invoke("get_puzzle_words", {
             count: count + Math.min(count, 8),
@@ -105,6 +104,11 @@ export function useWordSearchGame() {
         setWordsToFind(mainWords.filter(w => placed.has(w)));
         setFoundWords({});
         setFoundLines([]);
+        // gridSize and gridData must land in the same render -- setting
+        // gridSize earlier (before the await) let GameCanvas see a new,
+        // larger gridSize paired with the previous, smaller gridData for one
+        // render, reading out of bounds and crashing to a blank screen.
+        setGridSize(size);
         setGridData(grid);
         setStatus("Puzzle generated. Find the words!");
     };

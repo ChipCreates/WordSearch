@@ -9,6 +9,17 @@ type Props = {
     onSelectionEnd: (startCell: Cell, endCell: Cell) => void;
 };
 
+// HIGHLIGHT_COLORS (constants.ts) is mostly light pastels, so a fixed light
+// letter color washes out on top of them -- pick black/white per pill by its
+// actual luminance instead.
+function contrastingTextColor(hex: string): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? "#121212" : "#f5f5f5";
+}
+
 export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -28,9 +39,20 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
         const dpr = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
+        const targetWidth = Math.round(rect.width * dpr);
+        const targetHeight = Math.round(rect.height * dpr);
+        // Reassigning canvas.width/height always clears the bitmap, even when
+        // set to the same value -- during a live window-resize drag this fires
+        // on every tick and flashes the board blank, so only touch it when the
+        // backing size actually changed.
+        if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+        }
+        // setTransform (not scale) because scale() compounds across calls;
+        // resizing the canvas used to reset this for free, but we now skip
+        // that reset above when the size is unchanged.
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         ctx.clearRect(0, 0, rect.width, rect.height);
         if (!gridData.length) return;
@@ -53,23 +75,58 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             drawLine(startCell.r, startCell.c, currentTarget.r, currentTarget.c, "rgba(187, 134, 252, 0.6)");
         }
 
+        // Map every cell a found-word pill passes through to that pill's
+        // color, so the letter drawn on top can contrast against it instead
+        // of always using the default board color.
+        const pillColorByCell = new Map<string, string>();
+        foundLines.forEach(line => {
+            const dr = Math.sign(line.endR - line.startR);
+            const dc = Math.sign(line.endC - line.startC);
+            const steps = Math.max(Math.abs(line.endR - line.startR), Math.abs(line.endC - line.startC));
+            for (let i = 0; i <= steps; i++) {
+                pillColorByCell.set(`${line.startR + i * dr},${line.startC + i * dc}`, line.color);
+            }
+        });
+
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = `bold ${cellSize * 0.65}px 'Segoe UI', sans-serif`;
-        ctx.fillStyle = "#e0e0e0";
 
         for (let r = 0; r < gridSize; r++) {
             for (let c = 0; c < gridSize; c++) {
+                const pillColor = pillColorByCell.get(`${r},${c}`);
+                ctx.fillStyle = pillColor ? contrastingTextColor(pillColor) : "#e0e0e0";
                 ctx.fillText(gridData[r][c], c * cellSize + cellSize / 2, r * cellSize + cellSize / 2);
             }
         }
     };
 
     useEffect(() => { draw(); }, [gridData, gridSize, foundLines]);
+
+    // Always call the latest draw closure from the observer below, without
+    // tearing down and recreating the ResizeObserver on every render.
+    const drawRef = useRef(draw);
+    drawRef.current = draw;
+
     useEffect(() => {
-        const handleResize = () => draw();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        let rafId: number | null = null;
+        // Coalesce a burst of resize callbacks (a live window-drag can fire
+        // many per second) down to one draw per animation frame, instead of
+        // doing a full redraw synchronously on every single event.
+        const observer = new ResizeObserver(() => {
+            if (rafId !== null) cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(() => {
+                drawRef.current();
+                rafId = null;
+            });
+        });
+        observer.observe(canvas);
+        return () => {
+            observer.disconnect();
+            if (rafId !== null) cancelAnimationFrame(rafId);
+        };
     }, []);
 
     const getCellFromEvent = (e: React.PointerEvent<HTMLCanvasElement>): Cell | null => {
@@ -150,7 +207,21 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
     };
 
     return (
-        <Paper elevation={4} sx={{ maxWidth: 540, mx: 'auto', p: 1, borderRadius: 2 }}>
+        <Paper
+            elevation={4}
+            sx={{
+                width: '100%',
+                maxWidth: 540,
+                // As a flex row sibling, an item with no flex-basis shrinks
+                // to its content's intrinsic size -- for a <canvas> that's
+                // its default 300x300, not the 100%-width the CSS asks for.
+                // flex-basis:0 + flex-grow:1 makes it claim space instead.
+                flex: '1 1 0',
+                mx: 'auto',
+                p: 1,
+                borderRadius: 2,
+            }}
+        >
             <canvas
                 ref={canvasRef}
                 style={{ width: '100%', aspectRatio: '1 / 1', display: 'block', touchAction: 'none', borderRadius: '4px' }}

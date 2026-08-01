@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-app",
+  "productName": "Word Sprout",
   "version": "0.1.0",
   "identifier": "com.chip.tauri-app",
   "build": {
@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "tauri-app",
-        "width": 800,
-        "height": 600
+        "title": "Word Sprout",
+        "width": 1000,
+        "height": 680,
+        "minWidth": 680,
+        "minHeight": 600
       }
     ],
     "security": {
