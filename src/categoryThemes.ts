@@ -25,9 +25,19 @@ type Theme = {
     backgroundRepeat?: string;
 };
 
+// Root-absolute paths ("/backgrounds/...") only work when the app is served
+// from "/" (the Tauri build). Under GitHub Pages the app lives at
+// "/WordSearch/", and since these URLs are built at runtime (not static
+// asset references Vite's bundler can see and rewrite), they need
+// import.meta.env.BASE_URL explicitly -- it's "/" for Tauri and
+// "/WordSearch/" for the web build, so this works for both unchanged.
+function assetUrl(path: string): string {
+    return `${import.meta.env.BASE_URL}${path}`;
+}
+
 function scene(file: string, position = "center"): Theme {
     return {
-        background: `${SCRIM}, url("/backgrounds/${file}")`,
+        background: `${SCRIM}, url("${assetUrl(`backgrounds/${file}`)}")`,
         backgroundSize: "cover, cover",
         backgroundPosition: `center, ${position}`,
         backgroundRepeat: "no-repeat, no-repeat",
@@ -36,7 +46,7 @@ function scene(file: string, position = "center"): Theme {
 
 function pattern(file: string, tile = "420px"): Theme {
     return {
-        background: `${SCRIM}, url("/backgrounds/${file}")`,
+        background: `${SCRIM}, url("${assetUrl(`backgrounds/${file}`)}")`,
         backgroundSize: `cover, ${tile}`,
         backgroundPosition: "center, center",
         backgroundRepeat: "no-repeat, repeat",

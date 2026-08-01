@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { getPuzzleWords, validateWord } from "../backend";
 import { DIRECTIONS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 
@@ -146,11 +146,7 @@ export function useWordSearchGame() {
         // Vita's own level 4 (6x6 grid) ships exactly 5 words -> count = size - 1.
         const count = Math.max(3, size - 1);
 
-        const puzzle: { category: string; words: string[] } = await invoke("get_puzzle_words", {
-            count: count + Math.min(count, 8),
-            maxLength: size,
-            level,
-        });
+        const puzzle = await getPuzzleWords(count + Math.min(count, 8), size, level);
         setCategory(puzzle.category);
         setCategoriesSeen(prev => prev.has(puzzle.category) ? prev : new Set(prev).add(puzzle.category));
         const words = puzzle.words;
@@ -219,12 +215,12 @@ export function useWordSearchGame() {
         } else if (wordsToFind.includes(reversedWord)) {
             matchedWord = reversedWord;
         } else {
-            const isDictForward: boolean = await invoke("validate_word", { word: currentWord });
+            const isDictForward = await validateWord(currentWord);
             if (isDictForward && !foundWords[currentWord]) {
                 matchedWord = currentWord;
                 isBonus = true;
             } else if (reversedWord !== currentWord) {
-                const isDictReverse: boolean = await invoke("validate_word", { word: reversedWord });
+                const isDictReverse = await validateWord(reversedWord);
                 if (isDictReverse && !foundWords[reversedWord]) {
                     matchedWord = reversedWord;
                     isBonus = true;
