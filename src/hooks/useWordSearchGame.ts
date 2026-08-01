@@ -1,9 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { DIRECTIONS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
+import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 
 const LEVEL_STORAGE_KEY = "wordsearch.level";
 const STARS_STORAGE_KEY = "wordsearch.stars";
+const ACHIEVEMENTS_STORAGE_KEY = "wordsearch.achievements";
+const LEVELS_COMPLETED_STORAGE_KEY = "wordsearch.levelsCompleted";
+const CATEGORIES_SEEN_STORAGE_KEY = "wordsearch.categoriesSeen";
+const FOUND_DIAGONAL_STORAGE_KEY = "wordsearch.foundDiagonal";
+
+function loadStringSet(key: string): Set<string> {
+    try {
+        return new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+    } catch {
+        return new Set();
+    }
+}
 
 function canPlaceWord(grid: string[][], size: number, word: string, row: number, col: number, dir: number[]) {
     for (let i = 0; i < word.length; i++) {
@@ -73,6 +86,14 @@ export function useWordSearchGame() {
     const [foundWords, setFoundWords] = useState<Record<string, string>>({});
     const [foundLines, setFoundLines] = useState<FoundLine[]>([]);
 
+    const [unlockedAchievements, setUnlockedAchievements] = useState<Set<string>>(() => loadStringSet(ACHIEVEMENTS_STORAGE_KEY));
+    const [levelsCompleted, setLevelsCompleted] = useState(() => Number(localStorage.getItem(LEVELS_COMPLETED_STORAGE_KEY)) || 0);
+    const [categoriesSeen, setCategoriesSeen] = useState<Set<string>>(() => loadStringSet(CATEGORIES_SEEN_STORAGE_KEY));
+    const [foundDiagonal, setFoundDiagonal] = useState(() => localStorage.getItem(FOUND_DIAGONAL_STORAGE_KEY) === "true");
+    // Queue rather than a single value: multiple thresholds (e.g. a level
+    // count and a star count) can cross in the same action.
+    const [justUnlocked, setJustUnlocked] = useState<Achievement[]>([]);
+
     // Mirrors state for use inside submitSelection without stale closures.
     const stateRef = useRef({ gridData, wordsToFind, foundWords });
     useEffect(() => {
@@ -85,6 +106,34 @@ export function useWordSearchGame() {
     useEffect(() => {
         localStorage.setItem(STARS_STORAGE_KEY, String(stars));
     }, [stars]);
+    useEffect(() => {
+        localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify([...unlockedAchievements]));
+    }, [unlockedAchievements]);
+    useEffect(() => {
+        localStorage.setItem(LEVELS_COMPLETED_STORAGE_KEY, String(levelsCompleted));
+    }, [levelsCompleted]);
+    useEffect(() => {
+        localStorage.setItem(CATEGORIES_SEEN_STORAGE_KEY, JSON.stringify([...categoriesSeen]));
+    }, [categoriesSeen]);
+    useEffect(() => {
+        localStorage.setItem(FOUND_DIAGONAL_STORAGE_KEY, String(foundDiagonal));
+    }, [foundDiagonal]);
+
+    // Re-evaluate against the latest stats whenever any of them change, and
+    // surface anything newly satisfied -- read via a ref (not a dependency)
+    // so this effect doesn't re-fire on its own setUnlockedAchievements call.
+    const unlockedRef = useRef(unlockedAchievements);
+    useEffect(() => { unlockedRef.current = unlockedAchievements; }, [unlockedAchievements]);
+    useEffect(() => {
+        const satisfied = evaluateAchievements({ levelsCompleted, stars, categoriesSeen: categoriesSeen.size, foundDiagonal });
+        const newlyUnlockedIds = satisfied.filter(id => !unlockedRef.current.has(id));
+        if (newlyUnlockedIds.length > 0) {
+            setUnlockedAchievements(prev => new Set([...prev, ...newlyUnlockedIds]));
+            setJustUnlocked(prev => [...prev, ...ACHIEVEMENTS.filter(a => newlyUnlockedIds.includes(a.id))]);
+        }
+    }, [levelsCompleted, stars, categoriesSeen, foundDiagonal]);
+
+    const dismissJustUnlocked = () => setJustUnlocked(prev => prev.slice(1));
 
     const initGame = async () => {
         setStatus("Generating puzzle...");
@@ -103,6 +152,7 @@ export function useWordSearchGame() {
             level,
         });
         setCategory(puzzle.category);
+        setCategoriesSeen(prev => prev.has(puzzle.category) ? prev : new Set(prev).add(puzzle.category));
         const words = puzzle.words;
         const mainWords = words.slice(0, count);
         const bonusWords = words.slice(count);
@@ -189,6 +239,7 @@ export function useWordSearchGame() {
 
             setFoundLines(prev => [...prev, newLine]);
             setFoundWords(nextFoundWords);
+            if (dr !== 0 && dc !== 0) setFoundDiagonal(true);
 
             if (isBonus) {
                 setStars(s => s + 1);
@@ -197,6 +248,7 @@ export function useWordSearchGame() {
                 if (foundMainCount === wordsToFind.length) {
                     setStatus("Triumph! Level complete.");
                     setLevelComplete(true);
+                    setLevelsCompleted(n => n + 1);
                 }
             }
         }
@@ -212,5 +264,6 @@ export function useWordSearchGame() {
         level, stars, status, levelComplete, category,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, nextLevel, restart,
+        unlockedAchievements, justUnlocked, dismissJustUnlocked,
     };
 }

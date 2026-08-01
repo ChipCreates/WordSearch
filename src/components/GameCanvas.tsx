@@ -7,7 +7,28 @@ type Props = {
     gridData: string[][];
     foundLines: FoundLine[];
     onSelectionEnd: (startCell: Cell, endCell: Cell) => void;
+    celebrate?: boolean;
 };
+
+// Shared with the dark side panels (App.tsx borderRadius:3 == 12px under MUI's
+// default theme.shape.borderRadius of 4) and with the Paper below, so the
+// celebration animation's pills collapse to dots of exactly the radius
+// already used for every rounded corner in the UI.
+const CORNER_RADIUS_PX = 12;
+// Three phases, sequenced rather than simultaneous: if the card's own
+// opacity faded over the same span as the pill-to-dot collapse, both would
+// reach completion at the same instant, so the dots would only ever be
+// fully formed at the exact moment the whole card is nearly invisible --
+// never a beat where they're clearly visible. Instead the letters/pills
+// finish forming first while the card is still fully opaque, then the fully-
+// formed dots hold for a moment, then the card (now showing just the dots)
+// fades away. CARD_FADE_DELAY_MS is measured from celebrate:true itself
+// (same zero point as the dots-forming clock below), so it must cover both
+// the dots-forming time AND the hold, not just the hold on its own.
+const DOTS_FORM_DURATION_MS = 650;
+const DOTS_HOLD_DURATION_MS = 400;
+const CARD_FADE_DELAY_MS = DOTS_FORM_DURATION_MS + DOTS_HOLD_DURATION_MS;
+const CARD_FADE_DURATION_MS = 500;
 
 // HIGHLIGHT_COLORS (constants.ts) is mostly light pastels, so a fixed light
 // letter color washes out on top of them -- pick black/white per pill by its
@@ -20,7 +41,7 @@ function contrastingTextColor(hex: string): string {
     return luminance > 0.6 ? "#121212" : "#f5f5f5";
 }
 
-export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd }: Props) {
+export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, celebrate = false }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const dragRef = useRef({
@@ -28,6 +49,11 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         startCell: null as Cell | null,
         currentTarget: null as Cell | null,
     });
+
+    // 0 = normal board, 1 = fully celebrated (letters faded out, pills
+    // collapsed to dots). A ref, not state, since it's driven by a rAF loop
+    // that redraws imperatively every frame rather than through React render.
+    const celebrateProgressRef = useRef(0);
 
     const draw = () => {
         const canvas = canvasRef.current;
@@ -58,6 +84,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         if (!gridData.length) return;
 
         const cellSize = rect.width / gridSize;
+        const t = celebrateProgressRef.current;
 
         const drawLine = (startR: number, startC: number, endR: number, endC: number, color: string) => {
             ctx.beginPath();
@@ -69,7 +96,29 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             ctx.stroke();
         };
 
-        foundLines.forEach(line => drawLine(line.startR, line.startC, line.endR, line.endC, line.color));
+        // On level complete, each pill collapses toward its own midpoint
+        // while its stroke width grows to 2*CORNER_RADIUS_PX -- a
+        // zero-length round-capped line is exactly a filled circle of
+        // radius (lineWidth/2), so at t=1 this *is* a dot of that radius,
+        // no separate arc-drawing code path needed. At t=0 it's identical
+        // to the plain drawLine above.
+        const drawCelebratingLine = (line: FoundLine) => {
+            const sx = line.startC * cellSize + cellSize / 2;
+            const sy = line.startR * cellSize + cellSize / 2;
+            const ex = line.endC * cellSize + cellSize / 2;
+            const ey = line.endR * cellSize + cellSize / 2;
+            const mx = (sx + ex) / 2;
+            const my = (sy + ey) / 2;
+            ctx.beginPath();
+            ctx.moveTo(sx + (mx - sx) * t, sy + (my - sy) * t);
+            ctx.lineTo(ex + (mx - ex) * t, ey + (my - ey) * t);
+            ctx.lineWidth = cellSize * 0.75 + (2 * CORNER_RADIUS_PX - cellSize * 0.75) * t;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = line.color;
+            ctx.stroke();
+        };
+
+        foundLines.forEach(drawCelebratingLine);
 
         if (isDragging && startCell && currentTarget) {
             drawLine(startCell.r, startCell.c, currentTarget.r, currentTarget.c, "rgba(187, 134, 252, 0.6)");
@@ -91,6 +140,11 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = `bold ${cellSize * 0.65}px 'Segoe UI', sans-serif`;
+        // Letters fade out over the same celebration progress as the pills
+        // collapse, so the whole board dissolves to reveal the background
+        // behind it (the Paper card itself fades via a separate CSS
+        // transition on its own opacity).
+        ctx.globalAlpha = 1 - t;
 
         for (let r = 0; r < gridSize; r++) {
             for (let c = 0; c < gridSize; c++) {
@@ -99,6 +153,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 ctx.fillText(gridData[r][c], c * cellSize + cellSize / 2, r * cellSize + cellSize / 2);
             }
         }
+        ctx.globalAlpha = 1;
     };
 
     useEffect(() => { draw(); }, [gridData, gridSize, foundLines]);
@@ -107,6 +162,30 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
     // tearing down and recreating the ResizeObserver on every render.
     const drawRef = useRef(draw);
     drawRef.current = draw;
+
+    useEffect(() => {
+        let rafId: number | null = null;
+        if (!celebrate) {
+            // Snap back instantly (not a reverse animation) -- by the time
+            // celebrate goes false a new puzzle is already loading, so
+            // there's nothing worth animating back to.
+            celebrateProgressRef.current = 0;
+            drawRef.current();
+            return;
+        }
+        const start = performance.now();
+        const tick = (now: number) => {
+            celebrateProgressRef.current = Math.min(1, (now - start) / DOTS_FORM_DURATION_MS);
+            drawRef.current();
+            if (celebrateProgressRef.current < 1) {
+                rafId = requestAnimationFrame(tick);
+            }
+        };
+        rafId = requestAnimationFrame(tick);
+        return () => {
+            if (rafId !== null) cancelAnimationFrame(rafId);
+        };
+    }, [celebrate]);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -148,6 +227,8 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
     };
 
     const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        // Once the board is dissolving there's nothing left to select.
+        if (celebrate) return;
         e.currentTarget.setPointerCapture(e.pointerId);
 
         const cell = getCellFromEvent(e);
@@ -219,7 +300,19 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 flex: '1 1 0',
                 mx: 'auto',
                 p: 1,
-                borderRadius: 2,
+                borderRadius: `${CORNER_RADIUS_PX}px`,
+                // Fades the whole card (now showing just the collapsed dots)
+                // out on level complete, revealing the category background
+                // image behind it -- delayed until after the canvas-level
+                // pill-to-dot animation has finished forming the dots, so
+                // there's a beat where they're clearly visible before the
+                // card itself disappears. celebrate:false resets instantly
+                // (no transition) since a new puzzle is already loading by
+                // then and there's nothing worth animating back from.
+                opacity: celebrate ? 0 : 1,
+                transition: celebrate
+                    ? `opacity ${CARD_FADE_DURATION_MS}ms ease ${CARD_FADE_DELAY_MS}ms`
+                    : 'none',
             }}
         >
             <canvas
