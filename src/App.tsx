@@ -1,9 +1,15 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Box, Button, IconButton, Snackbar, Alert } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { darkTheme } from "./theme";
 import { useWordSearchGame } from "./hooks/useWordSearchGame";
 import { CATEGORY_THEMES, DEFAULT_THEME } from "./categoryThemes";
+import {
+  CELEBRATE_FADE_DELAY_MS,
+  CELEBRATE_FADE_DURATION_MS,
+  CELEBRATE_BUTTONS_MOVE_DELAY_MS,
+  CELEBRATE_BUTTONS_MOVE_DURATION_MS,
+} from "./constants";
 import GameCanvas from "./components/GameCanvas";
 import WordList from "./components/WordList";
 import AchievementsDialog from "./components/AchievementsDialog";
@@ -17,6 +23,31 @@ export default function App() {
   } = useWordSearchGame();
 
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+
+  // Closing beat of the celebration: once the board+word-list fade has
+  // finished, the button block glides from its sidebar spot to the center
+  // of the window. translate (not a layout/position change) so it animates
+  // smoothly and the element never leaves its normal flow slot -- the offset
+  // is measured once, right before the glide starts, from wherever the
+  // block actually is at that moment.
+  const buttonBoxRef = useRef<HTMLDivElement>(null);
+  const [centerOffset, setCenterOffset] = useState<{ dx: number; dy: number } | null>(null);
+  useEffect(() => {
+    if (!levelComplete) {
+      setCenterOffset(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      const el = buttonBoxRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setCenterOffset({
+        dx: window.innerWidth / 2 - (rect.left + rect.width / 2),
+        dy: window.innerHeight / 2 - (rect.top + rect.height / 2),
+      });
+    }, CELEBRATE_BUTTONS_MOVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [levelComplete]);
 
   const theme = CATEGORY_THEMES[category] ?? DEFAULT_THEME;
   const currentToast = justUnlocked[0];
@@ -80,6 +111,14 @@ export default function App() {
                 borderRadius: 3,
                 textAlign: 'center',
                 backgroundColor: 'rgba(15,15,20,0.62)',
+                // The status text and word list only matter while a puzzle
+                // is live -- once it's complete they fade out in lockstep
+                // with the board itself (same delay/duration) rather than
+                // sitting there stranded next to a dissolved-away board.
+                opacity: levelComplete ? 0 : 1,
+                transition: levelComplete
+                  ? `opacity ${CELEBRATE_FADE_DURATION_MS}ms ease ${CELEBRATE_FADE_DELAY_MS}ms`
+                  : 'none',
               }}
             >
               <Typography variant="body1" sx={{ mb: 2 }}>{status}</Typography>
@@ -87,11 +126,16 @@ export default function App() {
             </Box>
 
             <Box
+              ref={buttonBoxRef}
               sx={{
                 p: 2,
                 borderRadius: 3,
                 textAlign: 'center',
                 backgroundColor: 'rgba(15,15,20,0.62)',
+                position: 'relative',
+                zIndex: centerOffset ? 20 : 'auto',
+                transform: centerOffset ? `translate(${centerOffset.dx}px, ${centerOffset.dy}px)` : 'none',
+                transition: centerOffset ? `transform ${CELEBRATE_BUTTONS_MOVE_DURATION_MS}ms ease` : 'none',
               }}
             >
               {levelComplete && (

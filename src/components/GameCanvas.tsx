@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 import { Paper } from "@mui/material";
-import type { Cell, FoundLine } from "../constants";
+import {
+    type Cell,
+    type FoundLine,
+    CORNER_RADIUS_PX,
+    CELEBRATE_DOTS_FORM_MS,
+    CELEBRATE_FADE_DELAY_MS,
+    CELEBRATE_FADE_DURATION_MS,
+} from "../constants";
 
 type Props = {
     gridSize: number;
@@ -9,26 +16,6 @@ type Props = {
     onSelectionEnd: (startCell: Cell, endCell: Cell) => void;
     celebrate?: boolean;
 };
-
-// Shared with the dark side panels (App.tsx borderRadius:3 == 12px under MUI's
-// default theme.shape.borderRadius of 4) and with the Paper below, so the
-// celebration animation's pills collapse to dots of exactly the radius
-// already used for every rounded corner in the UI.
-const CORNER_RADIUS_PX = 12;
-// Three phases, sequenced rather than simultaneous: if the card's own
-// opacity faded over the same span as the pill-to-dot collapse, both would
-// reach completion at the same instant, so the dots would only ever be
-// fully formed at the exact moment the whole card is nearly invisible --
-// never a beat where they're clearly visible. Instead the letters/pills
-// finish forming first while the card is still fully opaque, then the fully-
-// formed dots hold for a moment, then the card (now showing just the dots)
-// fades away. CARD_FADE_DELAY_MS is measured from celebrate:true itself
-// (same zero point as the dots-forming clock below), so it must cover both
-// the dots-forming time AND the hold, not just the hold on its own.
-const DOTS_FORM_DURATION_MS = 650;
-const DOTS_HOLD_DURATION_MS = 400;
-const CARD_FADE_DELAY_MS = DOTS_FORM_DURATION_MS + DOTS_HOLD_DURATION_MS;
-const CARD_FADE_DURATION_MS = 500;
 
 // HIGHLIGHT_COLORS (constants.ts) is mostly light pastels, so a fixed light
 // letter color washes out on top of them -- pick black/white per pill by its
@@ -175,7 +162,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         }
         const start = performance.now();
         const tick = (now: number) => {
-            celebrateProgressRef.current = Math.min(1, (now - start) / DOTS_FORM_DURATION_MS);
+            celebrateProgressRef.current = Math.min(1, (now - start) / CELEBRATE_DOTS_FORM_MS);
             drawRef.current();
             if (celebrateProgressRef.current < 1) {
                 rafId = requestAnimationFrame(tick);
@@ -311,7 +298,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 // then and there's nothing worth animating back from.
                 opacity: celebrate ? 0 : 1,
                 transition: celebrate
-                    ? `opacity ${CARD_FADE_DURATION_MS}ms ease ${CARD_FADE_DELAY_MS}ms`
+                    ? `opacity ${CELEBRATE_FADE_DURATION_MS}ms ease ${CELEBRATE_FADE_DELAY_MS}ms`
                     : 'none',
             }}
         >
