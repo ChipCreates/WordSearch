@@ -15,7 +15,7 @@ A themed word search game built with Tauri, React, and Rust — desktop app, And
 
 - **10 themed categories** — Animals, Food, Nature, Weather, Ocean, Space, Sports, Household, Transportation, Music — each with its own curated word list and matching background art. Categories cycle as you level up.
 - **Progressive difficulty** — the grid grows from 4×4 to 10×10 as you climb levels, with the word count scaling to match (modeled on real word-search games like Vita Word Search rather than an arbitrary curve).
-- **Bonus words** — dragging out any real English word placed in the grid, not just the ones on the list, earns a bonus star. Backed by a 60,656-word dictionary.
+- **Bonus words** — dragging out any real English word placed in the grid, not just the ones on the list, earns a bonus star. Backed by a 125,312-word dictionary (the [ENABLE word list](data/dictionary/CREDITS.md), filtered to grid-usable lengths and profanity-screened).
 - **10 achievements** — level-count and star milestones, seeing every category, and a "Diagonal Detective" badge for finding a diagonally-placed word — tracked persistently and viewable from a trophy button in the header.
 - **Level-complete celebration** — found-word highlights collapse into dots, hold on screen, then the board fades to reveal the category art behind it, closing with the action buttons gliding to the center of the window.
 - **Installable PWA** — the web build works fully offline after the first visit (service worker precaches the app, background art, and dictionary) and installs to a phone or Mac's home screen/dock like a native app.

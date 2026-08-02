@@ -37,7 +37,7 @@ export default defineConfig({
         // which need to be precached for the game to actually work offline
         // once installed.
         globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg,json,webmanifest,mp3}"],
-        // The 60k-word dictionary.json (~650KB) needs an explicit bump --
+        // The 125k-word dictionary.json (~1.4MB) needs an explicit bump --
         // workbox's default precache limit is 2MB total, and this one file
         // alone is a meaningful chunk of that budget on top of the app
         // bundle and every background image.
