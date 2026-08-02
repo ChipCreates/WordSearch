@@ -63,17 +63,30 @@ export default function App() {
         }}
       >
         <AppBar position="static" elevation={0} sx={{ backgroundColor: 'rgba(18,18,18,0.35)' }}>
-          <Toolbar>
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          {/* flexWrap lets the whole category/level block drop to its own row
+              as one clean unit on narrow phones, instead of each Typography
+              individually word-wrapping mid-text (e.g. "Word" / "Sprout"
+              splitting) when there isn't room for everything on one line. */}
+          <Toolbar sx={{ flexWrap: 'wrap', rowGap: 0.5, py: 1 }}>
+            <Typography variant="h6" sx={{ flexGrow: 1, whiteSpace: 'nowrap' }}>
               Word Sprout
             </Typography>
             <IconButton onClick={() => setAchievementsOpen(true)} sx={{ color: '#fbbc04', mr: 1 }}>
               <EmojiEventsIcon />
             </IconButton>
-            <Typography variant="h6" sx={{ color: '#fbbc04', mr: 2 }}>
+            <Typography variant="h6" sx={{ color: '#fbbc04', whiteSpace: 'nowrap' }}>
               ⭐ {stars}
             </Typography>
-            <Typography variant="h6" color="secondary">
+            <Typography
+              variant="h6"
+              color="secondary"
+              sx={{
+                whiteSpace: 'nowrap',
+                width: { xs: '100%', sm: 'auto' },
+                textAlign: { xs: 'center', sm: 'right' },
+                ml: { sm: 2 },
+              }}
+            >
               {category ? `${category} · ` : ''}Level {level}
             </Typography>
           </Toolbar>
