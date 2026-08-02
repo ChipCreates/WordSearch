@@ -32,10 +32,11 @@ export default defineConfig({
       },
       workbox: {
         // Default globPatterns is js/css/html/ico/png/svg only -- misses
-        // the category background .jpg art and dictionary.json (the bonus-
-        // word list), both of which need to be precached for the game to
-        // actually work offline once installed.
-        globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg,json,webmanifest}"],
+        // the category background .jpg art, dictionary.json (the bonus-
+        // word list), and the background music/SFX .mp3 files, all of
+        // which need to be precached for the game to actually work offline
+        // once installed.
+        globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg,json,webmanifest,mp3}"],
         // The 60k-word dictionary.json (~650KB) needs an explicit bump --
         // workbox's default precache limit is 2MB total, and this one file
         // alone is a meaningful chunk of that budget on top of the app

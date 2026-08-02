@@ -14,6 +14,7 @@ type Props = {
     gridData: string[][];
     foundLines: FoundLine[];
     onSelectionEnd: (startCell: Cell, endCell: Cell) => void;
+    onSwipe?: () => void;
     celebrate?: boolean;
 };
 
@@ -28,7 +29,7 @@ function contrastingTextColor(hex: string): string {
     return luminance > 0.6 ? "#121212" : "#f5f5f5";
 }
 
-export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, celebrate = false }: Props) {
+export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const dragRef = useRef({
@@ -266,6 +267,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
         const { startCell, currentTarget } = dragRef.current;
         if (startCell && currentTarget) {
+            onSwipe?.();
             onSelectionEnd(startCell, currentTarget);
         }
 

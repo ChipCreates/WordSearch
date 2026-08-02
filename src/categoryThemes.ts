@@ -31,7 +31,7 @@ type Theme = {
 // asset references Vite's bundler can see and rewrite), they need
 // import.meta.env.BASE_URL explicitly -- it's "/" for Tauri and
 // "/WordSearch/" for the web build, so this works for both unchanged.
-function assetUrl(path: string): string {
+export function assetUrl(path: string): string {
     return `${import.meta.env.BASE_URL}${path}`;
 }
 
@@ -53,21 +53,28 @@ function pattern(file: string, tile = "420px"): Theme {
     };
 }
 
+// Keyed by category display name. Only the categories that predate the
+// 44-category expansion have dedicated art (sourced from Pixabay, see
+// CREDITS.md); the ~34 categories added alongside it fall back to
+// DEFAULT_THEME below rather than reusing/faking art for them. Ocean,
+// Space, Transportation, and Music were renamed to their closest match in
+// the new list (Ocean Life, Space & Astronomy, Vehicles, Musical
+// Instruments) -- same art, just re-keyed.
 export const CATEGORY_THEMES: Record<string, Theme> = {
     Animals: pattern("animals.jpg"),
     Food: pattern("food.jpg"),
     Nature: scene("nature.jpg"),
     Weather: scene("weather.jpg"),
-    Ocean: scene("ocean.jpg"),
+    "Ocean Life": scene("ocean.jpg"),
     // Planet sits left-of-center in the source; bias the crop toward it.
-    Space: scene("space.jpg", "40% center"),
+    "Space & Astronomy": scene("space.jpg", "40% center"),
     // Portrait-orientation source (unlike the other, landscape, picks) --
     // cover crops far less aggressively on a phone viewport as a result,
     // so a plain center position already keeps the subject intact.
     Sports: scene("sports.jpg"),
     Household: scene("household.jpg"),
-    Transportation: scene("transportation.jpg"),
-    Music: scene("music.svg"),
+    Vehicles: scene("transportation.jpg"),
+    "Musical Instruments": scene("music.svg"),
 };
 
 export const DEFAULT_THEME = CATEGORY_THEMES.Nature;

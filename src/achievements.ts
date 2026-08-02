@@ -14,7 +14,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     { id: "bonus-hunter", name: "Bonus Hunter", description: "Find your first bonus word", icon: "🔍" },
     { id: "star-collector", name: "Star Collector", description: "Earn 10 stars", icon: "⭐" },
     { id: "star-baron", name: "Star Baron", description: "Earn 50 stars", icon: "🌟" },
-    { id: "world-traveler", name: "World Traveler", description: "See all 10 word categories", icon: "🌍" },
+    { id: "world-traveler", name: "World Traveler", description: "See every word category, standard and challenging", icon: "🌍" },
     { id: "diagonal-detective", name: "Diagonal Detective", description: "Find a word placed diagonally", icon: "↗️" },
 ];
 
@@ -23,6 +23,11 @@ export type AchievementStats = {
     stars: number;
     categoriesSeen: number;
     foundDiagonal: boolean;
+    // Total number of categories that exist right now (both difficulty
+    // tiers combined) -- world-traveler compares against this instead of a
+    // hardcoded number so it keeps meaning "seen every category" as more
+    // get added.
+    totalCategories: number;
 };
 
 // Every achievement id whose unlock condition `stats` currently satisfies --
@@ -38,7 +43,7 @@ export function evaluateAchievements(stats: AchievementStats): string[] {
     if (stats.stars >= 1) unlocked.push("bonus-hunter");
     if (stats.stars >= 10) unlocked.push("star-collector");
     if (stats.stars >= 50) unlocked.push("star-baron");
-    if (stats.categoriesSeen >= 10) unlocked.push("world-traveler");
+    if (stats.categoriesSeen >= stats.totalCategories) unlocked.push("world-traveler");
     if (stats.foundDiagonal) unlocked.push("diagonal-detective");
     return unlocked;
 }

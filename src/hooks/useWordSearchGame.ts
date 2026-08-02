@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getPuzzleWords, validateWord } from "../backend";
+import { getPuzzleWords, validateWord, CATEGORY_NAMES, CATEGORY_NAMES_BY_TIER, type Tier } from "../backend";
 import { DIRECTIONS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 
@@ -9,6 +9,7 @@ const ACHIEVEMENTS_STORAGE_KEY = "wordsearch.achievements";
 const LEVELS_COMPLETED_STORAGE_KEY = "wordsearch.levelsCompleted";
 const CATEGORIES_SEEN_STORAGE_KEY = "wordsearch.categoriesSeen";
 const FOUND_DIAGONAL_STORAGE_KEY = "wordsearch.foundDiagonal";
+const DIFFICULTY_MODE_STORAGE_KEY = "wordsearch.difficultyMode";
 
 function loadStringSet(key: string): Set<string> {
     try {
@@ -79,6 +80,13 @@ export function useWordSearchGame() {
     const [status, setStatus] = useState("Loading...");
     const [levelComplete, setLevelComplete] = useState(false);
     const [category, setCategory] = useState("");
+    // Difficulty modes (and therefore this whole 44-category pool) didn't
+    // exist before this feature -- every player's prior progress happened
+    // under what is now the "standard" pool, so that's the default and the
+    // basis for the categoriesSeen backfill just below.
+    const [difficultyMode, setDifficultyMode] = useState<Tier>(
+        () => (localStorage.getItem(DIFFICULTY_MODE_STORAGE_KEY) === "challenging" ? "challenging" : "standard")
+    );
 
     const [gridSize, setGridSize] = useState(12);
     const [gridData, setGridData] = useState<string[][]>([]);
@@ -87,8 +95,23 @@ export function useWordSearchGame() {
     const [foundLines, setFoundLines] = useState<FoundLine[]>([]);
 
     const [unlockedAchievements, setUnlockedAchievements] = useState<Set<string>>(() => loadStringSet(ACHIEVEMENTS_STORAGE_KEY));
-    const [levelsCompleted, setLevelsCompleted] = useState(() => Number(localStorage.getItem(LEVELS_COMPLETED_STORAGE_KEY)) || 0);
-    const [categoriesSeen, setCategoriesSeen] = useState<Set<string>>(() => loadStringSet(CATEGORIES_SEEN_STORAGE_KEY));
+    // Reaching level N always means N-1 levels were already completed --
+    // that's the only way `level` ever advances -- so it's a floor for
+    // levelsCompleted, and levels 1..N-1 are exactly the categories already
+    // cycled through (same formula the backend uses to pick each one). Take
+    // the max/union with whatever's stored so players who were already past
+    // level 1 when these two counters were introduced don't have their
+    // already-earned progress read as zero.
+    const [levelsCompleted, setLevelsCompleted] = useState(() => {
+        const stored = Number(localStorage.getItem(LEVELS_COMPLETED_STORAGE_KEY)) || 0;
+        return Math.max(stored, level - 1);
+    });
+    const [categoriesSeen, setCategoriesSeen] = useState<Set<string>>(() => {
+        const stored = loadStringSet(CATEGORIES_SEEN_STORAGE_KEY);
+        const names = CATEGORY_NAMES_BY_TIER[difficultyMode];
+        for (let i = 0; i < level - 1; i++) stored.add(names[i % names.length]);
+        return stored;
+    });
     const [foundDiagonal, setFoundDiagonal] = useState(() => localStorage.getItem(FOUND_DIAGONAL_STORAGE_KEY) === "true");
     // Queue rather than a single value: multiple thresholds (e.g. a level
     // count and a star count) can cross in the same action.
@@ -118,6 +141,9 @@ export function useWordSearchGame() {
     useEffect(() => {
         localStorage.setItem(FOUND_DIAGONAL_STORAGE_KEY, String(foundDiagonal));
     }, [foundDiagonal]);
+    useEffect(() => {
+        localStorage.setItem(DIFFICULTY_MODE_STORAGE_KEY, difficultyMode);
+    }, [difficultyMode]);
 
     // Re-evaluate against the latest stats whenever any of them change, and
     // surface anything newly satisfied -- read via a ref (not a dependency)
@@ -125,7 +151,7 @@ export function useWordSearchGame() {
     const unlockedRef = useRef(unlockedAchievements);
     useEffect(() => { unlockedRef.current = unlockedAchievements; }, [unlockedAchievements]);
     useEffect(() => {
-        const satisfied = evaluateAchievements({ levelsCompleted, stars, categoriesSeen: categoriesSeen.size, foundDiagonal });
+        const satisfied = evaluateAchievements({ levelsCompleted, stars, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length });
         const newlyUnlockedIds = satisfied.filter(id => !unlockedRef.current.has(id));
         if (newlyUnlockedIds.length > 0) {
             setUnlockedAchievements(prev => new Set([...prev, ...newlyUnlockedIds]));
@@ -155,7 +181,7 @@ export function useWordSearchGame() {
         // starve word selection entirely rather than help placement.
         const maxWordLength = size <= 4 ? size : size - 1;
 
-        const puzzle = await getPuzzleWords(count + Math.min(count, 8), maxWordLength, level);
+        const puzzle = await getPuzzleWords(count + Math.min(count, 8), maxWordLength, level, difficultyMode);
         setCategory(puzzle.category);
         setCategoriesSeen(prev => prev.has(puzzle.category) ? prev : new Set(prev).add(puzzle.category));
         const words = puzzle.words;
@@ -202,7 +228,7 @@ export function useWordSearchGame() {
         setStatus("Puzzle generated. Find the words!");
     };
 
-    useEffect(() => { initGame(); }, [level]);
+    useEffect(() => { initGame(); }, [level, difficultyMode]);
 
     const submitSelection = async (startCell: Cell, endCell: Cell) => {
         const { gridData, wordsToFind, foundWords } = stateRef.current;
@@ -279,5 +305,6 @@ export function useWordSearchGame() {
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, nextLevel, restart,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
+        difficultyMode, setDifficultyMode,
     };
 }

@@ -1,6 +1,6 @@
 mod categories;
 mod dictionary;
-use categories::CATEGORIES;
+use categories::{Tier, CATEGORIES};
 use dictionary::DICTIONARY;
 
 #[tauri::command]
@@ -15,13 +15,15 @@ struct PuzzleWords {
 }
 
 #[tauri::command]
-fn get_puzzle_words(count: usize, max_length: usize, level: usize) -> PuzzleWords {
+fn get_puzzle_words(count: usize, max_length: usize, level: usize, tier: String) -> PuzzleWords {
     use rand::seq::SliceRandom;
     use rand::thread_rng;
 
     let mut rng = thread_rng();
 
-    let category = &CATEGORIES[(level.saturating_sub(1)) % CATEGORIES.len()];
+    let wanted_tier = if tier == "challenging" { Tier::Challenging } else { Tier::Standard };
+    let pool: Vec<&categories::Category> = CATEGORIES.iter().filter(|c| c.tier == wanted_tier).collect();
+    let category = pool[(level.saturating_sub(1)) % pool.len()];
 
     let mut valid_words: Vec<&str> = category
         .words

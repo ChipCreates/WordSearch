@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Box, Button, IconButton, Snackbar, Alert } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { darkTheme } from "./theme";
 import { useWordSearchGame } from "./hooks/useWordSearchGame";
+import { useAudio } from "./hooks/useAudio";
 import { CATEGORY_THEMES, DEFAULT_THEME } from "./categoryThemes";
 import {
   CELEBRATE_FADE_DELAY_MS,
@@ -13,6 +15,7 @@ import {
 import GameCanvas from "./components/GameCanvas";
 import WordList from "./components/WordList";
 import AchievementsDialog from "./components/AchievementsDialog";
+import SettingsDialog from "./components/SettingsDialog";
 
 export default function App() {
   const {
@@ -20,9 +23,34 @@ export default function App() {
     gridSize, gridData, wordsToFind, foundWords, foundLines,
     submitSelection, nextLevel, restart,
     unlockedAchievements, justUnlocked, dismissJustUnlocked,
+    difficultyMode, setDifficultyMode,
   } = useWordSearchGame();
+  const { muted, toggleMuted, playSfx } = useAudio();
 
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // SFX tied to state *transitions* (a level completing, a star being
+  // added, an achievement unlocking) rather than threaded into
+  // useWordSearchGame itself -- keeps that hook audio-agnostic. Refs (not
+  // state) hold the previous value purely for edge detection.
+  const prevStarsRef = useRef(stars);
+  useEffect(() => {
+    if (stars > prevStarsRef.current) playSfx("award");
+    prevStarsRef.current = stars;
+  }, [stars, playSfx]);
+
+  const prevLevelCompleteRef = useRef(levelComplete);
+  useEffect(() => {
+    if (levelComplete && !prevLevelCompleteRef.current) playSfx("cheering");
+    prevLevelCompleteRef.current = levelComplete;
+  }, [levelComplete, playSfx]);
+
+  const prevJustUnlockedLengthRef = useRef(justUnlocked.length);
+  useEffect(() => {
+    if (justUnlocked.length > prevJustUnlockedLengthRef.current) playSfx("achievement");
+    prevJustUnlockedLengthRef.current = justUnlocked.length;
+  }, [justUnlocked, playSfx]);
 
   // Closing beat of the celebration: once the board+word-list fade has
   // finished, the button block glides from its sidebar spot to the center
@@ -71,7 +99,10 @@ export default function App() {
             <Typography variant="h6" sx={{ flexGrow: 1, whiteSpace: 'nowrap' }}>
               Word Sprout
             </Typography>
-            <IconButton onClick={() => setAchievementsOpen(true)} sx={{ color: '#fbbc04', mr: 1 }}>
+            <IconButton onClick={() => { playSfx('click'); setSettingsOpen(true); }} sx={{ mr: 0.5 }}>
+              <SettingsIcon />
+            </IconButton>
+            <IconButton onClick={() => { playSfx('click'); setAchievementsOpen(true); }} sx={{ color: '#fbbc04', mr: 1 }}>
               <EmojiEventsIcon />
             </IconButton>
             <Typography variant="h6" sx={{ color: '#fbbc04', whiteSpace: 'nowrap' }}>
@@ -114,6 +145,7 @@ export default function App() {
             gridData={gridData}
             foundLines={foundLines}
             onSelectionEnd={submitSelection}
+            onSwipe={() => playSfx('swipe')}
             celebrate={levelComplete}
           />
 
@@ -152,11 +184,11 @@ export default function App() {
               }}
             >
               {levelComplete && (
-                  <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={nextLevel}>
+                  <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={() => { playSfx('click'); nextLevel(); }}>
                       Next Level
                   </Button>
               )}
-              <Button variant="outlined" color="primary" onClick={restart}>
+              <Button variant="outlined" color="primary" onClick={() => { playSfx('click'); restart(); }}>
                   Restart Game
               </Button>
             </Box>
@@ -168,6 +200,15 @@ export default function App() {
         open={achievementsOpen}
         unlockedAchievements={unlockedAchievements}
         onClose={() => setAchievementsOpen(false)}
+      />
+
+      <SettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        difficultyMode={difficultyMode}
+        onDifficultyModeChange={setDifficultyMode}
+        muted={muted}
+        onToggleMuted={toggleMuted}
       />
 
       <Snackbar
