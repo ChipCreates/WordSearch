@@ -25,8 +25,20 @@ A themed word search game built with Tauri, React, and Rust — desktop app, And
 | Platform | How |
 |---|---|
 | **Web** | Open **[chipcreates.github.io/WordSearch](https://chipcreates.github.io/WordSearch/)** in any modern browser. On iPhone/Mac Safari, use Share → "Add to Home Screen" for a full-screen, offline-capable app. |
-| **Desktop** | Build from source (see below) — Linux, Windows, macOS via Tauri. |
-| **Android** | Build from source (see below) and install the APK, or side-load via `tauri android build`. |
+| **Desktop** | Download a prebuilt binary from [Releases](../../releases/latest) — Linux, Windows, macOS — or build from source (see below). |
+| **Android** | Download the APK from [Releases](../../releases/latest), or build from source (see below). |
+
+## How to install and run
+
+Prebuilt binaries for every tagged version are published automatically to the [Releases page](../../releases/latest) by [`.github/workflows/release.yml`](.github/workflows/release.yml). These aren't signed by an Apple/Microsoft developer certificate, so the OS will show an "unknown publisher" warning the first time you open one — that's expected for a self-published indie app, not a sign of tampering.
+
+| Platform | File | Steps |
+|---|---|---|
+| **Windows** | `.msi` or `-setup.exe` | Run the installer. If SmartScreen blocks it, click **More info → Run anyway**. |
+| **macOS** | `.dmg` | Open the `.dmg` and drag Word Sprout to Applications. Gatekeeper will refuse to open an unsigned app on the first launch — right-click the app → **Open** → **Open** again to confirm, or run `xattr -d com.apple.quarantine "/Applications/Word Sprout.app"` in Terminal. |
+| **Linux** | `.AppImage` | `chmod +x Word-Sprout_*.AppImage && ./Word-Sprout_*.AppImage` |
+| **Linux (Debian/Ubuntu)** | `.deb` | `sudo dpkg -i word-sprout_*.deb` |
+| **Android** | `.apk` | Download on-device (or transfer over), tap the file, and allow "install from unknown sources" for your browser/file manager when prompted. |
 
 ## Tech stack
 

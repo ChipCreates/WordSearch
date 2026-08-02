@@ -34,12 +34,29 @@ function shuffle<T>(arr: T[]): T[] {
     return a;
 }
 
+// WebKitGTK's <audio>/<video> playback runs through GStreamer, which has no
+// source handler for Tauri's custom "tauri://" protocol -- so on the Linux
+// desktop build, media elements pointed straight at an assetUrl() silently
+// fail to play (fetch/XHR aren't affected; only the GStreamer pipeline is).
+// Fetching the bytes ourselves and handing the element a blob: URL routes
+// around it, and is a no-op on platforms that don't need it.
+const blobUrlCache = new Map<string, Promise<string>>();
+function toBlobUrl(url: string): Promise<string> {
+    let cached = blobUrlCache.get(url);
+    if (!cached) {
+        cached = fetch(url).then(r => r.blob()).then(b => URL.createObjectURL(b));
+        blobUrlCache.set(url, cached);
+    }
+    return cached;
+}
+
 export function useAudio() {
     const [muted, setMuted] = useState(() => localStorage.getItem(MUTED_STORAGE_KEY) === "true");
     const mutedRef = useRef(muted);
     const musicRef = useRef<HTMLAudioElement | null>(null);
     const sfxPoolsRef = useRef<Map<SfxName, HTMLAudioElement[]>>(new Map());
     const sfxCursorRef = useRef<Map<SfxName, number>>(new Map());
+    const sfxBlobUrlsRef = useRef<Map<SfxName, string>>(new Map());
 
     useEffect(() => {
         mutedRef.current = muted;
@@ -48,33 +65,57 @@ export function useAudio() {
     }, [muted]);
 
     useEffect(() => {
-        const order = shuffle(MUSIC_TRACKS);
-        let trackIndex = 0;
-        const audio = new Audio(order[trackIndex]);
-        audio.muted = mutedRef.current;
-        audio.addEventListener("ended", () => {
-            trackIndex = (trackIndex + 1) % order.length;
-            audio.src = order[trackIndex];
-            audio.play().catch(() => {});
+        (Object.keys(SFX_FILES) as SfxName[]).forEach(name => {
+            toBlobUrl(assetUrl(SFX_FILES[name]))
+                .then(blobUrl => {
+                    sfxBlobUrlsRef.current.set(name, blobUrl);
+                })
+                .catch(e => console.error(`useAudio: failed to fetch sfx "${name}"`, e));
         });
-        musicRef.current = audio;
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        let audio: HTMLAudioElement | null = null;
 
         // Browsers block unmuted autoplay before a user gesture -- rather
         // than fight that, just start on the first pointer/keyboard
         // interaction with the page (in practice: the first tap/drag on
         // the grid), which is imperceptible as a delay.
         const start = () => {
-            audio.play().catch(() => {});
+            audio?.play().catch(e => console.error("useAudio: music play() failed", e));
             window.removeEventListener("pointerdown", start);
             window.removeEventListener("keydown", start);
         };
-        window.addEventListener("pointerdown", start);
-        window.addEventListener("keydown", start);
+
+        (async () => {
+            try {
+                const order = shuffle(MUSIC_TRACKS);
+                const blobUrls = await Promise.all(order.map(toBlobUrl));
+                if (cancelled) return;
+
+                let trackIndex = 0;
+                audio = new Audio(blobUrls[trackIndex]);
+                audio.muted = mutedRef.current;
+                audio.addEventListener("ended", () => {
+                    trackIndex = (trackIndex + 1) % blobUrls.length;
+                    audio!.src = blobUrls[trackIndex];
+                    audio!.play().catch(e => console.error("useAudio: music play() failed", e));
+                });
+                musicRef.current = audio;
+
+                window.addEventListener("pointerdown", start);
+                window.addEventListener("keydown", start);
+            } catch (e) {
+                console.error("useAudio: failed to fetch music tracks", e);
+            }
+        })();
 
         return () => {
+            cancelled = true;
             window.removeEventListener("pointerdown", start);
             window.removeEventListener("keydown", start);
-            audio.pause();
+            audio?.pause();
             musicRef.current = null;
         };
     }, []);
@@ -83,7 +124,9 @@ export function useAudio() {
         if (mutedRef.current) return;
         let pool = sfxPoolsRef.current.get(name);
         if (!pool) {
-            pool = Array.from({ length: SFX_POOL_SIZE }, () => new Audio(assetUrl(SFX_FILES[name])));
+            const blobUrl = sfxBlobUrlsRef.current.get(name);
+            if (!blobUrl) return; // still fetching; drop this one play
+            pool = Array.from({ length: SFX_POOL_SIZE }, () => new Audio(blobUrl));
             sfxPoolsRef.current.set(name, pool);
             sfxCursorRef.current.set(name, 0);
         }

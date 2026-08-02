@@ -28,3 +28,10 @@ src-tauri/target/
 # Raw staging images downloaded for background art review; only the
 # processed/optimized picks in public/backgrounds/ ship with the app.
 /background-images/
+
+# Android release signing secrets. The keystore itself lives outside the
+# repo at ~/.android/word-sprout-release.jks; keystore.properties holds its
+# password and must never be committed either.
+src-tauri/gen/android/keystore.properties
+*.jks
+*.keystore
