@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Box, Button, IconButton, Snackbar, Alert } from "@mui/material";
+import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Box, Button, IconButton } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SettingsIcon from "@mui/icons-material/Settings";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutlineOutlined";
 import { darkTheme } from "./theme";
 import { useWordSearchGame } from "./hooks/useWordSearchGame";
 import { useAudio } from "./hooks/useAudio";
@@ -15,7 +16,9 @@ import {
 import GameCanvas from "./components/GameCanvas";
 import WordList from "./components/WordList";
 import AchievementsDialog from "./components/AchievementsDialog";
+import AchievementBanner from "./components/AchievementBanner";
 import SettingsDialog from "./components/SettingsDialog";
+import AboutDialog from "./components/AboutDialog";
 
 export default function App() {
   const {
@@ -25,10 +28,15 @@ export default function App() {
     unlockedAchievements, justUnlocked, dismissJustUnlocked,
     difficultyMode, setDifficultyMode,
   } = useWordSearchGame();
-  const { muted, toggleMuted, playSfx } = useAudio();
+  const {
+    musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
+    sfxMuted, toggleSfxMuted, sfxVolume, setSfxVolume,
+    playSfx,
+  } = useAudio();
 
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   // SFX tied to state *transitions* (a level completing, a star being
   // added, an achievement unlocking) rather than threaded into
@@ -99,6 +107,9 @@ export default function App() {
             <Typography variant="h6" sx={{ flexGrow: 1, whiteSpace: 'nowrap' }}>
               Word Sprout
             </Typography>
+            <IconButton onClick={() => { playSfx('click'); setAboutOpen(true); }} sx={{ mr: 0.5 }}>
+              <HelpOutlineIcon />
+            </IconButton>
             <IconButton onClick={() => { playSfx('click'); setSettingsOpen(true); }} sx={{ mr: 0.5 }}>
               <SettingsIcon />
             </IconButton>
@@ -207,22 +218,19 @@ export default function App() {
         onClose={() => setSettingsOpen(false)}
         difficultyMode={difficultyMode}
         onDifficultyModeChange={setDifficultyMode}
-        muted={muted}
-        onToggleMuted={toggleMuted}
+        musicMuted={musicMuted}
+        onToggleMusicMuted={toggleMusicMuted}
+        musicVolume={musicVolume}
+        onMusicVolumeChange={setMusicVolume}
+        sfxMuted={sfxMuted}
+        onToggleSfxMuted={toggleSfxMuted}
+        sfxVolume={sfxVolume}
+        onSfxVolumeChange={setSfxVolume}
       />
 
-      <Snackbar
-        open={!!currentToast}
-        autoHideDuration={3000}
-        onClose={dismissJustUnlocked}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        {currentToast ? (
-          <Alert onClose={dismissJustUnlocked} severity="success" variant="filled" icon={currentToast.icon}>
-            Achievement unlocked: {currentToast.name}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+
+      <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />
     </ThemeProvider>
   );
 }

@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { assetUrl } from "../categoryThemes";
 
-const MUTED_STORAGE_KEY = "wordsearch.audioMuted";
+const MUSIC_MUTED_STORAGE_KEY = "wordsearch.musicMuted";
+const MUSIC_VOLUME_STORAGE_KEY = "wordsearch.musicVolume";
+const SFX_MUTED_STORAGE_KEY = "wordsearch.sfxMuted";
+const SFX_VOLUME_STORAGE_KEY = "wordsearch.sfxVolume";
 
 const MUSIC_TRACKS = [
     "sounds/background-music/lotus-meditation.mp3",
@@ -24,6 +27,13 @@ export type SfxName = keyof typeof SFX_FILES;
 // other off -- each sound gets a small round-robin pool of <audio>
 // elements instead of one shared instance.
 const SFX_POOL_SIZE = 4;
+
+function loadVolume(key: string): number {
+    const stored = localStorage.getItem(key);
+    if (stored === null) return 1;
+    const raw = Number(stored);
+    return Number.isFinite(raw) && raw >= 0 && raw <= 1 ? raw : 1;
+}
 
 function shuffle<T>(arr: T[]): T[] {
     const a = [...arr];
@@ -51,18 +61,42 @@ function toBlobUrl(url: string): Promise<string> {
 }
 
 export function useAudio() {
-    const [muted, setMuted] = useState(() => localStorage.getItem(MUTED_STORAGE_KEY) === "true");
-    const mutedRef = useRef(muted);
+    const [musicMuted, setMusicMuted] = useState(() => localStorage.getItem(MUSIC_MUTED_STORAGE_KEY) === "true");
+    const [musicVolume, setMusicVolume] = useState(() => loadVolume(MUSIC_VOLUME_STORAGE_KEY));
+    const [sfxMuted, setSfxMuted] = useState(() => localStorage.getItem(SFX_MUTED_STORAGE_KEY) === "true");
+    const [sfxVolume, setSfxVolume] = useState(() => loadVolume(SFX_VOLUME_STORAGE_KEY));
+
+    const musicMutedRef = useRef(musicMuted);
+    const musicVolumeRef = useRef(musicVolume);
+    const sfxMutedRef = useRef(sfxMuted);
+    const sfxVolumeRef = useRef(sfxVolume);
+
     const musicRef = useRef<HTMLAudioElement | null>(null);
     const sfxPoolsRef = useRef<Map<SfxName, HTMLAudioElement[]>>(new Map());
     const sfxCursorRef = useRef<Map<SfxName, number>>(new Map());
     const sfxBlobUrlsRef = useRef<Map<SfxName, string>>(new Map());
 
     useEffect(() => {
-        mutedRef.current = muted;
-        localStorage.setItem(MUTED_STORAGE_KEY, String(muted));
-        if (musicRef.current) musicRef.current.muted = muted;
-    }, [muted]);
+        musicMutedRef.current = musicMuted;
+        localStorage.setItem(MUSIC_MUTED_STORAGE_KEY, String(musicMuted));
+        if (musicRef.current) musicRef.current.muted = musicMuted;
+    }, [musicMuted]);
+
+    useEffect(() => {
+        musicVolumeRef.current = musicVolume;
+        localStorage.setItem(MUSIC_VOLUME_STORAGE_KEY, String(musicVolume));
+        if (musicRef.current) musicRef.current.volume = musicVolume;
+    }, [musicVolume]);
+
+    useEffect(() => {
+        sfxMutedRef.current = sfxMuted;
+        localStorage.setItem(SFX_MUTED_STORAGE_KEY, String(sfxMuted));
+    }, [sfxMuted]);
+
+    useEffect(() => {
+        sfxVolumeRef.current = sfxVolume;
+        localStorage.setItem(SFX_VOLUME_STORAGE_KEY, String(sfxVolume));
+    }, [sfxVolume]);
 
     useEffect(() => {
         (Object.keys(SFX_FILES) as SfxName[]).forEach(name => {
@@ -96,7 +130,8 @@ export function useAudio() {
 
                 let trackIndex = 0;
                 audio = new Audio(blobUrls[trackIndex]);
-                audio.muted = mutedRef.current;
+                audio.muted = musicMutedRef.current;
+                audio.volume = musicVolumeRef.current;
                 audio.addEventListener("ended", () => {
                     trackIndex = (trackIndex + 1) % blobUrls.length;
                     audio!.src = blobUrls[trackIndex];
@@ -121,7 +156,7 @@ export function useAudio() {
     }, []);
 
     const playSfx = useCallback((name: SfxName) => {
-        if (mutedRef.current) return;
+        if (sfxMutedRef.current) return;
         let pool = sfxPoolsRef.current.get(name);
         if (!pool) {
             const blobUrl = sfxBlobUrlsRef.current.get(name);
@@ -134,10 +169,16 @@ export function useAudio() {
         const el = pool[cursor];
         sfxCursorRef.current.set(name, (cursor + 1) % pool.length);
         el.currentTime = 0;
+        el.volume = sfxVolumeRef.current;
         el.play().catch(() => {});
     }, []);
 
-    const toggleMuted = useCallback(() => setMuted(m => !m), []);
+    const toggleMusicMuted = useCallback(() => setMusicMuted(m => !m), []);
+    const toggleSfxMuted = useCallback(() => setSfxMuted(m => !m), []);
 
-    return { muted, toggleMuted, playSfx };
+    return {
+        musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
+        sfxMuted, toggleSfxMuted, sfxVolume, setSfxVolume,
+        playSfx,
+    };
 }
