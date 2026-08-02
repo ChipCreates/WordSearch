@@ -1,236 +1,572 @@
 import { useEffect, useRef, useState } from "react";
-import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Box, Button, IconButton } from "@mui/material";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import SettingsIcon from "@mui/icons-material/Settings";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutlineOutlined";
-import { darkTheme } from "./theme";
+import { ThemeProvider, CssBaseline } from "@mui/material";
+
+import { sproutLightTheme, sproutDarkTheme } from "./theme";
 import { useWordSearchGame } from "./hooks/useWordSearchGame";
 import { useAudio } from "./hooks/useAudio";
 import { CATEGORY_THEMES, DEFAULT_THEME } from "./categoryThemes";
-import {
-  CELEBRATE_FADE_DELAY_MS,
-  CELEBRATE_FADE_DURATION_MS,
-  CELEBRATE_BUTTONS_MOVE_DELAY_MS,
-  CELEBRATE_BUTTONS_MOVE_DURATION_MS,
-} from "./constants";
+import { DIRECTIONS } from "./constants";
+
 import GameCanvas from "./components/GameCanvas";
-import WordList from "./components/WordList";
-import AchievementsDialog from "./components/AchievementsDialog";
+import SuccessScreen from "./components/SuccessScreen";
 import AchievementBanner from "./components/AchievementBanner";
 import SettingsDialog from "./components/SettingsDialog";
 import AboutDialog from "./components/AboutDialog";
+import LevelsDialog from "./components/LevelsDialog";
+import AchievementsView from "./components/AchievementsView";
+import GardenView from "./components/GardenView";
+
+const THEME_STORAGE_KEY = "wordsearch.themeMode";
+
+type ThemeMode = "sprout" | "midnight";
+type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
 
 export default function App() {
-  const {
-    level, stars, status, levelComplete, category,
-    gridSize, gridData, wordsToFind, foundWords, foundLines,
-    submitSelection, nextLevel, restart,
-    unlockedAchievements, justUnlocked, dismissJustUnlocked,
-    difficultyMode, setDifficultyMode,
-  } = useWordSearchGame();
-  const {
-    musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
-    sfxMuted, toggleSfxMuted, sfxVolume, setSfxVolume,
-    playSfx,
-  } = useAudio();
+    const {
+        level, stars, levelComplete, category,
+        gridSize, gridData, wordsToFind, foundWords, foundLines,
+        submitSelection, nextLevel, restart,
+        unlockedAchievements, justUnlocked, dismissJustUnlocked,
+        difficultyMode, setDifficultyMode,
+    } = useWordSearchGame();
 
-  const [achievementsOpen, setAchievementsOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
+    const {
+        musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
+        sfxMuted, toggleSfxMuted, sfxVolume, setSfxVolume,
+        playSfx,
+    } = useAudio();
 
-  // SFX tied to state *transitions* (a level completing, a star being
-  // added, an achievement unlocking) rather than threaded into
-  // useWordSearchGame itself -- keeps that hook audio-agnostic. Refs (not
-  // state) hold the previous value purely for edge detection.
-  const prevStarsRef = useRef(stars);
-  useEffect(() => {
-    if (stars > prevStarsRef.current) playSfx("award");
-    prevStarsRef.current = stars;
-  }, [stars, playSfx]);
+    // ── Theme mode (Sprout / Midnight) ────────────────────────────────────────
+    const [themeMode, setThemeMode] = useState<ThemeMode>(
+        () => (localStorage.getItem(THEME_STORAGE_KEY) === "sprout" ? "sprout" : "midnight")
+    );
 
-  const prevLevelCompleteRef = useRef(levelComplete);
-  useEffect(() => {
-    if (levelComplete && !prevLevelCompleteRef.current) playSfx("cheering");
-    prevLevelCompleteRef.current = levelComplete;
-  }, [levelComplete, playSfx]);
+    const [activeTab, setActiveTab] = useState<ActiveTab>("play");
 
-  const prevJustUnlockedLengthRef = useRef(justUnlocked.length);
-  useEffect(() => {
-    if (justUnlocked.length > prevJustUnlockedLengthRef.current) playSfx("achievement");
-    prevJustUnlockedLengthRef.current = justUnlocked.length;
-  }, [justUnlocked, playSfx]);
+    const handleThemeModeChange = (mode: ThemeMode) => {
+        setThemeMode(mode);
+        localStorage.setItem(THEME_STORAGE_KEY, mode);
+        document.documentElement.setAttribute("data-theme", mode === "midnight" ? "midnight" : "");
+    };
 
-  // Closing beat of the celebration: once the board+word-list fade has
-  // finished, the button block glides from its sidebar spot to the center
-  // of the window. translate (not a layout/position change) so it animates
-  // smoothly and the element never leaves its normal flow slot -- the offset
-  // is measured once, right before the glide starts, from wherever the
-  // block actually is at that moment.
-  const buttonBoxRef = useRef<HTMLDivElement>(null);
-  const [centerOffset, setCenterOffset] = useState<{ dx: number; dy: number } | null>(null);
-  useEffect(() => {
-    if (!levelComplete) {
-      setCenterOffset(null);
-      return;
-    }
-    const timer = setTimeout(() => {
-      const el = buttonBoxRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      setCenterOffset({
-        dx: window.innerWidth / 2 - (rect.left + rect.width / 2),
-        dy: window.innerHeight / 2 - (rect.top + rect.height / 2),
-      });
-    }, CELEBRATE_BUTTONS_MOVE_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [levelComplete]);
+    useEffect(() => {
+        document.documentElement.setAttribute(
+            "data-theme",
+            themeMode === "midnight" ? "midnight" : ""
+        );
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+            metaTheme.setAttribute(
+                "content",
+                themeMode === "midnight" ? "#131313" : "#fefae8"
+            );
+        }
+    }, [themeMode]);
 
-  const theme = CATEGORY_THEMES[category] ?? DEFAULT_THEME;
-  const currentToast = justUnlocked[0];
+    // ── Dialog & Celebration states ────────────────────────────────────────────
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [aboutOpen, setAboutOpen] = useState(false);
+    const [levelsOpen, setLevelsOpen] = useState(false);
+    const [hintCell, setHintCell] = useState<{ r: number; c: number } | null>(null);
+    const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Box
-        sx={{
-          minHeight: '100vh',
-          ...theme,
-          transition: 'background-image 0.4s ease',
-        }}
-      >
-        <AppBar position="static" elevation={0} sx={{ backgroundColor: 'rgba(18,18,18,0.35)' }}>
-          {/* flexWrap lets the whole category/level block drop to its own row
-              as one clean unit on narrow phones, instead of each Typography
-              individually word-wrapping mid-text (e.g. "Word" / "Sprout"
-              splitting) when there isn't room for everything on one line. */}
-          <Toolbar sx={{ flexWrap: 'wrap', rowGap: 0.5, py: 1 }}>
-            <Typography variant="h6" sx={{ flexGrow: 1, whiteSpace: 'nowrap' }}>
-              Word Sprout
-            </Typography>
-            <IconButton onClick={() => { playSfx('click'); setAboutOpen(true); }} sx={{ mr: 0.5 }}>
-              <HelpOutlineIcon />
-            </IconButton>
-            <IconButton onClick={() => { playSfx('click'); setSettingsOpen(true); }} sx={{ mr: 0.5 }}>
-              <SettingsIcon />
-            </IconButton>
-            <IconButton onClick={() => { playSfx('click'); setAchievementsOpen(true); }} sx={{ color: '#fbbc04', mr: 1 }}>
-              <EmojiEventsIcon />
-            </IconButton>
-            <Typography variant="h6" sx={{ color: '#fbbc04', whiteSpace: 'nowrap' }}>
-              ⭐ {stars}
-            </Typography>
-            <Typography
-              variant="h6"
-              color="secondary"
-              sx={{
-                whiteSpace: 'nowrap',
-                width: { xs: '100%', sm: 'auto' },
-                textAlign: { xs: 'center', sm: 'right' },
-                ml: { sm: 2 },
-              }}
+    useEffect(() => {
+        setHintCell(null);
+    }, [gridData, level, foundLines]);
+
+    useEffect(() => {
+        if (levelComplete) {
+            // Allow the pill-to-dot collapse animation to play on the canvas grid first (1450ms)
+            const timer = setTimeout(() => {
+                setShowSuccessOverlay(true);
+            }, 1450);
+            return () => clearTimeout(timer);
+        } else {
+            setShowSuccessOverlay(false);
+        }
+    }, [levelComplete]);
+
+    const handleRevealHint = () => {
+        const unfoundWord = wordsToFind.find(w => !foundWords[w]);
+        if (!unfoundWord || !gridData.length) return;
+
+        const targetWord = unfoundWord.toUpperCase();
+        const wordLen = targetWord.length;
+
+        // Search the board for the actual placement of targetWord
+        for (let r = 0; r < gridSize; r++) {
+            for (let c = 0; c < gridSize; c++) {
+                for (const [dc, dr] of DIRECTIONS) {
+                    let matches = true;
+                    for (let i = 0; i < wordLen; i++) {
+                        const nr = r + i * dr;
+                        const nc = c + i * dc;
+                        if (
+                            nr < 0 || nr >= gridSize ||
+                            nc < 0 || nc >= gridSize ||
+                            gridData[nr][nc].toUpperCase() !== targetWord[i]
+                        ) {
+                            matches = false;
+                            break;
+                        }
+                    }
+                    if (matches) {
+                        setHintCell({ r, c });
+                        return;
+                    }
+                }
+            }
+        }
+    };
+
+    // ── SFX edge-detection ────────────────────────────────────────────────────
+    const prevStarsRef = useRef(stars);
+    useEffect(() => {
+        if (stars > prevStarsRef.current) playSfx("award");
+        prevStarsRef.current = stars;
+    }, [stars, playSfx]);
+
+    const prevLevelCompleteRef = useRef(levelComplete);
+    useEffect(() => {
+        if (levelComplete && !prevLevelCompleteRef.current) playSfx("cheering");
+        prevLevelCompleteRef.current = levelComplete;
+    }, [levelComplete, playSfx]);
+
+    const prevJustUnlockedLengthRef = useRef(justUnlocked.length);
+    useEffect(() => {
+        if (justUnlocked.length > prevJustUnlockedLengthRef.current) playSfx("achievement");
+        prevJustUnlockedLengthRef.current = justUnlocked.length;
+    }, [justUnlocked, playSfx]);
+
+    // ── Derived values ────────────────────────────────────────────────────────
+    const bgTheme = CATEGORY_THEMES[category] ?? DEFAULT_THEME;
+    const currentToast = justUnlocked[0];
+    const foundCount = wordsToFind.filter(w => foundWords[w]).length;
+    const muiTheme = themeMode === "midnight" ? sproutDarkTheme : sproutLightTheme;
+
+    const buildBackground = () => {
+        const raw: string = (bgTheme as { background: string }).background ?? "";
+        const urlPart = raw.includes("url(") ? raw.slice(raw.indexOf("url(")) : "";
+        const scrim = "var(--scrim)";
+        return urlPart ? `${scrim}, ${urlPart}` : "var(--color-surface)";
+    };
+
+    return (
+        <ThemeProvider theme={muiTheme}>
+            <CssBaseline />
+
+            <div
+                style={{
+                    minHeight: "100vh",
+                    background: buildBackground(),
+                    backgroundSize: (bgTheme as { backgroundSize?: string }).backgroundSize ?? "cover",
+                    backgroundPosition: (bgTheme as { backgroundPosition?: string }).backgroundPosition ?? "center",
+                    backgroundRepeat: (bgTheme as { backgroundRepeat?: string }).backgroundRepeat ?? "no-repeat",
+                    transition: "background-image 0.4s ease",
+                }}
             >
-              {category ? `${category} · ` : ''}Level {level}
-            </Typography>
-          </Toolbar>
-        </AppBar>
+                {/* ── Top Navigation Header (TopNavBar) ────────────────────────── */}
+                <header className="ws-top-nav">
+                    <div className="ws-top-nav__inner">
+                        <div className="ws-top-nav__brand" onClick={() => setActiveTab("play")}>
+                            <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 32 }}>eco</span>
+                            <span className="ws-top-nav__logo-text">Word Sprout</span>
+                        </div>
 
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            // 'stretch' (the default) lets GameCanvas's own maxWidth+mx:auto
-            // center it in the column layout, same as before this was a flex
-            // container -- 'center' here would shrink it to the <canvas>'s
-            // intrinsic 300x300 default instead of the full column width.
-            alignItems: 'stretch',
-            gap: 3,
-            p: 2,
-            maxWidth: 980,
-            mx: 'auto',
-          }}
-        >
-          <GameCanvas
-            gridSize={gridSize}
-            gridData={gridData}
-            foundLines={foundLines}
-            onSelectionEnd={submitSelection}
-            onSwipe={() => playSfx('swipe')}
-            celebrate={levelComplete}
-          />
+                        {/* Primary View Destinations */}
+                        <nav className="ws-top-nav__menu">
+                            <button
+                                className={`ws-top-nav__link ${activeTab === "play" ? "ws-top-nav__link--active" : ""}`}
+                                onClick={() => { playSfx("click"); setActiveTab("play"); }}
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: 18, marginRight: 4 }}>videogame_asset</span>
+                                Play
+                            </button>
+                            <button
+                                className={`ws-top-nav__link ${activeTab === "garden" ? "ws-top-nav__link--active" : ""}`}
+                                onClick={() => { playSfx("click"); setActiveTab("garden"); }}
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: 18, marginRight: 4 }}>eco</span>
+                                Garden
+                            </button>
+                            <button
+                                className={`ws-top-nav__link ${activeTab === "achievements" ? "ws-top-nav__link--active" : ""}`}
+                                onClick={() => { playSfx("click"); setActiveTab("achievements"); }}
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: 18, marginRight: 4 }}>emoji_events</span>
+                                Achievements
+                            </button>
+                        </nav>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: { xs: '100%', sm: 320 } }}>
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 3,
-                textAlign: 'center',
-                backgroundColor: 'rgba(15,15,20,0.62)',
-                // The status text and word list only matter while a puzzle
-                // is live -- once it's complete they fade out in lockstep
-                // with the board itself (same delay/duration) rather than
-                // sitting there stranded next to a dissolved-away board.
-                opacity: levelComplete ? 0 : 1,
-                transition: levelComplete
-                  ? `opacity ${CELEBRATE_FADE_DURATION_MS}ms ease ${CELEBRATE_FADE_DELAY_MS}ms`
-                  : 'none',
-              }}
-            >
-              <Typography variant="body1" sx={{ mb: 2 }}>{status}</Typography>
-              <WordList wordsToFind={wordsToFind} foundWords={foundWords} />
-            </Box>
+                        {/* Global Actions & Status Header */}
+                        <div className="ws-top-nav__actions">
+                            <div className="ws-top-nav__stat-pill" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 9999, background: "rgba(0, 228, 121, 0.12)", border: "1px solid rgba(0, 228, 121, 0.3)" }}>
+                                <img src="/seed.png" alt="Seed" style={{ width: 22, height: 22, objectFit: "contain", filter: "drop-shadow(0 0 6px rgba(0,228,121,0.5))" }} />
+                                <span style={{ fontFamily: "var(--font-headline)", fontWeight: 800, color: "var(--color-primary)", fontSize: "0.9rem" }}>{stars * 100} SEEDS</span>
+                            </div>
 
-            <Box
-              ref={buttonBoxRef}
-              sx={{
-                p: 2,
-                borderRadius: 3,
-                textAlign: 'center',
-                backgroundColor: 'rgba(15,15,20,0.62)',
-                position: 'relative',
-                zIndex: centerOffset ? 20 : 'auto',
-                transform: centerOffset ? `translate(${centerOffset.dx}px, ${centerOffset.dy}px)` : 'none',
-                transition: centerOffset ? `transform ${CELEBRATE_BUTTONS_MOVE_DURATION_MS}ms ease` : 'none',
-              }}
-            >
-              {levelComplete && (
-                  <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={() => { playSfx('click'); nextLevel(); }}>
-                      Next Level
-                  </Button>
-              )}
-              <Button variant="outlined" color="primary" onClick={() => { playSfx('click'); restart(); }}>
-                  Restart Game
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+                            {/* Theme Switcher Quick Toggle */}
+                            <button
+                                className="ws-top-nav__icon-btn"
+                                onClick={() => {
+                                    playSfx("click");
+                                    handleThemeModeChange(themeMode === "sprout" ? "midnight" : "sprout");
+                                }}
+                                aria-label="Toggle Theme Mode"
+                                title={`Switch to ${themeMode === "sprout" ? "Midnight Dark" : "Sprout Light"} Theme`}
+                            >
+                                <span className="material-symbols-outlined">
+                                    {themeMode === "sprout" ? "dark_mode" : "light_mode"}
+                                </span>
+                            </button>
 
-      <AchievementsDialog
-        open={achievementsOpen}
-        unlockedAchievements={unlockedAchievements}
-        onClose={() => setAchievementsOpen(false)}
-      />
+                            {/* Settings Modal Trigger */}
+                            <button
+                                className="ws-top-nav__icon-btn"
+                                onClick={() => { playSfx("click"); setSettingsOpen(true); }}
+                                aria-label="Settings"
+                                title="Settings"
+                            >
+                                <span className="material-symbols-outlined">settings</span>
+                            </button>
+                        </div>
+                    </div>
+                </header>
 
-      <SettingsDialog
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        difficultyMode={difficultyMode}
-        onDifficultyModeChange={setDifficultyMode}
-        musicMuted={musicMuted}
-        onToggleMusicMuted={toggleMusicMuted}
-        musicVolume={musicVolume}
-        onMusicVolumeChange={setMusicVolume}
-        sfxMuted={sfxMuted}
-        onToggleSfxMuted={toggleSfxMuted}
-        sfxVolume={sfxVolume}
-        onSfxVolumeChange={setSfxVolume}
-      />
+                {/* ── Side Navigation Sidebar (SideNavBar - Desktop XL) ─────────── */}
+                <aside className="ws-side-nav">
+                    {/* User profile section */}
+                    <div className="ws-side-nav__profile">
+                        <div className="ws-side-nav__avatar-box">
+                            <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 28 }}>eco</span>
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-primary)" }}>Sprout Master</div>
+                            <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)" }}>Level {level} Botanist</div>
+                        </div>
+                    </div>
 
-      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+                    {/* Biome Category Quick Selector */}
+                    <div className="glass-panel" style={{ padding: 14, borderRadius: "1rem", display: "flex", flexDirection: "column", gap: 8 }}>
+                        <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, color: "var(--color-on-surface-variant)" }}>
+                            Active Biome Category
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-primary)", display: "flex", alignItems: "center", gap: 6 }}>
+                            <span className="material-symbols-outlined text-secondary" style={{ fontSize: 20 }}>spa</span>
+                            {category || "Botanical"}
+                        </div>
+                        <button
+                            className="ws-control-btn"
+                            onClick={() => { playSfx("click"); setLevelsOpen(true); }}
+                            style={{ width: "100%", justifyContent: "center", marginTop: 4, padding: "6px 12px", fontSize: "0.8rem" }}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>grid_view</span>
+                            Level Map & Categories
+                        </button>
+                    </div>
 
-      <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />
-    </ThemeProvider>
-  );
+                    {/* Botanical Tactical Toolkit (Gameplay Tools) */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+                        <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, color: "var(--color-on-surface-variant)", paddingLeft: 4 }}>
+                            Tactical Toolkit
+                        </div>
+                        {levelComplete ? (
+                            <button
+                                className="ws-primary-action-btn"
+                                onClick={() => { playSfx("click"); nextLevel(); }}
+                                style={{ width: "100%", justifyContent: "center", padding: "10px 16px", fontSize: "0.95rem" }}
+                            >
+                                <span className="material-symbols-outlined filled">eco</span>
+                                <span>Next Level 🌱</span>
+                            </button>
+                        ) : (
+                            <button
+                                className="ws-primary-action-btn"
+                                onClick={() => { playSfx("click"); handleRevealHint(); }}
+                                style={{ width: "100%", justifyContent: "center", padding: "10px 16px", fontSize: "0.95rem" }}
+                            >
+                                <span className="material-symbols-outlined filled">magic_button</span>
+                                <span>Reveal Root</span>
+                            </button>
+                        )}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                            <button className="ws-control-btn" onClick={() => { playSfx("click"); restart(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>shuffle</span>
+                                <span>Shuffle</span>
+                            </button>
+                            <button className="ws-control-btn" onClick={() => { playSfx("click"); restart(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>refresh</span>
+                                <span>Restart</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Bottom Quick Audio & Info Dock */}
+                    <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--glass-border)", display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 6px" }}>
+                            <span style={{ fontSize: "0.8rem", color: "var(--color-on-surface-variant)", fontWeight: 600 }}>Audio Controls</span>
+                            <div style={{ display: "flex", gap: 6 }}>
+                                <button
+                                    onClick={toggleSfxMuted}
+                                    title={sfxMuted ? "Unmute SFX" : "Mute SFX"}
+                                    style={{
+                                        background: sfxMuted ? "rgba(255, 100, 100, 0.2)" : "rgba(0, 228, 121, 0.15)",
+                                        border: "1px solid var(--glass-border)",
+                                        color: sfxMuted ? "#ff6b6b" : "var(--color-primary)",
+                                        borderRadius: "50%",
+                                        width: 32,
+                                        height: 32,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        cursor: "pointer"
+                                    }}
+                                >
+                                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{sfxMuted ? "volume_off" : "volume_up"}</span>
+                                </button>
+                                <button
+                                    onClick={toggleMusicMuted}
+                                    title={musicMuted ? "Unmute Music" : "Mute Music"}
+                                    style={{
+                                        background: musicMuted ? "rgba(255, 100, 100, 0.2)" : "rgba(0, 228, 121, 0.15)",
+                                        border: "1px solid var(--glass-border)",
+                                        color: musicMuted ? "#ff6b6b" : "var(--color-primary)",
+                                        borderRadius: "50%",
+                                        width: 32,
+                                        height: 32,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        cursor: "pointer"
+                                    }}
+                                >
+                                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{musicMuted ? "music_off" : "music_note"}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setAboutOpen(true)}
+                            style={{ background: "none", border: "none", color: "var(--color-on-surface-variant)", fontSize: "0.8rem", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "6px 8px" }}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>help_outline</span> About & How to Play
+                        </button>
+                    </div>
+                </aside>
+
+                {/* ── Main Content Container ───────────────────────────────────── */}
+                <main className="ws-main-layout">
+                    {activeTab === "achievements" ? (
+                        <AchievementsView
+                            unlockedAchievements={unlockedAchievements}
+                            stats={{
+                                levelsCompleted: level - 1,
+                                stars,
+                                categoriesSeen: 3,
+                                foundDiagonal: true,
+                                totalCategories: Object.keys(CATEGORY_THEMES).length,
+                            }}
+                        />
+                    ) : activeTab === "garden" ? (
+                        <GardenView
+                            stars={stars}
+                            level={level}
+                            unlockedAchievementsCount={unlockedAchievements.size}
+                        />
+                    ) : (
+                        <>
+                            {/* Daily Goal Header Toolbar */}
+                            <div className="glass-panel ws-daily-goal-card">
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 8 }}>
+                                        <div>
+                                            <h2 className="glow-text-emerald" style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-primary)" }}>
+                                                Daily Goal
+                                            </h2>
+                                            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--color-on-surface-variant)" }}>
+                                                Harvest {wordsToFind.length} words to bloom your garden
+                                            </p>
+                                        </div>
+                                        <span style={{ fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-primary)" }}>
+                                            {foundCount}/{wordsToFind.length}
+                                        </span>
+                                    </div>
+                                    <div style={{ height: 14, width: "100%", background: "var(--color-surface-container-high)", borderRadius: 7, overflow: "hidden", border: "1px solid var(--glass-border)" }}>
+                                        <div className="bioluminescent-line" style={{ height: "100%", width: `${Math.min(100, (foundCount / (wordsToFind.length || 1)) * 100)}%`, borderRadius: 7, transition: "width 0.4s ease" }} />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: "flex", gap: 20, alignItems: "center", borderLeft: "1px solid var(--glass-border)", paddingLeft: 20 }}>
+                                    <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                            <img src="/seed.png" alt="Seed" style={{ width: 26, height: 26, objectFit: "contain", filter: "drop-shadow(0 0 8px rgba(0,228,121,0.6))" }} />
+                                            <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--color-secondary)" }}>{stars * 100}</span>
+                                        </div>
+                                        <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.05em" }}>SEEDS</div>
+                                    </div>
+                                    <div style={{ width: 1, height: 36, background: "var(--glass-border)" }} />
+                                    <div style={{ textAlign: "center" }}>
+                                        <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--color-primary)" }}>#{level}</div>
+                                        <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.05em" }}>STREAK</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Gameplay Grid & Found Words Side Panel */}
+                            <div className="ws-gameplay-grid">
+                                {/* Left: Canvas Word Grid Panel */}
+                                <div className="glass-panel ws-game-board-panel">
+                                    <GameCanvas
+                                        gridSize={gridSize}
+                                        gridData={gridData}
+                                        foundLines={foundLines}
+                                        hintCell={hintCell}
+                                        onSelectionEnd={submitSelection}
+                                        onSwipe={() => playSfx("swipe")}
+                                        celebrate={levelComplete}
+                                    />
+                                </div>
+
+                                {/* Right: Found Words List Panel */}
+                                <div className="glass-panel ws-found-words-panel">
+                                    <div className="ws-found-words-header">
+                                        <h3 style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.25rem", fontWeight: 700, color: "var(--color-primary)" }}>
+                                            Found Words
+                                        </h3>
+                                        <span style={{ padding: "4px 12px", borderRadius: 4, background: "rgba(236, 177, 255, 0.2)", color: "var(--color-secondary)", border: "1px solid rgba(236, 177, 255, 0.3)", fontSize: "0.85rem", fontWeight: 600 }}>
+                                            {foundCount} / {wordsToFind.length}
+                                        </span>
+                                    </div>
+
+                                    <div className="ws-found-words-list">
+                                        {wordsToFind.map(word => {
+                                            const isFound = foundWords[word];
+                                            return (
+                                                <div
+                                                    key={word}
+                                                    className="ws-found-word-card"
+                                                    style={{
+                                                        opacity: isFound ? 1 : 0.6,
+                                                        borderColor: isFound ? "var(--color-primary)" : "rgba(255, 255, 255, 0.1)",
+                                                    }}
+                                                >
+                                                    <span>{word.toUpperCase()}</span>
+                                                    {isFound ? (
+                                                        <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 20 }}>check_circle</span>
+                                                    ) : (
+                                                        <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: 20 }}>lock</span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Card Footer Biome indicator */}
+                                    <div style={{ padding: "12px 16px", background: "rgba(0, 0, 0, 0.2)", borderTop: "1px solid var(--glass-border)", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "0 0 1.25rem 1.25rem" }}>
+                                        <span style={{ fontSize: "0.8rem", color: "var(--color-on-surface-variant)", fontWeight: 600 }}>
+                                            Biome Category: <strong style={{ color: "var(--color-primary)" }}>{category || "Botanical"}</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── Footer ───────────────────────────────────────────────── */}
+                    <footer className="ws-footer">
+                        <div style={{ display: "flex", gap: 20, justifyContent: "center", marginBottom: 8 }}>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setAboutOpen(true); }} style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>Terms of Service</a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setAboutOpen(true); }} style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>Privacy Policy</a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setAboutOpen(true); }} style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>Support</a>
+                        </div>
+                        <p>© 2024 Word Sprout Studio. v1.2.0-beta</p>
+                    </footer>
+                </main>
+
+                {/* ── Mobile Bottom Navigation Bar (BottomNavBar) ────────────────── */}
+                <nav className="ws-bottom-nav">
+                    <button
+                        className={`ws-bottom-nav__item ${activeTab === "play" ? "ws-bottom-nav__item--active" : ""}`}
+                        onClick={() => { playSfx("click"); setActiveTab("play"); }}
+                    >
+                        <span className="material-symbols-outlined filled">eco</span>
+                        <span>Play</span>
+                    </button>
+
+                    <button
+                        className="ws-bottom-nav__item"
+                        onClick={() => { playSfx("click"); setLevelsOpen(true); }}
+                    >
+                        <span className="material-symbols-outlined">format_list_bulleted</span>
+                        <span>Levels</span>
+                    </button>
+
+                    <button
+                        className={`ws-bottom-nav__item ${activeTab === "garden" ? "ws-bottom-nav__item--active" : ""}`}
+                        onClick={() => { playSfx("click"); setActiveTab("garden"); }}
+                    >
+                        <span className="material-symbols-outlined">eco</span>
+                        <span>Garden</span>
+                    </button>
+
+                    <button
+                        className={`ws-bottom-nav__item ${activeTab === "achievements" ? "ws-bottom-nav__item--active" : ""}`}
+                        onClick={() => { playSfx("click"); setActiveTab("achievements"); }}
+                    >
+                        <span className="material-symbols-outlined">emoji_events</span>
+                        <span>Trophies</span>
+                    </button>
+
+                    <button
+                        className="ws-bottom-nav__item"
+                        onClick={() => { playSfx("click"); setSettingsOpen(true); }}
+                    >
+                        <span className="material-symbols-outlined">settings</span>
+                        <span>Settings</span>
+                    </button>
+                </nav>
+
+                {/* ── Success Overlay ────────────────────────────────────────────── */}
+                {showSuccessOverlay && (
+                    <SuccessScreen
+                        category={category}
+                        level={level}
+                        stars={stars}
+                        onNextLevel={() => { playSfx("click"); nextLevel(); }}
+                        onRestart={() => { playSfx("click"); restart(); }}
+                    />
+                )}
+            </div>
+
+            {/* ── Dialogs ───────────────────────────────────────────────────── */}
+            <SettingsDialog
+                open={settingsOpen}
+                onClose={() => setSettingsOpen(false)}
+                difficultyMode={difficultyMode}
+                onDifficultyModeChange={setDifficultyMode}
+                musicMuted={musicMuted}
+                onToggleMusicMuted={toggleMusicMuted}
+                musicVolume={musicVolume}
+                onMusicVolumeChange={setMusicVolume}
+                sfxMuted={sfxMuted}
+                onToggleSfxMuted={toggleSfxMuted}
+                sfxVolume={sfxVolume}
+                onSfxVolumeChange={setSfxVolume}
+                themeMode={themeMode}
+                onThemeModeChange={handleThemeModeChange}
+            />
+
+            <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+
+            <LevelsDialog
+                open={levelsOpen}
+                currentLevel={level}
+                onClose={() => setLevelsOpen(false)}
+                onSelectLevel={() => {
+                    restart();
+                }}
+            />
+
+            <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />
+        </ThemeProvider>
+    );
 }

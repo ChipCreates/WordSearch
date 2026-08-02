@@ -1,9 +1,16 @@
 export const HIGHLIGHT_COLORS = [
-    "#f28b82", "#fbbc04", "#fff475", "#ccff90",
-    "#a7ffeb", "#cbf0f8", "#aecbfa", "#d7aefb",
-    "#fdcfe8", "#e6c9a8", "#03dac6", "#bb86fc",
-    "#cf6679", "#ff8a65", "#ba68c8", "#4fc3f7",
-    "#81c784", "#fff176", "#ffb74d", "#f06292"
+    // Sprout greens (secondary family)
+    "#74c365", "#a4f792", "#4a9b3e", "#89da79",
+    // Lavender (tertiary — "Bloom" palette)
+    "#9b5de5", "#c49dff", "#dab9ff", "#b185e0",
+    // Sage & earth tones
+    "#95d4b3", "#b1f0ce", "#2d6a4f", "#61dac1",
+    // Warm accents (sunflower / amber)
+    "#f4c95d", "#ffe099", "#f2a65a",
+    // Soft neutrals
+    "#bfc9c1", "#89da79", "#a8e7c5",
+    // Terracotta / muted rose
+    "#d4906a", "#e8b4a0",
 ];
 
 export const DIRECTIONS = [

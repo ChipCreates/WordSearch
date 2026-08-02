@@ -15,8 +15,9 @@
 // canvas, the Restart button below it) and lighter through the middle,
 // since the opaque canvas card already owns contrast there regardless of
 // how much of the image shows through.
-const SCRIM =
-    "linear-gradient(rgba(10,10,14,0.78) 0%, rgba(10,10,14,0.35) 20%, rgba(10,10,14,0.35) 65%, rgba(10,10,14,0.8) 100%)";
+// SCRIM is now a CSS custom-property reference so it adapts to the
+// Sprout (light) and Midnight (dark) themes defined in App.css.
+const SCRIM = "var(--scrim)";
 
 type Theme = {
     background: string;

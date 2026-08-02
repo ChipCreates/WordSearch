@@ -10,44 +10,73 @@ type Props = {
 
 export default function AchievementsDialog({ open, unlockedAchievements, onClose }: Props) {
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                Achievements
-                <IconButton onClick={onClose} size="small">
+        <Dialog
+            open={open}
+            onClose={onClose}
+            maxWidth="sm"
+            fullWidth
+            fullScreen={typeof window !== "undefined" && window.innerWidth < 640}
+            sx={{
+                "& .MuiDialog-paper": {
+                    m: { xs: 0, sm: 2 },
+                    maxHeight: { xs: "100%", sm: "90vh" },
+                },
+            }}
+        >
+            <DialogTitle
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontFamily: "var(--font-headline)",
+                    fontWeight: 700,
+                    fontSize: "1.25rem",
+                    pb: 1,
+                }}
+            >
+                🏆 Achievements
+                <IconButton onClick={onClose} size="small" id="achievements-close-btn">
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
-            <DialogContent dividers>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+
+            <DialogContent dividers sx={{ p: { xs: 1.5, sm: 2 } }}>
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                        gap: 1.5,
+                    }}
+                >
                     {ACHIEVEMENTS.map(achievement => {
                         const unlocked = unlockedAchievements.has(achievement.id);
                         return (
-                            <Box
+                            <div
                                 key={achievement.id}
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 1.5,
-                                    p: 1.5,
-                                    borderRadius: 2,
-                                    backgroundColor: unlocked ? 'rgba(187,134,252,0.12)' : 'rgba(255,255,255,0.03)',
-                                    border: '1px solid',
-                                    borderColor: unlocked ? 'rgba(187,134,252,0.4)' : 'rgba(255,255,255,0.08)',
-                                    opacity: unlocked ? 1 : 0.5,
-                                }}
+                                className={`ws-achievement-card${
+                                    unlocked ? " ws-achievement-card--unlocked" : " ws-achievement-card--locked"
+                                }`}
                             >
-                                <Typography sx={{ fontSize: '1.8rem', lineHeight: 1, filter: unlocked ? 'none' : 'grayscale(1)' }}>
-                                    {unlocked ? achievement.icon : '🔒'}
+                                {unlocked && (
+                                    <span className="ws-achievement-card__leaf" aria-hidden="true">
+                                        🍃
+                                    </span>
+                                )}
+                                <Typography
+                                    className="ws-achievement-card__icon"
+                                    sx={{ fontSize: "2rem", lineHeight: 1, flexShrink: 0 }}
+                                >
+                                    {unlocked ? achievement.icon : "🔒"}
                                 </Typography>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                                    <div className="ws-achievement-card__name">
                                         {achievement.name}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
+                                    </div>
+                                    <div className="ws-achievement-card__desc">
                                         {achievement.description}
-                                    </Typography>
+                                    </div>
                                 </Box>
-                            </Box>
+                            </div>
                         );
                     })}
                 </Box>

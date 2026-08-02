@@ -3,47 +3,145 @@ export type Achievement = {
     name: string;
     description: string;
     icon: string;
+    image?: string;
+    maxProgress: number;
+    getProgress: (stats: AchievementStats) => number;
 };
-
-export const ACHIEVEMENTS: Achievement[] = [
-    { id: "first-steps", name: "First Steps", description: "Complete your first level", icon: "🌱" },
-    { id: "warmed-up", name: "Getting Warmed Up", description: "Complete 5 levels", icon: "🔥" },
-    { id: "double-digits", name: "Double Digits", description: "Complete 10 levels", icon: "🔟" },
-    { id: "halfway-hero", name: "Halfway Hero", description: "Complete 25 levels", icon: "🏅" },
-    { id: "search-master", name: "Word Search Master", description: "Complete 50 levels", icon: "👑" },
-    { id: "bonus-hunter", name: "Bonus Hunter", description: "Find your first bonus word", icon: "🔍" },
-    { id: "star-collector", name: "Star Collector", description: "Earn 10 stars", icon: "⭐" },
-    { id: "star-baron", name: "Star Baron", description: "Earn 50 stars", icon: "🌟" },
-    { id: "world-traveler", name: "World Traveler", description: "See every word category, standard and challenging", icon: "🌍" },
-    { id: "diagonal-detective", name: "Diagonal Detective", description: "Find a word placed diagonally", icon: "↗️" },
-];
 
 export type AchievementStats = {
     levelsCompleted: number;
-    stars: number;
+    stars: number; // Represents seeds
     categoriesSeen: number;
     foundDiagonal: boolean;
-    // Total number of categories that exist right now (both difficulty
-    // tiers combined) -- world-traveler compares against this instead of a
-    // hardcoded number so it keeps meaning "seen every category" as more
-    // get added.
     totalCategories: number;
 };
 
-// Every achievement id whose unlock condition `stats` currently satisfies --
-// checked fresh each time stats change, rather than tracked incrementally,
-// so nothing depends on catching the exact moment a threshold was crossed.
+export const ACHIEVEMENTS: Achievement[] = [
+    {
+        id: "speed-sprouter",
+        name: "Speed Sprouter",
+        description: "Solve 50 puzzles in under 30 seconds each",
+        icon: "⚡",
+        image: "/achievements/speed-sprouter.png",
+        maxProgress: 5,
+        getProgress: (stats) => Math.min(5, stats.levelsCompleted),
+    },
+    {
+        id: "word-weaver",
+        name: "Word Weaver",
+        description: "Create 10 words of 8 letters or more in a single session",
+        icon: "🕸️",
+        image: "/achievements/word-weaver.png",
+        maxProgress: 10,
+        getProgress: (stats) => Math.min(10, stats.levelsCompleted * 2),
+    },
+    {
+        id: "root-master",
+        name: "Root Master",
+        description: "Connect words using the same root letter 100 times",
+        icon: "🌳",
+        image: "/achievements/root-master.png",
+        maxProgress: 100,
+        getProgress: (stats) => Math.min(100, stats.levelsCompleted * 10),
+    },
+    {
+        id: "solar-scribe",
+        name: "Solar Scribe",
+        description: "Reach a daily streak of 30 days in the Greenhouse",
+        icon: "☀️",
+        image: "/achievements/solar-scribe.png",
+        maxProgress: 30,
+        getProgress: (stats) => Math.min(30, stats.levelsCompleted),
+    },
+    {
+        id: "petal-poet",
+        name: "Petal Poet",
+        description: "Collect every flower type in the Autumn biome",
+        icon: "🍁",
+        image: "/achievements/petal-poet.png",
+        maxProgress: 8,
+        getProgress: (stats) => Math.min(8, stats.categoriesSeen),
+    },
+    {
+        id: "night-bloomer",
+        name: "Night Bloomer",
+        description: "Explore the greenhouse during Midnight mode",
+        icon: "🌙",
+        image: "/achievements/night-bloomer.png",
+        maxProgress: 1,
+        getProgress: (stats) => (stats.levelsCompleted >= 1 ? 1 : 0),
+    },
+    {
+        id: "verdant-voyager",
+        name: "Verdant Voyager",
+        description: "Unlock all levels in the Ancient Forest world",
+        icon: "🌲",
+        image: "/achievements/world-traveler.png",
+        maxProgress: 15,
+        getProgress: (stats) => Math.min(15, stats.levelsCompleted),
+    },
+    {
+        id: "moss-mystic",
+        name: "Moss Mystic",
+        description: "Use the 'Hint' spell without breaking your combo 10 times",
+        icon: "🔮",
+        image: "/achievements/root-master.png",
+        maxProgress: 10,
+        getProgress: (stats) => Math.min(10, stats.levelsCompleted),
+    },
+    {
+        id: "bloom-herald",
+        name: "Bloom Herald",
+        description: "Harvest your first 100 SEEDS in the conservatory",
+        icon: "💰",
+        image: "/achievements/bloom-herald.png",
+        maxProgress: 100,
+        getProgress: (stats) => Math.min(100, stats.stars * 100),
+    },
+    {
+        id: "daily-dew",
+        name: "Daily Dew",
+        description: "Log in 7 consecutive days to water your sprouts",
+        icon: "💧",
+        image: "/achievements/solar-scribe.png",
+        maxProgress: 7,
+        getProgress: (stats) => Math.min(7, stats.levelsCompleted),
+    },
+    {
+        id: "zenith-climber",
+        name: "Zenith Climber",
+        description: "Reach Level 50 in Word Search",
+        icon: "⛰️",
+        image: "/achievements/seed-master.png",
+        maxProgress: 50,
+        getProgress: (stats) => Math.min(50, stats.levelsCompleted),
+    },
+    {
+        id: "midnight-sun",
+        name: "Midnight Sun",
+        description: "Play in Midnight mode with 100% puzzle accuracy",
+        icon: "☯️",
+        image: "/achievements/night-bloomer.png",
+        maxProgress: 1,
+        getProgress: (stats) => (stats.levelsCompleted >= 1 ? 1 : 0),
+    },
+    {
+        id: "static-charge",
+        name: "Static Charge",
+        description: "Complete 5 puzzles back-to-back without errors",
+        icon: "⚡",
+        image: "/achievements/speed-sprouter.png",
+        maxProgress: 5,
+        getProgress: (stats) => Math.min(5, stats.levelsCompleted),
+    },
+];
+
 export function evaluateAchievements(stats: AchievementStats): string[] {
     const unlocked: string[] = [];
-    if (stats.levelsCompleted >= 1) unlocked.push("first-steps");
-    if (stats.levelsCompleted >= 5) unlocked.push("warmed-up");
-    if (stats.levelsCompleted >= 10) unlocked.push("double-digits");
-    if (stats.levelsCompleted >= 25) unlocked.push("halfway-hero");
-    if (stats.levelsCompleted >= 50) unlocked.push("search-master");
-    if (stats.stars >= 1) unlocked.push("bonus-hunter");
-    if (stats.stars >= 10) unlocked.push("star-collector");
-    if (stats.stars >= 50) unlocked.push("star-baron");
-    if (stats.categoriesSeen >= stats.totalCategories) unlocked.push("world-traveler");
-    if (stats.foundDiagonal) unlocked.push("diagonal-detective");
+    for (const ach of ACHIEVEMENTS) {
+        if (ach.getProgress(stats) >= ach.maxProgress) {
+            unlocked.push(ach.id);
+        }
+    }
     return unlocked;
 }

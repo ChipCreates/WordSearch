@@ -1,12 +1,9 @@
 import { useEffect, useRef } from "react";
-import { Paper } from "@mui/material";
 import {
     type Cell,
     type FoundLine,
     CORNER_RADIUS_PX,
     CELEBRATE_DOTS_FORM_MS,
-    CELEBRATE_FADE_DELAY_MS,
-    CELEBRATE_FADE_DURATION_MS,
 } from "../constants";
 
 type Props = {
@@ -16,20 +13,28 @@ type Props = {
     onSelectionEnd: (startCell: Cell, endCell: Cell) => void;
     onSwipe?: () => void;
     celebrate?: boolean;
+    hintCell?: Cell | null;
 };
 
-// HIGHLIGHT_COLORS (constants.ts) is mostly light pastels, so a fixed light
-// letter color washes out on top of them -- pick black/white per pill by its
-// actual luminance instead.
+// Pick a contrasting letter color (dark/light) for a given pill background.
 function contrastingTextColor(hex: string): string {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance > 0.6 ? "#121212" : "#f5f5f5";
+    return luminance > 0.55 ? "#1d1c12" : "#f5f5f0";
 }
 
-export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false }: Props) {
+// Resolve the current theme-mode letter color from the CSS custom property.
+// Falls back to dark-on-light for SSR safety.
+function surfaceLetterColor(): string {
+    if (typeof window === "undefined") return "#1d1c12";
+    return getComputedStyle(document.documentElement)
+        .getPropertyValue("--color-on-surface")
+        .trim() || "#1d1c12";
+}
+
+export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false, hintCell }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const dragRef = useRef({
@@ -38,125 +43,179 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         currentTarget: null as Cell | null,
     });
 
-    // 0 = normal board, 1 = fully celebrated (letters faded out, pills
-    // collapsed to dots). A ref, not state, since it's driven by a rAF loop
-    // that redraws imperatively every frame rather than through React render.
     const celebrateProgressRef = useRef(0);
 
     const draw = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
         const { isDragging, startCell, currentTarget } = dragRef.current;
 
         const dpr = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
-        const targetWidth = Math.round(rect.width * dpr);
+        const targetWidth  = Math.round(rect.width  * dpr);
         const targetHeight = Math.round(rect.height * dpr);
-        // Reassigning canvas.width/height always clears the bitmap, even when
-        // set to the same value -- during a live window-resize drag this fires
-        // on every tick and flashes the board blank, so only touch it when the
-        // backing size actually changed.
         if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
-            canvas.width = targetWidth;
+            canvas.width  = targetWidth;
             canvas.height = targetHeight;
         }
-        // setTransform (not scale) because scale() compounds across calls;
-        // resizing the canvas used to reset this for free, but we now skip
-        // that reset above when the size is unchanged.
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
         ctx.clearRect(0, 0, rect.width, rect.height);
         if (!gridData.length) return;
 
         const cellSize = rect.width / gridSize;
         const t = celebrateProgressRef.current;
 
-        const drawLine = (startR: number, startC: number, endR: number, endC: number, color: string) => {
-            ctx.beginPath();
-            ctx.moveTo(startC * cellSize + cellSize / 2, startR * cellSize + cellSize / 2);
-            ctx.lineTo(endC * cellSize + cellSize / 2, endR * cellSize + cellSize / 2);
-            ctx.lineWidth = cellSize * 0.75;
-            ctx.lineCap = "round";
-            ctx.strokeStyle = color;
-            ctx.stroke();
-        };
-
-        // On level complete, each pill collapses toward its own midpoint
-        // while its stroke width grows to 2*CORNER_RADIUS_PX -- a
-        // zero-length round-capped line is exactly a filled circle of
-        // radius (lineWidth/2), so at t=1 this *is* a dot of that radius,
-        // no separate arc-drawing code path needed. At t=0 it's identical
-        // to the plain drawLine above.
+        // Draws a found-word pill — collapses to a dot as celebrate progress t→1
         const drawCelebratingLine = (line: FoundLine) => {
             const sx = line.startC * cellSize + cellSize / 2;
             const sy = line.startR * cellSize + cellSize / 2;
-            const ex = line.endC * cellSize + cellSize / 2;
-            const ey = line.endR * cellSize + cellSize / 2;
+            const ex = line.endC   * cellSize + cellSize / 2;
+            const ey = line.endR   * cellSize + cellSize / 2;
             const mx = (sx + ex) / 2;
             const my = (sy + ey) / 2;
+
+            if (t >= 0.95) {
+                // Render as a glowing bioluminescent dot at center (mx, my)
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(mx, my, cellSize * 0.28, 0, 2 * Math.PI);
+                ctx.fillStyle = line.color;
+                ctx.shadowColor = line.color;
+                ctx.shadowBlur = 18;
+                ctx.fill();
+                ctx.restore();
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(sx + (mx - sx) * t, sy + (my - sy) * t);
+                ctx.lineTo(ex + (mx - ex) * t, ey + (my - ey) * t);
+                ctx.lineWidth = cellSize * 0.75 + (2 * CORNER_RADIUS_PX - cellSize * 0.75) * t;
+                ctx.lineCap   = "round";
+                ctx.strokeStyle = line.color;
+                ctx.stroke();
+            }
+        };
+
+        // Active-selection "Sprout Trace" — soft gel look with double stroke
+        const drawSelectionTrace = (
+            startR: number, startC: number, endR: number, endC: number
+        ) => {
+            const x1 = startC * cellSize + cellSize / 2;
+            const y1 = startR * cellSize + cellSize / 2;
+            const x2 = endC   * cellSize + cellSize / 2;
+            const y2 = endR   * cellSize + cellSize / 2;
+
+            // Soft outer glow
             ctx.beginPath();
-            ctx.moveTo(sx + (mx - sx) * t, sy + (my - sy) * t);
-            ctx.lineTo(ex + (mx - ex) * t, ey + (my - ey) * t);
-            ctx.lineWidth = cellSize * 0.75 + (2 * CORNER_RADIUS_PX - cellSize * 0.75) * t;
-            ctx.lineCap = "round";
-            ctx.strokeStyle = line.color;
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineWidth  = cellSize * 0.88;
+            ctx.lineCap    = "round";
+            ctx.strokeStyle = "rgba(116,195,101,0.22)";
+            ctx.stroke();
+
+            // Sharper inner trace
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineWidth  = cellSize * 0.70;
+            ctx.lineCap    = "round";
+            ctx.strokeStyle = "rgba(116,195,101,0.50)";
             ctx.stroke();
         };
 
         foundLines.forEach(drawCelebratingLine);
 
-        if (isDragging && startCell && currentTarget) {
-            drawLine(startCell.r, startCell.c, currentTarget.r, currentTarget.c, "rgba(187, 134, 252, 0.6)");
+        // Draw Reveal Root hint glow if hintCell is active
+        if (hintCell && hintCell.r >= 0 && hintCell.c >= 0) {
+            const hx = hintCell.c * cellSize + cellSize / 2;
+            const hy = hintCell.r * cellSize + cellSize / 2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(hx, hy, cellSize * 0.44, 0, 2 * Math.PI);
+            ctx.fillStyle = "rgba(0, 228, 121, 0.35)";
+            ctx.shadowColor = "#00e479";
+            ctx.shadowBlur = 22;
+            ctx.fill();
+            ctx.strokeStyle = "#00e479";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.restore();
         }
 
-        // Map every cell a found-word pill passes through to that pill's
-        // color, so the letter drawn on top can contrast against it instead
-        // of always using the default board color.
+        if (isDragging && startCell && currentTarget) {
+            drawSelectionTrace(startCell.r, startCell.c, currentTarget.r, currentTarget.c);
+        }
+
+        // Map every cell covered by a pill to its color (for letter contrast).
         const pillColorByCell = new Map<string, string>();
         foundLines.forEach(line => {
             const dr = Math.sign(line.endR - line.startR);
             const dc = Math.sign(line.endC - line.startC);
-            const steps = Math.max(Math.abs(line.endR - line.startR), Math.abs(line.endC - line.startC));
+            const steps = Math.max(
+                Math.abs(line.endR - line.startR),
+                Math.abs(line.endC - line.startC)
+            );
             for (let i = 0; i <= steps; i++) {
-                pillColorByCell.set(`${line.startR + i * dr},${line.startC + i * dc}`, line.color);
+                pillColorByCell.set(
+                    `${line.startR + i * dr},${line.startC + i * dc}`,
+                    line.color
+                );
             }
         });
 
-        ctx.textAlign = "center";
+        const letterColor = surfaceLetterColor();
+        ctx.textAlign    = "center";
         ctx.textBaseline = "middle";
-        ctx.font = `bold ${cellSize * 0.65}px 'Segoe UI', sans-serif`;
-        // Letters fade out over the same celebration progress as the pills
-        // collapse, so the whole board dissolves to reveal the background
-        // behind it (the Paper card itself fades via a separate CSS
-        // transition on its own opacity).
-        ctx.globalAlpha = 1 - t;
+        // Use Space Grotesk — gated on document.fonts.ready in the useEffect below.
+        ctx.font = `bold ${cellSize * 0.58}px 'Space Grotesk', 'Segoe UI', sans-serif`;
+        ctx.globalAlpha = Math.max(0.4, 1 - t * 0.6);
 
         for (let r = 0; r < gridSize; r++) {
             for (let c = 0; c < gridSize; c++) {
                 const pillColor = pillColorByCell.get(`${r},${c}`);
-                ctx.fillStyle = pillColor ? contrastingTextColor(pillColor) : "#e0e0e0";
-                ctx.fillText(gridData[r][c], c * cellSize + cellSize / 2, r * cellSize + cellSize / 2);
+                const isHintCell = hintCell && hintCell.r === r && hintCell.c === c;
+                ctx.fillStyle = isHintCell
+                    ? "#ffffff"
+                    : (pillColor ? contrastingTextColor(pillColor) : letterColor);
+
+                if (isHintCell) {
+                    ctx.save();
+                    ctx.shadowColor = "#00e479";
+                    ctx.shadowBlur = 12;
+                }
+
+                ctx.fillText(
+                    gridData[r][c],
+                    c * cellSize + cellSize / 2,
+                    r * cellSize + cellSize / 2
+                );
+
+                if (isHintCell) {
+                    ctx.restore();
+                }
             }
         }
         ctx.globalAlpha = 1;
     };
 
-    useEffect(() => { draw(); }, [gridData, gridSize, foundLines]);
+    // Gate the initial draw on the custom font being loaded so letters
+    // always render in Space Grotesk rather than a fallback.
+    useEffect(() => {
+        document.fonts.ready.then(() => draw());
+    }, []);
 
-    // Always call the latest draw closure from the observer below, without
-    // tearing down and recreating the ResizeObserver on every render.
+    useEffect(() => { draw(); }, [gridData, gridSize, foundLines, hintCell]);
+
     const drawRef = useRef(draw);
     drawRef.current = draw;
 
+    // Celebration rAF loop (pill → dot collapse)
     useEffect(() => {
         let rafId: number | null = null;
         if (!celebrate) {
-            // Snap back instantly (not a reverse animation) -- by the time
-            // celebrate goes false a new puzzle is already loading, so
-            // there's nothing worth animating back to.
             celebrateProgressRef.current = 0;
             drawRef.current();
             return;
@@ -170,59 +229,42 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             }
         };
         rafId = requestAnimationFrame(tick);
-        return () => {
-            if (rafId !== null) cancelAnimationFrame(rafId);
-        };
+        return () => { if (rafId !== null) cancelAnimationFrame(rafId); };
     }, [celebrate]);
 
+    // ResizeObserver — coalesced via rAF
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         let rafId: number | null = null;
-        // Coalesce a burst of resize callbacks (a live window-drag can fire
-        // many per second) down to one draw per animation frame, instead of
-        // doing a full redraw synchronously on every single event.
         const observer = new ResizeObserver(() => {
             if (rafId !== null) cancelAnimationFrame(rafId);
-            rafId = requestAnimationFrame(() => {
-                drawRef.current();
-                rafId = null;
-            });
+            rafId = requestAnimationFrame(() => { drawRef.current(); rafId = null; });
         });
         observer.observe(canvas);
-        return () => {
-            observer.disconnect();
-            if (rafId !== null) cancelAnimationFrame(rafId);
-        };
+        return () => { observer.disconnect(); if (rafId !== null) cancelAnimationFrame(rafId); };
     }, []);
 
+    // ── Pointer handling ──────────────────────────────────────────────────────
     const getCellFromEvent = (e: React.PointerEvent<HTMLCanvasElement>): Cell | null => {
         const canvas = canvasRef.current;
         if (!canvas) return null;
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
         const cellSize = rect.width / gridSize;
-        let c = Math.floor(x / cellSize);
-        let r = Math.floor(y / cellSize);
-
-        // Clamp to grid boundaries so fast swipes don't disconnect
+        let c = Math.floor((e.clientX - rect.left)  / cellSize);
+        let r = Math.floor((e.clientY - rect.top) / cellSize);
         c = Math.max(0, Math.min(gridSize - 1, c));
         r = Math.max(0, Math.min(gridSize - 1, r));
-
         return { r, c };
     };
 
     const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-        // Once the board is dissolving there's nothing left to select.
         if (celebrate) return;
         e.currentTarget.setPointerCapture(e.pointerId);
-
         const cell = getCellFromEvent(e);
         if (cell) {
-            dragRef.current.isDragging = true;
-            dragRef.current.startCell = cell;
+            dragRef.current.isDragging    = true;
+            dragRef.current.startCell     = cell;
             dragRef.current.currentTarget = cell;
             draw();
         }
@@ -230,31 +272,20 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
     const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
         if (!dragRef.current.isDragging || !dragRef.current.startCell) return;
-
         let cell = getCellFromEvent(e);
         if (cell) {
-            // Snap to the nearest 45-degree direction
-            const dr = cell.r - dragRef.current.startCell.r;
-            const dc = cell.c - dragRef.current.startCell.c;
-            const angle = Math.atan2(dr, dc) * 180 / Math.PI;
+            const dr   = cell.r - dragRef.current.startCell.r;
+            const dc   = cell.c - dragRef.current.startCell.c;
+            const angle  = Math.atan2(dr, dc) * 180 / Math.PI;
             const snapped = Math.round(angle / 45) * 45;
-            const rad = snapped * Math.PI / 180;
-
+            const rad  = snapped * Math.PI / 180;
             const dist = Math.max(Math.abs(dr), Math.abs(dc));
-            // Unit step per grid cell in the snapped direction -- e.g. for a
-            // diagonal, sin/cos of 45deg is ~0.707, which is a Euclidean
-            // component, not a whole grid step, so it must be rounded to
-            // +-1 *before* scaling by dist rather than after.
             const unitR = Math.round(Math.sin(rad));
             const unitC = Math.round(Math.cos(rad));
             cell = {
-                r: dragRef.current.startCell.r + unitR * dist,
-                c: dragRef.current.startCell.c + unitC * dist
+                r: Math.max(0, Math.min(gridSize - 1, dragRef.current.startCell.r + unitR * dist)),
+                c: Math.max(0, Math.min(gridSize - 1, dragRef.current.startCell.c + unitC * dist)),
             };
-
-            cell.c = Math.max(0, Math.min(gridSize - 1, cell.c));
-            cell.r = Math.max(0, Math.min(gridSize - 1, cell.r));
-
             dragRef.current.currentTarget = cell;
             draw();
         }
@@ -264,53 +295,24 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         e.currentTarget.releasePointerCapture(e.pointerId);
         if (!dragRef.current.isDragging) return;
         dragRef.current.isDragging = false;
-
         const { startCell, currentTarget } = dragRef.current;
         if (startCell && currentTarget) {
             onSwipe?.();
             onSelectionEnd(startCell, currentTarget);
         }
-
-        dragRef.current.startCell = null;
+        dragRef.current.startCell     = null;
         dragRef.current.currentTarget = null;
         draw();
     };
 
     return (
-        <Paper
-            elevation={4}
-            sx={{
-                width: '100%',
-                maxWidth: 540,
-                // As a flex row sibling, an item with no flex-basis shrinks
-                // to its content's intrinsic size -- for a <canvas> that's
-                // its default 300x300, not the 100%-width the CSS asks for.
-                // flex-basis:0 + flex-grow:1 makes it claim space instead.
-                flex: '1 1 0',
-                mx: 'auto',
-                p: 1,
-                borderRadius: `${CORNER_RADIUS_PX}px`,
-                // Fades the whole card (now showing just the collapsed dots)
-                // out on level complete, revealing the category background
-                // image behind it -- delayed until after the canvas-level
-                // pill-to-dot animation has finished forming the dots, so
-                // there's a beat where they're clearly visible before the
-                // card itself disappears. celebrate:false resets instantly
-                // (no transition) since a new puzzle is already loading by
-                // then and there's nothing worth animating back from.
-                opacity: celebrate ? 0 : 1,
-                transition: celebrate
-                    ? `opacity ${CELEBRATE_FADE_DURATION_MS}ms ease ${CELEBRATE_FADE_DELAY_MS}ms`
-                    : 'none',
-            }}
-        >
+        <div className="ws-planter">
             <canvas
                 ref={canvasRef}
-                style={{ width: '100%', aspectRatio: '1 / 1', display: 'block', touchAction: 'none', borderRadius: '4px' }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
             />
-        </Paper>
+        </div>
     );
 }
