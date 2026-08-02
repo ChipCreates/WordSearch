@@ -145,8 +145,17 @@ export function useWordSearchGame() {
         const size = Math.min(4 + Math.ceil((level - 1) / 2), 10);
         // Vita's own level 4 (6x6 grid) ships exactly 5 words -> count = size - 1.
         const count = Math.max(3, size - 1);
+        // A word exactly as long as the grid can only occupy one specific
+        // full row/column/diagonal -- no slack in where it can start -- so
+        // requesting several such words is a common cause of placement
+        // failure (and therefore fewer words shown than intended) on 5x5+
+        // grids. Capping at size-1 leaves every word at least one cell of
+        // slack. Skip this at size 4: several categories have almost no
+        // 3-letter words (some have none at all), so size-1 there would
+        // starve word selection entirely rather than help placement.
+        const maxWordLength = size <= 4 ? size : size - 1;
 
-        const puzzle = await getPuzzleWords(count + Math.min(count, 8), size, level);
+        const puzzle = await getPuzzleWords(count + Math.min(count, 8), maxWordLength, level);
         setCategory(puzzle.category);
         setCategoriesSeen(prev => prev.has(puzzle.category) ? prev : new Set(prev).add(puzzle.category));
         const words = puzzle.words;
@@ -155,13 +164,22 @@ export function useWordSearchGame() {
 
         const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
 
-        // Longer words are harder to fit; placing them first while the grid
-        // is emptiest avoids leaving words unplaced (and therefore unfindable).
-        const byLengthDesc = [...mainWords, ...bonusWords].sort((a, b) => b.length - a.length);
+        // Main words must be placed before bonus words, full stop -- bonus
+        // words are pure extras, and on a large grid requesting many words
+        // (e.g. 9 main + 8 bonus on a 10x10), letting them compete on length
+        // alone let a long bonus word grab space ahead of a shorter main
+        // word, starving the main word out entirely. Placing all of
+        // mainWords first (longest-first, so the hardest-to-fit main words
+        // get the emptiest grid) guarantees they get first pick; bonusWords
+        // then only ever use whatever space is left over.
         const placed = new Set<string>();
-        byLengthDesc.forEach(word => {
-            if (placeWord(grid, size, word)) placed.add(word);
-        });
+        const placeAll = (list: string[]) => {
+            [...list].sort((a, b) => b.length - a.length).forEach(word => {
+                if (placeWord(grid, size, word)) placed.add(word);
+            });
+        };
+        placeAll(mainWords);
+        placeAll(bonusWords);
 
         for (let r = 0; r < size; r++) {
             for (let c = 0; c < size; c++) {
