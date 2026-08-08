@@ -14,6 +14,7 @@ import AchievementBanner from "./components/AchievementBanner";
 import SettingsDialog from "./components/SettingsDialog";
 import AboutDialog from "./components/AboutDialog";
 import LevelsDialog from "./components/LevelsDialog";
+import SeedStoreDialog from "./components/SeedStoreDialog";
 import AchievementsView from "./components/AchievementsView";
 import GardenView from "./components/GardenView";
 import EcoLeaf from "./components/icons/EcoLeaf";
@@ -90,6 +91,7 @@ export default function App() {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [aboutOpen, setAboutOpen] = useState(false);
     const [levelsOpen, setLevelsOpen] = useState(false);
+    const [seedStoreOpen, setSeedStoreOpen] = useState(false);
     const [hintCell, setHintCell] = useState<{ r: number; c: number } | null>(null);
     const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 
@@ -223,7 +225,12 @@ export default function App() {
 
                         {/* Global Actions & Status Header */}
                         <div className="ws-top-nav__actions">
-                            <div className="ws-top-nav__stat-pill" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 9999, background: "rgba(0, 228, 121, 0.12)", border: "1px solid rgba(0, 228, 121, 0.3)" }}>
+                            <div
+                                className="ws-top-nav__stat-pill"
+                                onClick={() => { playSfx("click"); setSeedStoreOpen(true); }}
+                                title="Click to open Seed Redemption Store"
+                                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 9999, background: "rgba(0, 228, 121, 0.12)", border: "1px solid rgba(0, 228, 121, 0.3)", cursor: "pointer" }}
+                            >
                                 <img src="/seed.png" alt="Seed" style={{ width: 18, height: 18, objectFit: "contain", filter: "drop-shadow(0 0 6px rgba(0,228,121,0.5))" }} />
                                 <span style={{ fontFamily: "var(--font-headline)", fontWeight: 800, color: "var(--color-primary)", fontSize: "0.85rem" }}>
                                     {stars * 100} <span className="ws-seeds-label">SEEDS</span>
@@ -605,6 +612,13 @@ export default function App() {
                 onSelectLevel={(lvl) => {
                     goToLevel(lvl);
                 }}
+            />
+
+            <SeedStoreDialog
+                open={seedStoreOpen}
+                onClose={() => setSeedStoreOpen(false)}
+                seeds={stars * 100}
+                onRedeemHint={handleRevealHint}
             />
 
             <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />

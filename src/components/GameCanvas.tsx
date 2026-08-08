@@ -70,10 +70,15 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+            requestAnimationFrame(() => drawRef.current());
+            return;
+        }
+
         const { isDragging, startCell, currentTarget } = dragRef.current;
 
         const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
         const targetWidth  = Math.round(rect.width  * dpr);
         const targetHeight = Math.round(rect.height * dpr);
         if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
@@ -203,10 +208,16 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         ctx.globalAlpha = 1;
     };
 
-    // Gate the initial draw on the custom font being loaded so letters
-    // always render in Space Grotesk rather than a fallback.
+    // Trigger immediate draw on mount and schedule layout-settle redraws
     useEffect(() => {
+        draw();
+        const t1 = setTimeout(() => draw(), 50);
+        const t2 = setTimeout(() => draw(), 200);
         document.fonts.ready.then(() => draw());
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+        };
     }, []);
 
     useEffect(() => { draw(); }, [gridData, gridSize, foundLines, hintCell]);
