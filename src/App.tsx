@@ -252,16 +252,6 @@ export default function App() {
                             >
                                 <HelpOutlineOutlined />
                             </button>
-
-                            {/* Settings Modal Trigger */}
-                            <button
-                                className="ws-top-nav__icon-btn"
-                                onClick={() => { playSfx("click"); setSettingsOpen(true); }}
-                                aria-label="Settings"
-                                title="Settings"
-                            >
-                                <SettingsOutlined />
-                            </button>
                         </div>
                     </div>
                 </header>
