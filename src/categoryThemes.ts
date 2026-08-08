@@ -62,9 +62,14 @@ function pattern(file: string, tile = "420px"): Theme {
 // the new list (Ocean Life, Space & Astronomy, Vehicles, Musical
 // Instruments) -- same art, just re-keyed.
 export const CATEGORY_THEMES: Record<string, Theme> = {
-    Animals: pattern("animals.jpg"),
+    Animals: scene("bg_animals.jpg"),
     Insects: pattern("animals.jpg"),
     "Mythical Creatures": pattern("animals.jpg"),
+
+    Architecture: scene("bg_architecture.jpg"),
+    "Astrology/Zodiac": scene("bg_astrology.jpg"),
+    "Card Games": scene("bg_card_games.jpg"),
+    "Chemistry Elements/Terms": scene("bg_chemistry.jpg"),
 
     Food: pattern("food.jpg"),
     Fruits: pattern("food.jpg"),
@@ -83,7 +88,6 @@ export const CATEGORY_THEMES: Record<string, Theme> = {
     "Nautical Terms": scene("ocean.jpg"),
 
     "Space & Astronomy": scene("space.jpg", "40% center"),
-    "Astrology/Zodiac": scene("space.jpg", "40% center"),
 
     Sports: scene("sports.jpg"),
 
