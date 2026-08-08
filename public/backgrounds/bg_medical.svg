@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <!-- Dark Vignette Scrim -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#131313" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#131313" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#090909" stop-opacity="0.95"/>
+    </radialGradient>
+
+    <!-- Bioluminescent Emerald Glow Filter -->
+    <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Gold Ember Glow Filter -->
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Custom Category Gradients & Elements -->
+    
+  </defs>
+
+  <!-- Dark Atmospheric Background -->
+  <rect width="1920" height="1080" fill="#081014"/>
+
+  <!-- Category Graphic Motifs -->
+  
+            <path d="M 100 540 Q 300 300 500 540 T 900 540 T 1300 540 T 1700 540" fill="none" stroke="#00f0ff" stroke-width="3" opacity="0.4" filter="url(#emeraldGlow)"/>
+        
+
+  <!-- Dark Edge Vignette Overlay -->
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+</svg>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <!-- Dark Vignette Scrim -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#131313" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#131313" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#090909" stop-opacity="0.95"/>
+    </radialGradient>
+
+    <!-- Bioluminescent Emerald Glow Filter -->
+    <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Gold Ember Glow Filter -->
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Custom Category Gradients & Elements -->
+    
+            <linearGradient id="ribbon1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00e479" stop-opacity="0.8"/>
+                <stop offset="50%" stop-color="#00f0ff" stop-opacity="0.6"/>
+                <stop offset="100%" stop-color="#7b3cc4" stop-opacity="0.4"/>
+            </linearGradient>
+            <linearGradient id="ribbon2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#f4c95d" stop-opacity="0.7"/>
+                <stop offset="50%" stop-color="#ecb1ff" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#00e479" stop-opacity="0.3"/>
+            </linearGradient>
+        
+  </defs>
+
+  <!-- Dark Atmospheric Background -->
+  <rect width="1920" height="1080" fill="#0d0f12"/>
+
+  <!-- Category Graphic Motifs -->
+  
+            <path d="M-100,200 C400,600 800,100 1400,700 C1700,1000 2000,800 2100,900" fill="none" stroke="url(#ribbon1)" stroke-width="60" filter="url(#emeraldGlow)"/>
+            <path d="M-100,800 C500,300 1000,900 1500,200 C1800,-100 2000,300 2100,400" fill="none" stroke="url(#ribbon2)" stroke-width="40" filter="url(#goldGlow)"/>
+        
+
+  <!-- Dark Edge Vignette Overlay -->
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+</svg>

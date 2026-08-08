@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <!-- Dark Vignette Scrim -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#131313" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#131313" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#090909" stop-opacity="0.95"/>
+    </radialGradient>
+
+    <!-- Bioluminescent Emerald Glow Filter -->
+    <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Gold Ember Glow Filter -->
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Custom Category Gradients & Elements -->
+    
+            <linearGradient id="flight" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#00e479" stop-opacity="0.3"/>
+            </linearGradient>
+        
+  </defs>
+
+  <!-- Dark Atmospheric Background -->
+  <rect width="1920" height="1080" fill="#0a1014"/>
+
+  <!-- Category Graphic Motifs -->
+  
+            <circle cx="960" cy="540" r="400" fill="none" stroke="#00e479" stroke-width="2" stroke-dasharray="8,8" opacity="0.4"/>
+            <circle cx="960" cy="540" r="280" fill="none" stroke="#00f0ff" stroke-width="1.5" opacity="0.3"/>
+            <path d="M 300 700 Q 960 200 1600 650" fill="none" stroke="url(#flight)" stroke-width="3" filter="url(#emeraldGlow)"/>
+            <path d="M 400 300 Q 960 800 1500 400" fill="none" stroke="url(#flight)" stroke-width="2" filter="url(#emeraldGlow)"/>
+        
+
+  <!-- Dark Edge Vignette Overlay -->
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+</svg>

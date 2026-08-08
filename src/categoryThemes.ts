@@ -63,43 +63,49 @@ function pattern(file: string, tile = "420px"): Theme {
 // Instruments) -- same art, just re-keyed.
 export const CATEGORY_THEMES: Record<string, Theme> = {
     Animals: scene("bg_animals.jpg"),
-    Insects: pattern("animals.jpg"),
-    "Mythical Creatures": pattern("animals.jpg"),
-
     Architecture: scene("bg_architecture.jpg"),
     "Astrology/Zodiac": scene("bg_astrology.jpg"),
     "Card Games": scene("bg_card_games.jpg"),
     "Chemistry Elements/Terms": scene("bg_chemistry.jpg"),
-
+    Colors: scene("bg_colors.svg"),
+    "Cooking Techniques": scene("bg_cooking.svg"),
+    Countries: scene("bg_countries.svg"),
+    "Cryptic/Obscure Adjectives": scene("bg_cryptic.svg"),
+    "Dance Styles": scene("bg_dance.svg"),
+    Desserts: scene("bg_desserts.svg"),
+    Emotions: scene("bg_emotions.svg"),
+    "Etymology/Word Roots": scene("bg_etymology.svg"),
     Food: pattern("food.jpg"),
-    Fruits: pattern("food.jpg"),
-    Desserts: pattern("food.jpg"),
-    "Cooking Techniques": pattern("food.jpg"),
-
-    Nature: scene("nature.jpg"),
-    Gardening: scene("nature.jpg"),
-    "Geology/Minerals": scene("nature.jpg"),
-    "Mycology (Fungi)": scene("nature.jpg"),
-
-    Weather: scene("weather.jpg"),
-    "Horror Themes": scene("weather.jpg"),
-
-    "Ocean Life": scene("ocean.jpg"),
-    "Nautical Terms": scene("ocean.jpg"),
-
-    "Space & Astronomy": scene("space.jpg", "40% center"),
-
-    Sports: scene("sports.jpg"),
-
+    Forensics: scene("bg_forensics.svg"),
+    Fruits: scene("bg_fruits.svg"),
+    Gardening: scene("bg_gardening.svg"),
+    "Geology/Minerals": scene("bg_geology.svg"),
+    "Grammar/Linguistics": scene("bg_grammar.svg"),
+    Holidays: scene("bg_holidays.svg"),
+    "Horror Themes": scene("bg_horror.svg"),
     Household: scene("household.jpg"),
-    "Kitchen Items": scene("household.jpg"),
-    Tools: scene("household.jpg"),
-
-    Vehicles: scene("transportation.jpg"),
-
+    Insects: scene("bg_insects.svg"),
+    "Kitchen Items": scene("bg_kitchen.svg"),
+    "Legal Terms": scene("bg_legal.svg"),
+    "Medical Terminology": scene("bg_medical.svg"),
+    "Movies & TV": scene("bg_movies.svg"),
+    "Musical Genres": scene("bg_musical_genres.svg"),
     "Musical Instruments": scene("music.svg"),
-    "Musical Genres": scene("music.svg"),
-    "Dance Styles": scene("music.svg"),
+    "Mycology (Fungi)": scene("bg_mycology.svg"),
+    "Mythical Creatures": scene("bg_mythical.svg"),
+    Nature: scene("nature.jpg"),
+    "Nautical Terms": scene("bg_nautical.svg"),
+    Occupations: scene("bg_occupations.svg"),
+    "Ocean Life": scene("ocean.jpg"),
+    Philosophy: scene("bg_philosophy.svg"),
+    "School Subjects": scene("bg_school.svg"),
+    "Space & Astronomy": scene("space.jpg", "40% center"),
+    Sports: scene("sports.jpg"),
+    Tools: scene("bg_tools.svg"),
+    "Types of Government": scene("bg_government.svg"),
+    Vehicles: scene("bg_vehicles.svg"),
+    Weather: scene("weather.jpg"),
+    "Weaving/Textiles": scene("bg_weaving.svg"),
 };
 
 export const DEFAULT_THEME = CATEGORY_THEMES.Nature;
