@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, IconButton, Box, Button } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, IconButton, Box, Button, useMediaQuery } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LockIcon from "@mui/icons-material/Lock";
@@ -13,16 +13,18 @@ type Props = {
 export default function LevelsDialog({ open, currentLevel, onClose, onSelectLevel }: Props) {
     const totalLevels = 20;
     const levels = Array.from({ length: totalLevels }, (_, i) => i + 1);
+    const isMobile = useMediaQuery("(max-width: 767px)");
 
     return (
         <Dialog
             open={open}
             onClose={onClose}
+            fullScreen={isMobile}
             maxWidth="sm"
             fullWidth
             sx={{
                 "& .MuiDialog-paper": {
-                    borderRadius: "1rem",
+                    borderRadius: isMobile ? 0 : "1rem",
                     background: "var(--color-surface-container)",
                     color: "var(--color-on-surface)",
                 },

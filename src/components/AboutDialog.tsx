@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, IconButton, Box, Typography, Divider, Link } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, IconButton, Box, Typography, Divider, Link, useMediaQuery } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 type Props = {
@@ -16,10 +16,12 @@ function Step({ icon, children }: { icon: string; children: React.ReactNode }) {
 }
 
 export default function AboutDialog({ open, onClose }: Props) {
+    const isMobile = useMediaQuery("(max-width: 767px)");
+
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                About &amp; How to Play
+        <Dialog open={open} onClose={onClose} fullScreen={isMobile} maxWidth="xs" fullWidth>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: "var(--font-headline)", fontWeight: 700 }}>
+                ℹ️ About &amp; How to Play
                 <IconButton onClick={onClose} size="small">
                     <CloseIcon />
                 </IconButton>

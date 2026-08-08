@@ -1,6 +1,7 @@
 import {
     Box, Typography, Slider, Switch, FormControlLabel,
     ToggleButtonGroup, ToggleButton, IconButton, useMediaQuery,
+    Dialog, DialogTitle, DialogContent,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
@@ -131,70 +132,46 @@ function SettingsContent({
     );
 }
 
-// ── Main component — bottom sheet on mobile, dialog on desktop ────────────────
+// ── Main component — fullScreen dialog on mobile, modal on desktop ───────────
 export default function SettingsDialog(props: Props) {
     const { open, onClose } = props;
-    const isMobile = useMediaQuery("(max-width: 639px)");
+    const isMobile = useMediaQuery("(max-width: 767px)");
 
-    if (!open) return null;
-
-    // Mobile — bottom sheet
-    if (isMobile) {
-        return (
-            <>
-                <div
-                    className="ws-bottom-sheet-backdrop"
-                    onClick={onClose}
-                    aria-hidden="true"
-                />
-                <div className="ws-bottom-sheet" role="dialog" aria-label="Settings">
-                    <div className="ws-bottom-sheet__handle" />
-                    <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
-                        <div className="ws-bottom-sheet__title" style={{ flex: 1 }}>Settings</div>
-                        <IconButton size="small" onClick={onClose} id="settings-close-btn">
-                            <CloseIcon fontSize="small" />
-                        </IconButton>
-                    </div>
-                    <SettingsContent {...props} />
-                </div>
-            </>
-        );
-    }
-
-    // Desktop — centred MUI-styled sheet (using the same bottom-sheet CSS,
-    // but rendered inside a fixed centred container)
     return (
-        <>
-            <div
-                className="ws-bottom-sheet-backdrop"
-                onClick={onClose}
-                aria-hidden="true"
-            />
-            <div
-                role="dialog"
-                aria-label="Settings"
-                style={{
-                    position: "fixed",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    zIndex: 1201,
-                    width: "100%",
-                    maxWidth: 440,
+        <Dialog
+            open={open}
+            onClose={onClose}
+            fullScreen={isMobile}
+            maxWidth="xs"
+            fullWidth
+            sx={{
+                "& .MuiDialog-paper": {
+                    borderRadius: isMobile ? 0 : "1.25rem",
                     background: "var(--color-surface-container)",
-                    borderRadius: "var(--radius-xl)",
-                    padding: "24px 28px 28px",
-                    boxShadow: "0 24px 60px rgba(0,0,0,0.22)",
+                    color: "var(--color-on-surface)",
+                },
+            }}
+        >
+            <DialogTitle
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontFamily: "var(--font-headline)",
+                    fontWeight: 700,
+                    fontSize: "1.25rem",
+                    pb: 1,
                 }}
             >
-                <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-                    <div className="ws-bottom-sheet__title" style={{ flex: 1, textAlign: "left" }}>Settings</div>
-                    <IconButton size="small" onClick={onClose} id="settings-close-btn-desktop">
-                        <CloseIcon fontSize="small" />
-                    </IconButton>
-                </div>
+                ⚙️ Settings
+                <IconButton onClick={onClose} size="small" id="settings-close-btn" sx={{ color: "var(--color-on-surface)" }}>
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+
+            <DialogContent dividers sx={{ p: { xs: 2.5, sm: 3 } }}>
                 <SettingsContent {...props} />
-            </div>
-        </>
+            </DialogContent>
+        </Dialog>
     );
 }
