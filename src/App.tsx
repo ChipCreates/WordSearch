@@ -224,8 +224,10 @@ export default function App() {
                         {/* Global Actions & Status Header */}
                         <div className="ws-top-nav__actions">
                             <div className="ws-top-nav__stat-pill" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 9999, background: "rgba(0, 228, 121, 0.12)", border: "1px solid rgba(0, 228, 121, 0.3)" }}>
-                                <img src="/seed.png" alt="Seed" style={{ width: 22, height: 22, objectFit: "contain", filter: "drop-shadow(0 0 6px rgba(0,228,121,0.5))" }} />
-                                <span style={{ fontFamily: "var(--font-headline)", fontWeight: 800, color: "var(--color-primary)", fontSize: "0.9rem" }}>{stars * 100} SEEDS</span>
+                                <img src="/seed.png" alt="Seed" style={{ width: 18, height: 18, objectFit: "contain", filter: "drop-shadow(0 0 6px rgba(0,228,121,0.5))" }} />
+                                <span style={{ fontFamily: "var(--font-headline)", fontWeight: 800, color: "var(--color-primary)", fontSize: "0.85rem" }}>
+                                    {stars * 100} <span className="ws-seeds-label">SEEDS</span>
+                                </span>
                             </div>
 
                             {/* Theme Switcher Quick Toggle */}

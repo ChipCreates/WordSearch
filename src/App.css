@@ -668,36 +668,51 @@ body {
 /* ── Mobile First Responsive Design System Overrides ─────────────────────── */
 @media (max-width: 767px) {
   .ws-top-nav {
-    height: 60px;
+    height: 48px;
   }
 
   .ws-top-nav__inner {
-    padding: 0 12px;
+    padding: 0 10px;
+  }
+
+  .ws-top-nav__brand {
+    gap: 4px;
   }
 
   .ws-top-nav__logo-text {
-    font-size: 1.35rem;
+    font-size: 1.05rem;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+  }
+
+  .ws-top-nav__actions {
+    gap: 6px;
+  }
+
+  .ws-top-nav__stat-pill {
+    padding: 3px 8px !important;
+    gap: 4px !important;
+  }
+
+  .ws-seeds-label {
+    display: none;
   }
 
   .ws-main-layout {
-    padding-top: 68px;
-    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-top: 54px;
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   .ws-daily-goal-card {
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    gap: 8px;
-  }
-
-  .ws-planter {
-    max-width: min(88vw, 360px);
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    gap: 6px;
   }
 
   .ws-bottom-nav {
-    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    height: calc(54px + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
@@ -706,18 +721,18 @@ body {
   .ws-found-words-list {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px;
-    max-height: 120px;
+    gap: 5px;
+    padding: 4px;
+    max-height: 110px;
     overflow-y: auto;
     justify-content: center;
   }
 
   .ws-found-word-card {
-    padding: 5px 12px;
-    font-size: 0.78rem;
+    padding: 4px 10px;
+    font-size: 0.76rem;
     border-radius: var(--radius-full);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
   }
 }
 
@@ -739,8 +754,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 14px;
-    margin-bottom: 8px;
+    padding: 5px 12px;
+    margin-bottom: 6px;
     border-radius: var(--radius-xl);
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
@@ -750,31 +765,31 @@ body {
   .ws-mobile-header-bar__left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .ws-mobile-header-bar__level {
     font-family: var(--font-headline);
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--color-primary);
     background: rgba(0, 228, 121, 0.15);
-    padding: 2px 10px;
+    padding: 2px 8px;
     border-radius: var(--radius-full);
     border: 1px solid rgba(0, 228, 121, 0.3);
   }
 
   .ws-mobile-header-bar__cat {
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-on-surface);
   }
 
   .ws-mobile-header-bar__right {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 0.82rem;
+    gap: 10px;
+    font-size: 0.8rem;
     font-weight: 700;
   }
 
@@ -791,31 +806,31 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 6px;
   }
 
   .ws-mobile-tool-btn {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: var(--radius-full);
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     color: var(--color-on-surface);
     font-family: var(--font-body);
     font-weight: 700;
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     cursor: pointer;
   }
 
   .ws-planter {
-    max-width: min(84vw, min(48vh, 320px)) !important;
+    max-width: min(92vw, min(56vh, 360px)) !important;
     margin: 0 auto;
   }
 
   .ws-game-board-panel {
-    padding: 8px !important;
+    padding: 6px !important;
   }
 
   .ws-found-words-header {
