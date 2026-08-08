@@ -243,6 +243,16 @@ export default function App() {
                                 {themeMode === "sprout" ? <DarkModeOutlined /> : <LightModeOutlined />}
                             </button>
 
+                            {/* Help & About Quick Toggle */}
+                            <button
+                                className="ws-top-nav__icon-btn"
+                                onClick={() => { playSfx("click"); setAboutOpen(true); }}
+                                aria-label="About & How to Play"
+                                title="About & How to Play"
+                            >
+                                <HelpOutlineOutlined />
+                            </button>
+
                             {/* Settings Modal Trigger */}
                             <button
                                 className="ws-top-nav__icon-btn"
@@ -405,7 +415,6 @@ export default function App() {
                                 </div>
                                 <div className="ws-mobile-header-bar__right">
                                     <span className="ws-mobile-header-bar__progress">{foundCount}/{wordsToFind.length}</span>
-                                    <span className="ws-mobile-header-bar__seeds">🌱 {stars * 100}</span>
                                 </div>
                             </div>
 
@@ -520,10 +529,6 @@ export default function App() {
 
                     {/* ── Footer ───────────────────────────────────────────────── */}
                     <footer className="ws-footer">
-                        <div style={{ display: "flex", gap: 20, justifyContent: "center", marginBottom: 8 }}>
-                            <a href="#" onClick={(e) => { e.preventDefault(); setAboutOpen(true); }} style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>About &amp; How to Play</a>
-                            <a href="https://github.com/ChipCreates/WordSearch" target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>Source &amp; Support</a>
-                        </div>
                         <p>© {new Date().getFullYear()} Word Sprout Studio. v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.1.0"}</p>
                     </footer>
                 </main>
