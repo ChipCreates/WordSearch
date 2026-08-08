@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
     type Cell,
     type FoundLine,
@@ -44,6 +44,25 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
     });
 
     const celebrateProgressRef = useRef(0);
+
+    const pillColorByCell = useMemo(() => {
+        const map = new Map<string, string>();
+        foundLines.forEach(line => {
+            const dr = Math.sign(line.endR - line.startR);
+            const dc = Math.sign(line.endC - line.startC);
+            const steps = Math.max(
+                Math.abs(line.endR - line.startR),
+                Math.abs(line.endC - line.startC)
+            );
+            for (let i = 0; i <= steps; i++) {
+                map.set(
+                    `${line.startR + i * dr},${line.startC + i * dc}`,
+                    line.color
+                );
+            }
+        });
+        return map;
+    }, [foundLines]);
 
     const draw = () => {
         const canvas = canvasRef.current;
@@ -148,23 +167,6 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         if (isDragging && startCell && currentTarget) {
             drawSelectionTrace(startCell.r, startCell.c, currentTarget.r, currentTarget.c);
         }
-
-        // Map every cell covered by a pill to its color (for letter contrast).
-        const pillColorByCell = new Map<string, string>();
-        foundLines.forEach(line => {
-            const dr = Math.sign(line.endR - line.startR);
-            const dc = Math.sign(line.endC - line.startC);
-            const steps = Math.max(
-                Math.abs(line.endR - line.startR),
-                Math.abs(line.endC - line.startC)
-            );
-            for (let i = 0; i <= steps; i++) {
-                pillColorByCell.set(
-                    `${line.startR + i * dr},${line.startC + i * dc}`,
-                    line.color
-                );
-            }
-        });
 
         const letterColor = surfaceLetterColor();
         ctx.textAlign    = "center";

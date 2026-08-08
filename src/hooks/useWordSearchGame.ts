@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getPuzzleWords, validateWord, CATEGORY_NAMES, CATEGORY_NAMES_BY_TIER, type Tier } from "../backend";
 import { DIRECTIONS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
@@ -159,7 +159,7 @@ export function useWordSearchGame() {
         }
     }, [levelsCompleted, stars, categoriesSeen, foundDiagonal]);
 
-    const dismissJustUnlocked = () => setJustUnlocked(prev => prev.slice(1));
+    const dismissJustUnlocked = useCallback(() => setJustUnlocked(prev => prev.slice(1)), []);
 
     const initGame = async () => {
         setStatus("Generating puzzle...");

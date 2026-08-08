@@ -1,3 +1,5 @@
+import { invoke } from "@tauri-apps/api/core";
+
 // The Tauri desktop/Android builds get puzzle words and bonus-word
 // validation from Rust (src-tauri/src/categories/, dictionary.rs) over IPC.
 // A plain web build has no Tauri runtime to call into, so this module picks
@@ -70,7 +72,6 @@ if (!isTauri()) {
 
 export async function getPuzzleWords(count: number, maxLength: number, level: number, tier: Tier): Promise<Puzzle> {
     if (isTauri()) {
-        const { invoke } = await import("@tauri-apps/api/core");
         return invoke("get_puzzle_words", { count, maxLength, level, tier });
     }
     const pool = webPool(tier);
@@ -82,7 +83,6 @@ export async function getPuzzleWords(count: number, maxLength: number, level: nu
 
 export async function validateWord(word: string): Promise<boolean> {
     if (isTauri()) {
-        const { invoke } = await import("@tauri-apps/api/core");
         return invoke("validate_word", { word });
     }
     const dictionary = await loadDictionary();

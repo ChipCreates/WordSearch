@@ -1,11 +1,11 @@
 mod categories;
 mod dictionary;
 use categories::{Tier, CATEGORIES};
-use dictionary::DICTIONARY;
+use dictionary::dictionary;
 
 #[tauri::command]
 fn validate_word(word: String) -> bool {
-    DICTIONARY.binary_search(&word.as_str()).is_ok()
+    dictionary().binary_search(&word.as_str()).is_ok()
 }
 
 #[derive(serde::Serialize)]
@@ -69,5 +69,14 @@ mod tests {
         assert!(!validate_word("12345".to_string()));
         assert!(!validate_word("!@#$%^".to_string()));
         assert!(!validate_word("A".repeat(100)));
+    }
+
+    #[test]
+    fn test_category_selection_parity() {
+        let p1 = get_puzzle_words(5, 10, 1, "standard".to_string());
+        assert_eq!(p1.category, "Animals");
+
+        let p2 = get_puzzle_words(5, 10, 2, "standard".to_string());
+        assert_eq!(p2.category, "Card Games");
     }
 }
