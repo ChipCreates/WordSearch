@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     type Cell,
     type FoundLine,
@@ -247,14 +247,34 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         return () => { observer.disconnect(); if (rafId !== null) cancelAnimationFrame(rafId); };
     }, []);
 
+    const [activeDragString, setActiveDragString] = useState<string | null>(null);
+
+    const computeDragString = (start: Cell | null, end: Cell | null): string | null => {
+        if (!start || !end || !gridData || !gridData.length) return null;
+        const dr = Math.sign(end.r - start.r);
+        const dc = Math.sign(end.c - start.c);
+        const steps = Math.max(Math.abs(end.r - start.r), Math.abs(end.c - start.c));
+        let str = "";
+        for (let i = 0; i <= steps; i++) {
+            const r = start.r + i * dr;
+            const c = start.c + i * dc;
+            if (gridData[r] && gridData[r][c] !== undefined) {
+                str += gridData[r][c];
+            }
+        }
+        return str || null;
+    };
+
     // ── Pointer handling ──────────────────────────────────────────────────────
     const getCellFromEvent = (e: React.PointerEvent<HTMLCanvasElement>): Cell | null => {
         const canvas = canvasRef.current;
         if (!canvas) return null;
         const rect = canvas.getBoundingClientRect();
         const cellSize = rect.width / gridSize;
+        // On touch devices, slightly offset clientY (-12px) so selection sits above the thumb
+        const offsetY = e.pointerType === "touch" ? -12 : 0;
         let c = Math.floor((e.clientX - rect.left)  / cellSize);
-        let r = Math.floor((e.clientY - rect.top) / cellSize);
+        let r = Math.floor((e.clientY + offsetY - rect.top) / cellSize);
         c = Math.max(0, Math.min(gridSize - 1, c));
         r = Math.max(0, Math.min(gridSize - 1, r));
         return { r, c };
@@ -268,6 +288,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             dragRef.current.isDragging    = true;
             dragRef.current.startCell     = cell;
             dragRef.current.currentTarget = cell;
+            setActiveDragString(computeDragString(cell, cell));
             draw();
         }
     };
@@ -289,6 +310,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 c: Math.max(0, Math.min(gridSize - 1, dragRef.current.startCell.c + unitC * dist)),
             };
             dragRef.current.currentTarget = cell;
+            setActiveDragString(computeDragString(dragRef.current.startCell, cell));
             draw();
         }
     };
@@ -304,11 +326,39 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         }
         dragRef.current.startCell     = null;
         dragRef.current.currentTarget = null;
+        setActiveDragString(null);
         draw();
     };
 
     return (
         <div className="ws-planter">
+            {activeDragString && (
+                <div
+                    className="ws-drag-preview-bubble glow-emerald"
+                    style={{
+                        position: "absolute",
+                        top: -28,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        background: "var(--color-primary-container)",
+                        color: "var(--color-on-primary)",
+                        padding: "6px 18px",
+                        borderRadius: "9999px",
+                        fontFamily: "var(--font-grid)",
+                        fontWeight: 800,
+                        fontSize: "1.15rem",
+                        letterSpacing: "0.25em",
+                        boxShadow: "0 0 24px rgba(0, 228, 121, 0.6)",
+                        border: "2px solid var(--color-primary)",
+                        zIndex: 30,
+                        pointerEvents: "none",
+                        whiteSpace: "nowrap",
+                        animation: "bubblePop 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                    }}
+                >
+                    {activeDragString}
+                </div>
+            )}
             <canvas
                 ref={canvasRef}
                 onPointerDown={handlePointerDown}
