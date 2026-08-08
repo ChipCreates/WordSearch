@@ -1,6 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import fs from "fs";
+
+const pkg = JSON.parse(fs.readFileSync(new URL("./package.json", import.meta.url), "utf-8"));
 
 // Separate from vite.config.ts (which is tuned for `tauri dev`/`tauri build`
 // -- fixed port, HMR websocket, watch-ignore src-tauri) on purpose: this is
@@ -45,6 +48,9 @@ export default defineConfig({
       },
     }),
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   base: "/WordSearch/",
   build: {
     outDir: "dist-web",

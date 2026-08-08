@@ -494,11 +494,10 @@ export default function App() {
                     {/* ── Footer ───────────────────────────────────────────────── */}
                     <footer className="ws-footer">
                         <div style={{ display: "flex", gap: 20, justifyContent: "center", marginBottom: 8 }}>
-                            <a href="#" onClick={(e) => { e.preventDefault(); setAboutOpen(true); }} style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>Terms of Service</a>
-                            <a href="#" onClick={(e) => { e.preventDefault(); setAboutOpen(true); }} style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>Privacy Policy</a>
-                            <a href="#" onClick={(e) => { e.preventDefault(); setAboutOpen(true); }} style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>Support</a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setAboutOpen(true); }} style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>About &amp; How to Play</a>
+                            <a href="https://github.com/ChipCreates/WordSearch" target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-on-surface-variant)", textDecoration: "none" }}>Source &amp; Support</a>
                         </div>
-                        <p>© 2024 Word Sprout Studio. v1.2.0-beta</p>
+                        <p>© {new Date().getFullYear()} Word Sprout Studio. v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.1.0"}</p>
                     </footer>
                 </main>
 

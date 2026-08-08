@@ -1,8 +1,10 @@
 /* ── Verdant Sprout Design System ──────────────────────────────────────────── */
 
 /* Light (Sprout) tokens */
+/* keep in sync with src/theme/tokens.ts — see tokens.sync.test.ts */
 :root {
   --color-primary:            #0f5238;
+  --color-primary-rgb:        15, 82, 56;
   --color-primary-container:  #2d6a4f;
   --color-on-primary:         #ffffff;
   --color-secondary:          #1f6d1a;
@@ -58,8 +60,10 @@
 }
 
 /* Dark (Midnight) tokens — applied via data-theme="midnight" */
+/* keep in sync with src/theme/tokens.ts — see tokens.sync.test.ts */
 [data-theme="midnight"] {
   --color-primary:            #00e479;
+  --color-primary-rgb:        0, 228, 121;
   --color-primary-container:  #00ff88;
   --color-on-primary:         #003919;
   --color-secondary:          #ecb1ff;

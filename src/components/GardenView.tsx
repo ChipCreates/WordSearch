@@ -141,7 +141,7 @@ export default function GardenView({ stars, level, unlockedAchievementsCount }: 
                             </h2>
                         </div>
                         <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--color-on-surface-variant)", maxWidth: 680, lineHeight: 1.5 }}>
-                            Water and nurture your bioluminescent collection using harvested SEEDS. Every level completed increases greenhouse vitality and oxygen output.
+                            Water and nurture your bioluminescent collection. Every level completed increases greenhouse vitality and oxygen output.
                         </p>
                     </div>
 
@@ -347,7 +347,7 @@ export default function GardenView({ stars, level, unlockedAchievementsCount }: 
                                             ) : (
                                                 <ShowerOutlined style={{ fontSize: 20 }} />
                                             )}
-                                            <span>{isWatered ? "Nurtured Today ✨" : "Water Sprout (10 SEEDS)"}</span>
+                                            <span>{isWatered ? "Nurtured Today ✨" : "Water Sprout"}</span>
                                         </button>
                                     )}
                                 </div>

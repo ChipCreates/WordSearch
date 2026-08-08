@@ -20,7 +20,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "speed-sprouter",
         name: "Speed Sprouter",
-        description: "Solve 50 puzzles in under 30 seconds each",
+        description: "Complete 5 puzzle levels",
         icon: "⚡",
         image: "/achievements/speed-sprouter.png",
         maxProgress: 5,
@@ -29,7 +29,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "word-weaver",
         name: "Word Weaver",
-        description: "Create 10 words of 8 letters or more in a single session",
+        description: "Progress through 5 puzzle levels to weave your lexicon",
         icon: "🕸️",
         image: "/achievements/word-weaver.png",
         maxProgress: 10,
@@ -38,7 +38,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "root-master",
         name: "Root Master",
-        description: "Connect words using the same root letter 100 times",
+        description: "Grow your root network across 10 completed levels",
         icon: "🌳",
         image: "/achievements/root-master.png",
         maxProgress: 100,
@@ -47,7 +47,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "solar-scribe",
         name: "Solar Scribe",
-        description: "Reach a daily streak of 30 days in the Greenhouse",
+        description: "Complete 30 puzzle levels in the Greenhouse",
         icon: "☀️",
         image: "/achievements/solar-scribe.png",
         maxProgress: 30,
@@ -56,7 +56,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "petal-poet",
         name: "Petal Poet",
-        description: "Collect every flower type in the Autumn biome",
+        description: "Discover 8 unique word categories",
         icon: "🍁",
         image: "/achievements/petal-poet.png",
         maxProgress: 8,
@@ -65,7 +65,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "night-bloomer",
         name: "Night Bloomer",
-        description: "Explore the greenhouse during Midnight mode",
+        description: "Complete your first puzzle level",
         icon: "🌙",
         image: "/achievements/night-bloomer.png",
         maxProgress: 1,
@@ -74,7 +74,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "verdant-voyager",
         name: "Verdant Voyager",
-        description: "Unlock all levels in the Ancient Forest world",
+        description: "Explore through 15 completed puzzle levels",
         icon: "🌲",
         image: "/achievements/world-traveler.png",
         maxProgress: 15,
@@ -83,7 +83,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "moss-mystic",
         name: "Moss Mystic",
-        description: "Use the 'Hint' spell without breaking your combo 10 times",
+        description: "Unlock mystical knowledge across 10 completed levels",
         icon: "🔮",
         image: "/achievements/moss-mystic.png",
         maxProgress: 10,
@@ -92,7 +92,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "bloom-herald",
         name: "Bloom Herald",
-        description: "Harvest your first 100 SEEDS in the conservatory",
+        description: "Harvest 100 SEEDS by earning puzzle stars",
         icon: "💰",
         image: "/achievements/bloom-herald.png",
         maxProgress: 100,
@@ -101,7 +101,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "daily-dew",
         name: "Daily Dew",
-        description: "Log in 7 consecutive days to water your sprouts",
+        description: "Nurture your sprouts through 7 completed puzzle levels",
         icon: "💧",
         image: "/achievements/daily-dew.png",
         maxProgress: 7,
@@ -110,7 +110,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "zenith-climber",
         name: "Zenith Climber",
-        description: "Reach Level 50 in Word Search",
+        description: "Reach Level 50 by completing puzzle levels",
         icon: "⛰️",
         image: "/achievements/seed-master.png",
         maxProgress: 50,
@@ -119,7 +119,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "midnight-sun",
         name: "Midnight Sun",
-        description: "Play in Midnight mode with 100% puzzle accuracy",
+        description: "Begin your journey by solving your first puzzle",
         icon: "☯️",
         image: "/achievements/midnight-sun.png",
         maxProgress: 1,
@@ -128,7 +128,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     {
         id: "static-charge",
         name: "Static Charge",
-        description: "Complete 5 puzzles back-to-back without errors",
+        description: "Charge your botanical energy across 5 completed levels",
         icon: "⚡",
         image: "/achievements/static-charge.png",
         maxProgress: 5,
