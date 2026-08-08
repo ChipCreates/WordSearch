@@ -79,11 +79,13 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         const { isDragging, startCell, currentTarget } = dragRef.current;
 
         const dpr = window.devicePixelRatio || 1;
-        const targetWidth  = Math.round(rect.width  * dpr);
-        const targetHeight = Math.round(rect.height * dpr);
+        const targetWidth  = Math.max(1, Math.round(rect.width  * dpr));
+        const targetHeight = Math.max(1, Math.round(rect.height * dpr));
+        let resized = false;
         if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
             canvas.width  = targetWidth;
             canvas.height = targetHeight;
+            resized = true;
         }
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, rect.width, rect.height);
@@ -206,31 +208,46 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             }
         }
         ctx.globalAlpha = 1;
+
+        if (resized) {
+            requestAnimationFrame(() => drawRef.current());
+        }
     };
-
-    // Trigger immediate draw on mount and schedule layout-settle redraws
-    useEffect(() => {
-        draw();
-        const t1 = setTimeout(() => draw(), 50);
-        const t2 = setTimeout(() => draw(), 200);
-        document.fonts.ready.then(() => draw());
-        return () => {
-            clearTimeout(t1);
-            clearTimeout(t2);
-        };
-    }, []);
-
-    useEffect(() => { draw(); }, [gridData, gridSize, foundLines, hintCell]);
 
     const drawRef = useRef(draw);
     drawRef.current = draw;
+
+    const schedulePaint = () => {
+        requestAnimationFrame(() => {
+            drawRef.current();
+            requestAnimationFrame(() => {
+                drawRef.current();
+            });
+        });
+    };
+
+    // Trigger multi-stage layout & GPU surface paints on mount and font load
+    useEffect(() => {
+        schedulePaint();
+        const t1 = setTimeout(() => schedulePaint(), 50);
+        const t2 = setTimeout(() => schedulePaint(), 180);
+        const t3 = setTimeout(() => schedulePaint(), 400);
+        document.fonts.ready.then(() => schedulePaint());
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+            clearTimeout(t3);
+        };
+    }, []);
+
+    useEffect(() => { schedulePaint(); }, [gridData, gridSize, foundLines, hintCell]);
 
     // Celebration rAF loop (pill → dot collapse)
     useEffect(() => {
         let rafId: number | null = null;
         if (!celebrate) {
             celebrateProgressRef.current = 0;
-            drawRef.current();
+            schedulePaint();
             return;
         }
         const start = performance.now();
@@ -252,7 +269,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         let rafId: number | null = null;
         const observer = new ResizeObserver(() => {
             if (rafId !== null) cancelAnimationFrame(rafId);
-            rafId = requestAnimationFrame(() => { drawRef.current(); rafId = null; });
+            rafId = requestAnimationFrame(() => { schedulePaint(); rafId = null; });
         });
         observer.observe(canvas);
         return () => { observer.disconnect(); if (rafId !== null) cancelAnimationFrame(rafId); };
@@ -372,6 +389,8 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             )}
             <canvas
                 ref={canvasRef}
+                width={360}
+                height={360}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
