@@ -512,13 +512,6 @@ export default function App() {
                                             );
                                         })}
                                     </div>
-
-                                    {/* Card Footer Biome indicator */}
-                                    <div style={{ padding: "12px 16px", background: "rgba(0, 0, 0, 0.2)", borderTop: "1px solid var(--glass-border)", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "0 0 1.25rem 1.25rem" }}>
-                                        <span style={{ fontSize: "0.8rem", color: "var(--color-on-surface-variant)", fontWeight: 600 }}>
-                                            Biome Category: <strong style={{ color: "var(--color-primary)" }}>{category || "Botanical"}</strong>
-                                        </span>
-                                    </div>
                                 </div>
                             </div>
                         </>
