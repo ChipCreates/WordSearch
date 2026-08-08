@@ -48,3 +48,26 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_puzzle_words_never_panics() {
+        for level in 1..=50 {
+            for tier in ["standard", "challenging"] {
+                let puzzle = get_puzzle_words(5, 10, level, tier.to_string());
+                assert!(!puzzle.category.is_empty());
+            }
+        }
+    }
+
+    #[test]
+    fn test_validate_word_edge_cases() {
+        assert!(!validate_word("".to_string()));
+        assert!(!validate_word("12345".to_string()));
+        assert!(!validate_word("!@#$%^".to_string()));
+        assert!(!validate_word("A".repeat(100)));
+    }
+}
