@@ -15,6 +15,27 @@ import AboutDialog from "./components/AboutDialog";
 import LevelsDialog from "./components/LevelsDialog";
 import AchievementsView from "./components/AchievementsView";
 import GardenView from "./components/GardenView";
+import EcoLeaf from "./components/icons/EcoLeaf";
+import {
+    VideogameAssetOutlined,
+    EmojiEventsOutlined,
+    DarkModeOutlined,
+    LightModeOutlined,
+    SettingsOutlined,
+    SpaOutlined,
+    GridViewOutlined,
+    AutoFixHighOutlined,
+    ShuffleOutlined,
+    RefreshOutlined,
+    VolumeOffOutlined,
+    VolumeUpOutlined,
+    MusicOffOutlined,
+    MusicNoteOutlined,
+    HelpOutlineOutlined,
+    CheckCircleOutlined,
+    LockOutlined,
+    FormatListBulletedOutlined,
+} from "@mui/icons-material";
 
 const THEME_STORAGE_KEY = "wordsearch.themeMode";
 
@@ -170,7 +191,7 @@ export default function App() {
                 <header className="ws-top-nav">
                     <div className="ws-top-nav__inner">
                         <div className="ws-top-nav__brand" onClick={() => setActiveTab("play")}>
-                            <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 32 }}>eco</span>
+                            <EcoLeaf style={{ fontSize: 32, color: "var(--color-primary)" }} />
                             <span className="ws-top-nav__logo-text">Word Sprout</span>
                         </div>
 
@@ -180,21 +201,21 @@ export default function App() {
                                 className={`ws-top-nav__link ${activeTab === "play" ? "ws-top-nav__link--active" : ""}`}
                                 onClick={() => { playSfx("click"); setActiveTab("play"); }}
                             >
-                                <span className="material-symbols-outlined" style={{ fontSize: 18, marginRight: 4 }}>videogame_asset</span>
+                                <VideogameAssetOutlined style={{ fontSize: 18, marginRight: 4, verticalAlign: "middle" }} />
                                 Play
                             </button>
                             <button
                                 className={`ws-top-nav__link ${activeTab === "garden" ? "ws-top-nav__link--active" : ""}`}
                                 onClick={() => { playSfx("click"); setActiveTab("garden"); }}
                             >
-                                <span className="material-symbols-outlined" style={{ fontSize: 18, marginRight: 4 }}>eco</span>
+                                <EcoLeaf style={{ fontSize: 18, marginRight: 4, verticalAlign: "middle" }} />
                                 Garden
                             </button>
                             <button
                                 className={`ws-top-nav__link ${activeTab === "achievements" ? "ws-top-nav__link--active" : ""}`}
                                 onClick={() => { playSfx("click"); setActiveTab("achievements"); }}
                             >
-                                <span className="material-symbols-outlined" style={{ fontSize: 18, marginRight: 4 }}>emoji_events</span>
+                                <EmojiEventsOutlined style={{ fontSize: 18, marginRight: 4, verticalAlign: "middle" }} />
                                 Achievements
                             </button>
                         </nav>
@@ -216,9 +237,7 @@ export default function App() {
                                 aria-label="Toggle Theme Mode"
                                 title={`Switch to ${themeMode === "sprout" ? "Midnight Dark" : "Sprout Light"} Theme`}
                             >
-                                <span className="material-symbols-outlined">
-                                    {themeMode === "sprout" ? "dark_mode" : "light_mode"}
-                                </span>
+                                {themeMode === "sprout" ? <DarkModeOutlined /> : <LightModeOutlined />}
                             </button>
 
                             {/* Settings Modal Trigger */}
@@ -228,7 +247,7 @@ export default function App() {
                                 aria-label="Settings"
                                 title="Settings"
                             >
-                                <span className="material-symbols-outlined">settings</span>
+                                <SettingsOutlined />
                             </button>
                         </div>
                     </div>
@@ -239,7 +258,7 @@ export default function App() {
                     {/* User profile section */}
                     <div className="ws-side-nav__profile">
                         <div className="ws-side-nav__avatar-box">
-                            <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 28 }}>eco</span>
+                            <EcoLeaf style={{ fontSize: 28, color: "var(--color-primary)" }} />
                         </div>
                         <div>
                             <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-primary)" }}>Sprout Master</div>
@@ -253,7 +272,7 @@ export default function App() {
                             Active Biome Category
                         </div>
                         <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-primary)", display: "flex", alignItems: "center", gap: 6 }}>
-                            <span className="material-symbols-outlined text-secondary" style={{ fontSize: 20 }}>spa</span>
+                            <SpaOutlined style={{ fontSize: 20, color: "var(--color-secondary)" }} />
                             {category || "Botanical"}
                         </div>
                         <button
@@ -261,7 +280,7 @@ export default function App() {
                             onClick={() => { playSfx("click"); setLevelsOpen(true); }}
                             style={{ width: "100%", justifyContent: "center", marginTop: 4, padding: "6px 12px", fontSize: "0.8rem" }}
                         >
-                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>grid_view</span>
+                            <GridViewOutlined style={{ fontSize: 16 }} />
                             Level Map & Categories
                         </button>
                     </div>
@@ -277,7 +296,7 @@ export default function App() {
                                 onClick={() => { playSfx("click"); nextLevel(); }}
                                 style={{ width: "100%", justifyContent: "center", padding: "10px 16px", fontSize: "0.95rem" }}
                             >
-                                <span className="material-symbols-outlined filled">eco</span>
+                                <EcoLeaf />
                                 <span>Next Level 🌱</span>
                             </button>
                         ) : (
@@ -286,17 +305,17 @@ export default function App() {
                                 onClick={() => { playSfx("click"); handleRevealHint(); }}
                                 style={{ width: "100%", justifyContent: "center", padding: "10px 16px", fontSize: "0.95rem" }}
                             >
-                                <span className="material-symbols-outlined filled">magic_button</span>
+                                <AutoFixHighOutlined />
                                 <span>Reveal Root</span>
                             </button>
                         )}
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                             <button className="ws-control-btn" onClick={() => { playSfx("click"); reshuffle(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
-                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>shuffle</span>
+                                <ShuffleOutlined style={{ fontSize: 16 }} />
                                 <span>Shuffle</span>
                             </button>
                             <button className="ws-control-btn" onClick={() => { playSfx("click"); retryLevel(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
-                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>refresh</span>
+                                <RefreshOutlined style={{ fontSize: 16 }} />
                                 <span>Restart</span>
                             </button>
                         </div>
@@ -323,7 +342,7 @@ export default function App() {
                                         cursor: "pointer"
                                     }}
                                 >
-                                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{sfxMuted ? "volume_off" : "volume_up"}</span>
+                                    {sfxMuted ? <VolumeOffOutlined style={{ fontSize: 18 }} /> : <VolumeUpOutlined style={{ fontSize: 18 }} />}
                                 </button>
                                 <button
                                     onClick={toggleMusicMuted}
@@ -341,7 +360,7 @@ export default function App() {
                                         cursor: "pointer"
                                     }}
                                 >
-                                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{musicMuted ? "music_off" : "music_note"}</span>
+                                    {musicMuted ? <MusicOffOutlined style={{ fontSize: 18 }} /> : <MusicNoteOutlined style={{ fontSize: 18 }} />}
                                 </button>
                             </div>
                         </div>
@@ -349,7 +368,7 @@ export default function App() {
                             onClick={() => setAboutOpen(true)}
                             style={{ background: "none", border: "none", color: "var(--color-on-surface-variant)", fontSize: "0.8rem", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "6px 8px" }}
                         >
-                            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>help_outline</span> About & How to Play
+                            <HelpOutlineOutlined style={{ fontSize: 18, verticalAlign: "middle" }} /> About & How to Play
                         </button>
                     </div>
                 </aside>
@@ -452,9 +471,9 @@ export default function App() {
                                                 >
                                                     <span>{word.toUpperCase()}</span>
                                                     {isFound ? (
-                                                        <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 20 }}>check_circle</span>
+                                                        <CheckCircleOutlined style={{ fontSize: 20, color: "var(--color-primary)" }} />
                                                     ) : (
-                                                        <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: 20 }}>lock</span>
+                                                        <LockOutlined style={{ fontSize: 20, color: "var(--color-on-surface-variant)" }} />
                                                     )}
                                                 </div>
                                             );
@@ -489,7 +508,7 @@ export default function App() {
                         className={`ws-bottom-nav__item ${activeTab === "play" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("play"); }}
                     >
-                        <span className="material-symbols-outlined filled">eco</span>
+                        <EcoLeaf />
                         <span>Play</span>
                     </button>
 
@@ -497,7 +516,7 @@ export default function App() {
                         className="ws-bottom-nav__item"
                         onClick={() => { playSfx("click"); setLevelsOpen(true); }}
                     >
-                        <span className="material-symbols-outlined">format_list_bulleted</span>
+                        <FormatListBulletedOutlined />
                         <span>Levels</span>
                     </button>
 
@@ -505,7 +524,7 @@ export default function App() {
                         className={`ws-bottom-nav__item ${activeTab === "garden" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("garden"); }}
                     >
-                        <span className="material-symbols-outlined">eco</span>
+                        <EcoLeaf />
                         <span>Garden</span>
                     </button>
 
@@ -513,7 +532,7 @@ export default function App() {
                         className={`ws-bottom-nav__item ${activeTab === "achievements" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("achievements"); }}
                     >
-                        <span className="material-symbols-outlined">emoji_events</span>
+                        <EmojiEventsOutlined />
                         <span>Trophies</span>
                     </button>
 
@@ -521,7 +540,7 @@ export default function App() {
                         className="ws-bottom-nav__item"
                         onClick={() => { playSfx("click"); setSettingsOpen(true); }}
                     >
-                        <span className="material-symbols-outlined">settings</span>
+                        <SettingsOutlined />
                         <span>Settings</span>
                     </button>
                 </nav>

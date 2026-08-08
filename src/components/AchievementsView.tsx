@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { EmojiEventsOutlined, CheckCircleOutlined, LockOutlined } from "@mui/icons-material";
 import { ACHIEVEMENTS, AchievementStats } from "../achievements";
 
 type FilterType = "all" | "unlocked" | "locked";
@@ -29,7 +30,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
                     <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                            <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 32 }}>emoji_events</span>
+                            <EmojiEventsOutlined style={{ fontSize: 32, color: "var(--color-primary)" }} />
                             <h2 className="glow-text-emerald" style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.75rem", fontWeight: 800, color: "var(--color-primary)" }}>
                                 Achievements & Cultivation
                             </h2>
@@ -152,9 +153,9 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                             {ach.name}
                                         </h3>
                                         {isUnlocked ? (
-                                            <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 20 }}>check_circle</span>
+                                            <CheckCircleOutlined style={{ fontSize: 20, color: "var(--color-primary)" }} />
                                         ) : (
-                                            <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: 18 }}>lock</span>
+                                            <LockOutlined style={{ fontSize: 18, color: "var(--color-on-surface-variant)" }} />
                                         )}
                                     </div>
                                     <p style={{ margin: "6px 0 0 0", fontSize: "0.85rem", color: "var(--color-on-surface-variant)", lineHeight: 1.4 }}>

@@ -1,17 +1,59 @@
 import { vi, beforeEach } from "vitest";
 
-// Mock fetch for backend dictionary loading in node/jsdom environment
+// Polyfill document.fonts for jsdom
+if (typeof document !== "undefined" && !document.fonts) {
+    Object.defineProperty(document, "fonts", {
+        value: {
+            ready: Promise.resolve(),
+        },
+        writable: true,
+    });
+}
+
+if (typeof window !== "undefined") {
+    if (!window.ResizeObserver) {
+        window.ResizeObserver = class {
+            observe() {}
+            unobserve() {}
+            disconnect() {}
+        };
+    }
+    if (typeof HTMLCanvasElement !== "undefined" && !HTMLCanvasElement.prototype.getContext) {
+        HTMLCanvasElement.prototype.getContext = (() => ({
+            clearRect: () => {},
+            fillRect: () => {},
+            fillText: () => {},
+            strokeText: () => {},
+            beginPath: () => {},
+            moveTo: () => {},
+            lineTo: () => {},
+            stroke: () => {},
+            fill: () => {},
+            save: () => {},
+            restore: () => {},
+            scale: () => {},
+            translate: () => {},
+            rotate: () => {},
+            arc: () => {},
+            measureText: () => ({ width: 10 } as TextMetrics),
+        })) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    }
+}
+
+// Mock fetch for backend dictionary loading and audio assets in node/jsdom environment
 globalThis.fetch = vi.fn().mockImplementation((url: string) => {
     if (typeof url === "string" && url.includes("dictionary.json")) {
         return Promise.resolve({
             ok: true,
             json: async () => [],
-        } as Response);
+            blob: async () => new Blob([]),
+        } as unknown as Response);
     }
     return Promise.resolve({
         ok: true,
         json: async () => ({}),
-    } as Response);
+        blob: async () => new Blob([]),
+    } as unknown as Response);
 });
 
 // Polyfill/mock localStorage for unit tests

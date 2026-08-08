@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ShowerOutlined, WaterDropOutlined } from "@mui/icons-material";
+import EcoLeaf from "./icons/EcoLeaf";
 
 type Props = {
     stars: number; // Seed count multiplier
@@ -133,7 +135,7 @@ export default function GardenView({ stars, level, unlockedAchievementsCount }: 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
                     <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                            <span className="material-symbols-outlined filled text-primary" style={{ fontSize: 32 }}>eco</span>
+                            <EcoLeaf style={{ fontSize: 32, color: "var(--color-primary)" }} />
                             <h2 className="glow-text-emerald" style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.75rem", fontWeight: 800, color: "var(--color-primary)" }}>
                                 Digital Conservatory & Botanical Sanctuary
                             </h2>
@@ -340,9 +342,11 @@ export default function GardenView({ stars, level, unlockedAchievementsCount }: 
                                                 transition: "all 0.2s ease",
                                             }}
                                         >
-                                            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                                                {isWatered ? "water_drop" : "shower"}
-                                            </span>
+                                            {isWatered ? (
+                                                <WaterDropOutlined style={{ fontSize: 20 }} />
+                                            ) : (
+                                                <ShowerOutlined style={{ fontSize: 20 }} />
+                                            )}
                                             <span>{isWatered ? "Nurtured Today ✨" : "Water Sprout (10 SEEDS)"}</span>
                                         </button>
                                     )}
