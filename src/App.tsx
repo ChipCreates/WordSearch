@@ -395,6 +395,18 @@ export default function App() {
                         />
                     ) : (
                         <>
+                            {/* Mobile Compact Header Bar (shown on mobile screens < 768px) */}
+                            <div className="ws-mobile-header-bar">
+                                <div className="ws-mobile-header-bar__left">
+                                    <span className="ws-mobile-header-bar__level">Lvl {level}</span>
+                                    <span className="ws-mobile-header-bar__cat">{category || "Botanical"}</span>
+                                </div>
+                                <div className="ws-mobile-header-bar__right">
+                                    <span className="ws-mobile-header-bar__progress">{foundCount}/{wordsToFind.length}</span>
+                                    <span className="ws-mobile-header-bar__seeds">🌱 {stars * 100}</span>
+                                </div>
+                            </div>
+
                             {/* Daily Goal Header Toolbar */}
                             <div className="glass-panel ws-daily-goal-card">
                                 <div style={{ flex: 1 }}>
@@ -435,7 +447,7 @@ export default function App() {
                             {/* Gameplay Grid & Found Words Side Panel */}
                             <div className="ws-gameplay-grid">
                                 {/* Left: Canvas Word Grid Panel */}
-                                <div className="glass-panel ws-game-board-panel">
+                                <div className="glass-panel ws-game-board-panel" style={{ flexDirection: "column" }}>
                                     <GameCanvas
                                         gridSize={gridSize}
                                         gridData={gridData}
@@ -445,6 +457,18 @@ export default function App() {
                                         onSwipe={() => playSfx("swipe")}
                                         celebrate={levelComplete}
                                     />
+                                    {/* Mobile Tactical Toolbar */}
+                                    <div className="ws-mobile-tactical-bar">
+                                        <button className="ws-mobile-tool-btn" onClick={() => { playSfx("click"); handleRevealHint(); }}>
+                                            <AutoFixHighOutlined style={{ fontSize: 16 }} /> Hint
+                                        </button>
+                                        <button className="ws-mobile-tool-btn" onClick={() => { playSfx("click"); reshuffle(); }}>
+                                            <ShuffleOutlined style={{ fontSize: 16 }} /> Shuffle
+                                        </button>
+                                        <button className="ws-mobile-tool-btn" onClick={() => { playSfx("click"); retryLevel(); }}>
+                                            <RefreshOutlined style={{ fontSize: 16 }} /> Restart
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Right: Found Words List Panel */}

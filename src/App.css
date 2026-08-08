@@ -707,16 +707,126 @@ body {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 10px;
-    max-height: 150px;
+    padding: 6px;
+    max-height: 120px;
     overflow-y: auto;
+    justify-content: center;
   }
 
   .ws-found-word-card {
-    padding: 6px 14px;
-    font-size: 0.8rem;
+    padding: 5px 12px;
+    font-size: 0.78rem;
     border-radius: var(--radius-full);
     letter-spacing: 0.08em;
+  }
+}
+
+/* ── Mobile Compact Integrated Header & Tactical Bar ──────────────────────── */
+.ws-mobile-header-bar {
+  display: none;
+}
+
+.ws-mobile-tactical-bar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .ws-daily-goal-card {
+    display: none !important;
+  }
+
+  .ws-mobile-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    margin-bottom: 8px;
+    border-radius: var(--radius-xl);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .ws-mobile-header-bar__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ws-mobile-header-bar__level {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    background: rgba(0, 228, 121, 0.15);
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(0, 228, 121, 0.3);
+  }
+
+  .ws-mobile-header-bar__cat {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--color-on-surface);
+  }
+
+  .ws-mobile-header-bar__right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .ws-mobile-header-bar__progress {
+    color: var(--color-primary);
+  }
+
+  .ws-mobile-header-bar__seeds {
+    color: var(--color-secondary);
+  }
+
+  .ws-mobile-tactical-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .ws-mobile-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--color-on-surface);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  .ws-planter {
+    max-width: min(84vw, min(48vh, 320px)) !important;
+    margin: 0 auto;
+  }
+
+  .ws-game-board-panel {
+    padding: 8px !important;
+  }
+
+  .ws-found-words-header {
+    display: none !important;
+  }
+
+  .ws-found-words-panel {
+    border-radius: var(--radius-xl) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 }
 
