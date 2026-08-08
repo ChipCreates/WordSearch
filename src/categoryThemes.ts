@@ -63,19 +63,39 @@ function pattern(file: string, tile = "420px"): Theme {
 // Instruments) -- same art, just re-keyed.
 export const CATEGORY_THEMES: Record<string, Theme> = {
     Animals: pattern("animals.jpg"),
+    Insects: pattern("animals.jpg"),
+    "Mythical Creatures": pattern("animals.jpg"),
+
     Food: pattern("food.jpg"),
+    Fruits: pattern("food.jpg"),
+    Desserts: pattern("food.jpg"),
+    "Cooking Techniques": pattern("food.jpg"),
+
     Nature: scene("nature.jpg"),
+    Gardening: scene("nature.jpg"),
+    "Geology/Minerals": scene("nature.jpg"),
+    "Mycology (Fungi)": scene("nature.jpg"),
+
     Weather: scene("weather.jpg"),
+    "Horror Themes": scene("weather.jpg"),
+
     "Ocean Life": scene("ocean.jpg"),
-    // Planet sits left-of-center in the source; bias the crop toward it.
+    "Nautical Terms": scene("ocean.jpg"),
+
     "Space & Astronomy": scene("space.jpg", "40% center"),
-    // Portrait-orientation source (unlike the other, landscape, picks) --
-    // cover crops far less aggressively on a phone viewport as a result,
-    // so a plain center position already keeps the subject intact.
+    "Astrology/Zodiac": scene("space.jpg", "40% center"),
+
     Sports: scene("sports.jpg"),
+
     Household: scene("household.jpg"),
+    "Kitchen Items": scene("household.jpg"),
+    Tools: scene("household.jpg"),
+
     Vehicles: scene("transportation.jpg"),
+
     "Musical Instruments": scene("music.svg"),
+    "Musical Genres": scene("music.svg"),
+    "Dance Styles": scene("music.svg"),
 };
 
 export const DEFAULT_THEME = CATEGORY_THEMES.Nature;
