@@ -48,7 +48,7 @@ export default function App() {
     const {
         level, stars, levelComplete, category,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
-        submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel,
+        submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
         categoriesSeen, foundDiagonal,
@@ -612,6 +612,7 @@ export default function App() {
                 onClose={() => setSeedStoreOpen(false)}
                 seeds={stars * 100}
                 onRedeemHint={handleRevealHint}
+                onSpendSeeds={spendSeeds}
             />
 
             <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />

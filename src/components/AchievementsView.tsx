@@ -101,7 +101,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                     return (
                         <div
                             key={ach.id}
-                            className="glass-panel"
+                            className={`glass-panel ${isUnlocked ? "glow-emerald" : ""}`}
                             style={{
                                 padding: 20,
                                 borderRadius: "1.25rem",
@@ -111,6 +111,9 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                 gap: 16,
                                 borderLeft: `4px solid ${isUnlocked ? "var(--color-primary)" : "rgba(255,255,255,0.1)"}`,
                                 opacity: isUnlocked ? 1 : 0.7,
+                                boxShadow: isUnlocked
+                                    ? "0 0 24px rgba(0, 228, 121, 0.22), var(--glass-shadow)"
+                                    : "var(--glass-shadow)",
                                 transition: "transform 0.2s ease, box-shadow 0.2s ease",
                             }}
                         >
@@ -120,13 +123,15 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                         width: 64,
                                         height: 64,
                                         borderRadius: "1.1rem",
-                                        background: isUnlocked ? "rgba(0, 228, 121, 0.12)" : "rgba(255, 255, 255, 0.04)",
-                                        border: `1px solid ${isUnlocked ? "rgba(0, 228, 121, 0.35)" : "rgba(255, 255, 255, 0.08)"}`,
+                                        background: isUnlocked
+                                            ? "radial-gradient(circle, rgba(0, 228, 121, 0.25) 0%, rgba(0, 228, 121, 0.08) 100%)"
+                                            : "rgba(255, 255, 255, 0.04)",
+                                        border: `1px solid ${isUnlocked ? "rgba(0, 228, 121, 0.45)" : "rgba(255, 255, 255, 0.08)"}`,
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        boxShadow: isUnlocked ? "0 0 20px rgba(0, 228, 121, 0.25)" : "none",
-                                        filter: isUnlocked ? "none" : "grayscale(100%) opacity(60%)",
+                                        boxShadow: isUnlocked ? "0 0 24px rgba(0, 228, 121, 0.35)" : "none",
+                                        filter: isUnlocked ? "none" : "grayscale(100%) opacity(50%)",
                                         flexShrink: 0,
                                         overflow: "hidden",
                                         padding: 6,
@@ -140,11 +145,13 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                                 width: "100%",
                                                 height: "100%",
                                                 objectFit: "contain",
-                                                filter: isUnlocked ? "drop-shadow(0 0 8px rgba(0,228,121,0.6))" : "none",
+                                                filter: isUnlocked ? "drop-shadow(0 0 10px rgba(0, 228, 121, 0.75))" : "none",
                                             }}
                                         />
                                     ) : (
-                                        <span style={{ fontSize: "2rem" }}>{ach.icon}</span>
+                                        <span style={{ fontSize: "2rem", textShadow: isUnlocked ? "0 0 14px rgba(0, 228, 121, 0.8)" : "none" }}>
+                                            {ach.icon}
+                                        </span>
                                     )}
                                 </div>
 

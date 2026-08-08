@@ -13,10 +13,24 @@ type Props = {
     onClose: () => void;
     seeds: number;
     onRedeemHint?: () => void;
+    onSpendSeeds?: (cost: number) => boolean;
 };
 
-export default function SeedStoreDialog({ open, onClose, seeds, onRedeemHint }: Props) {
+export default function SeedStoreDialog({ open, onClose, seeds, onRedeemHint, onSpendSeeds }: Props) {
     const isMobile = useMediaQuery("(max-width: 767px)");
+
+    const handleRedeem = (cost: number, onSuccess: () => void) => {
+        if (onSpendSeeds) {
+            const success = onSpendSeeds(cost);
+            if (success) {
+                onSuccess();
+            } else {
+                alert("Not enough seeds harvested yet! Keep finding words to earn seeds. 🌱");
+            }
+        } else {
+            onSuccess();
+        }
+    };
 
     const storeItems = [
         {
@@ -26,8 +40,10 @@ export default function SeedStoreDialog({ open, onClose, seeds, onRedeemHint }: 
             cost: 100,
             icon: <AutoFixHighIcon sx={{ fontSize: 32, color: "#00e479" }} />,
             action: () => {
-                if (onRedeemHint) onRedeemHint();
-                onClose();
+                handleRedeem(100, () => {
+                    if (onRedeemHint) onRedeemHint();
+                    onClose();
+                });
             },
         },
         {
@@ -37,7 +53,9 @@ export default function SeedStoreDialog({ open, onClose, seeds, onRedeemHint }: 
             cost: 300,
             icon: <LocalFloristIcon sx={{ fontSize: 32, color: "#f4c95d" }} />,
             action: () => {
-                alert("Fertilizer applied! Your garden plants are blooming 🌺");
+                handleRedeem(300, () => {
+                    alert("Botanical Fertilizer redeemed! Your garden plants are blooming 🌺");
+                });
             },
         },
         {
@@ -47,7 +65,9 @@ export default function SeedStoreDialog({ open, onClose, seeds, onRedeemHint }: 
             cost: 500,
             icon: <PaletteIcon sx={{ fontSize: 32, color: "#00f0ff" }} />,
             action: () => {
-                alert("Bioluminescent Aura activated! ✨");
+                handleRedeem(500, () => {
+                    alert("Bioluminescent Aura activated! ✨");
+                });
             },
         },
         {
@@ -57,7 +77,9 @@ export default function SeedStoreDialog({ open, onClose, seeds, onRedeemHint }: 
             cost: 1000,
             icon: <EmojiEventsIcon sx={{ fontSize: 32, color: "#ecb1ff" }} />,
             action: () => {
-                alert("Golden Sprout Crest equipped to your profile 🏆");
+                handleRedeem(1000, () => {
+                    alert("Golden Sprout Crest equipped to your profile 🏆");
+                });
             },
         },
     ];

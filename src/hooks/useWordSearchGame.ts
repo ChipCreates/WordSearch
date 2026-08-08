@@ -310,10 +310,19 @@ export function useWordSearchGame() {
         setStars(0);
     };
 
+    const spendSeeds = useCallback((cost: number): boolean => {
+        const starCost = Math.ceil(cost / 100);
+        if (stars >= starCost) {
+            setStars(s => Math.max(0, s - starCost));
+            return true;
+        }
+        return false;
+    }, [stars]);
+
     return {
         level, stars, status, levelComplete, category,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
-        submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel,
+        submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
         categoriesSeen, foundDiagonal,
