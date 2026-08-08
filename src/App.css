@@ -337,8 +337,8 @@ body {
 
 /* ── Main Layout Container ─────────────────────────────────────────────────── */
 .ws-main-layout {
-  padding-top: 96px;
-  padding-bottom: 24px;
+  padding-top: 56px;
+  padding-bottom: 72px;
   height: 100vh;
   width: 100%;
   max-width: 1440px;
@@ -348,6 +348,8 @@ body {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (min-width: 1280px) {
@@ -577,12 +579,16 @@ body {
 
 /* ── Footer ────────────────────────────────────────────────────────────────── */
 .ws-footer {
-  margin-top: var(--space-md);
-  padding: var(--space-md) 0 var(--space-xs) 0;
+  margin-top: auto;
+  padding: 10px 0;
   border-top: 1px solid var(--glass-border);
   text-align: center;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--color-on-surface-variant);
+}
+
+.ws-footer p {
+  margin: 0;
 }
 
 /* ── Winning Success Overlay & Celebration Animations ────────────────────── */
@@ -764,8 +770,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 5px 12px;
-    margin-bottom: 6px;
+    padding: 6px 14px;
+    margin-bottom: 16px;
     border-radius: var(--radius-xl);
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
