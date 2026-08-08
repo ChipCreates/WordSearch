@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { EmojiEventsOutlined, CheckCircleOutlined, LockOutlined } from "@mui/icons-material";
 import { ACHIEVEMENTS, AchievementStats } from "../achievements";
+import { assetUrl } from "../categoryThemes";
 
 type FilterType = "all" | "unlocked" | "locked";
 
@@ -133,7 +134,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                 >
                                     {ach.image ? (
                                         <img
-                                            src={ach.image}
+                                            src={ach.image.startsWith("http") ? ach.image : assetUrl(ach.image.startsWith("/") ? ach.image.slice(1) : ach.image)}
                                             alt={ach.name}
                                             style={{
                                                 width: "100%",

@@ -23,6 +23,8 @@ const medallionPulse = keyframes`
   50% { transform: scale(1.12); }
 `;
 
+import { assetUrl } from "../categoryThemes";
+
 type Props = {
     achievement: Achievement | null;
     onDismiss: () => void;
@@ -123,7 +125,7 @@ export default function AchievementBanner({ achievement, onDismiss }: Props) {
                 >
                     {achievement.image ? (
                         <img
-                            src={achievement.image}
+                            src={achievement.image.startsWith("http") ? achievement.image : assetUrl(achievement.image.startsWith("/") ? achievement.image.slice(1) : achievement.image)}
                             alt={achievement.name}
                             style={{
                                 width: "100%",

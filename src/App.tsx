@@ -5,6 +5,7 @@ import { sproutLightTheme, sproutDarkTheme } from "./theme";
 import { useWordSearchGame } from "./hooks/useWordSearchGame";
 import { useAudio } from "./hooks/useAudio";
 import { CATEGORY_THEMES, DEFAULT_THEME } from "./categoryThemes";
+import { CATEGORY_NAMES } from "./backend";
 import { DIRECTIONS } from "./constants";
 
 import GameCanvas from "./components/GameCanvas";
@@ -383,7 +384,7 @@ export default function App() {
                                 stars,
                                 categoriesSeen: categoriesSeen.size,
                                 foundDiagonal,
-                                totalCategories: Object.keys(CATEGORY_THEMES).length,
+                                totalCategories: CATEGORY_NAMES.length,
                             }}
                         />
                     ) : activeTab === "garden" ? (

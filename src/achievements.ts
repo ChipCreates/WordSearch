@@ -96,7 +96,7 @@ export const ACHIEVEMENTS: Achievement[] = [
         icon: "💰",
         image: "/achievements/bloom-herald.png",
         maxProgress: 100,
-        getProgress: (stats) => Math.min(100, stats.stars * 100),
+        getProgress: (stats) => Math.min(100, stats.stars),
     },
     {
         id: "daily-dew",

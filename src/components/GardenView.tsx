@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ShowerOutlined, WaterDropOutlined } from "@mui/icons-material";
+import { assetUrl } from "../categoryThemes";
 import EcoLeaf from "./icons/EcoLeaf";
 
 type Props = {
@@ -249,7 +250,7 @@ export default function GardenView({ stars, level, unlockedAchievementsCount }: 
                             >
                                 {plant.image ? (
                                     <img
-                                        src={plant.image}
+                                        src={plant.image.startsWith("http") ? plant.image : assetUrl(plant.image.startsWith("/") ? plant.image.slice(1) : plant.image)}
                                         alt={plant.name}
                                         style={{
                                             maxHeight: "100%",
