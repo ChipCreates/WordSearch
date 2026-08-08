@@ -25,9 +25,10 @@ export default function App() {
     const {
         level, stars, levelComplete, category,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
-        submitSelection, nextLevel, restart,
+        submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
+        categoriesSeen, foundDiagonal,
     } = useWordSearchGame();
 
     const {
@@ -290,11 +291,11 @@ export default function App() {
                             </button>
                         )}
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                            <button className="ws-control-btn" onClick={() => { playSfx("click"); restart(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                            <button className="ws-control-btn" onClick={() => { playSfx("click"); reshuffle(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>shuffle</span>
                                 <span>Shuffle</span>
                             </button>
-                            <button className="ws-control-btn" onClick={() => { playSfx("click"); restart(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                            <button className="ws-control-btn" onClick={() => { playSfx("click"); retryLevel(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>refresh</span>
                                 <span>Restart</span>
                             </button>
@@ -361,8 +362,8 @@ export default function App() {
                             stats={{
                                 levelsCompleted: level - 1,
                                 stars,
-                                categoriesSeen: 3,
-                                foundDiagonal: true,
+                                categoriesSeen: categoriesSeen.size,
+                                foundDiagonal,
                                 totalCategories: Object.keys(CATEGORY_THEMES).length,
                             }}
                         />
@@ -561,8 +562,8 @@ export default function App() {
                 open={levelsOpen}
                 currentLevel={level}
                 onClose={() => setLevelsOpen(false)}
-                onSelectLevel={() => {
-                    restart();
+                onSelectLevel={(lvl) => {
+                    goToLevel(lvl);
                 }}
             />
 

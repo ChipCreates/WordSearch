@@ -294,6 +294,16 @@ export function useWordSearchGame() {
         }
     };
 
+    const goToLevel = (lvl: number) => setLevel(lvl);
+    const reshuffle = () => {
+        initGame();
+    };
+    const retryLevel = () => {
+        setFoundWords({});
+        setFoundLines([]);
+        setLevelComplete(false);
+    };
+
     const nextLevel = () => setLevel(l => l + 1);
     const restart = () => {
         setLevel(1);
@@ -303,8 +313,9 @@ export function useWordSearchGame() {
     return {
         level, stars, status, levelComplete, category,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
-        submitSelection, nextLevel, restart,
+        submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
+        categoriesSeen, foundDiagonal,
     };
 }
