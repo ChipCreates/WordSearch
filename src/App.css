@@ -1,0 +1,949 @@
+/* ── Verdant Sprout Design System ──────────────────────────────────────────── */
+
+/* Light (Sprout) tokens */
+/* keep in sync with src/theme/tokens.ts — see tokens.sync.test.ts */
+:root {
+  --color-primary:            #0f5238;
+  --color-primary-rgb:        15, 82, 56;
+  --color-primary-container:  #2d6a4f;
+  --color-on-primary:         #ffffff;
+  --color-secondary:          #1f6d1a;
+  --color-secondary-container:#a4f792;
+  --color-tertiary:           #621cab;
+  --color-tertiary-container: #7b3cc4;
+  --color-on-tertiary:        #ffffff;
+  --color-surface:            #fefae8;
+  --color-surface-dim:        #dedaca;
+  --color-surface-container:  #f2eedd;
+  --color-surface-container-low: #f8f4e3;
+  --color-surface-container-high: #ece8d8;
+  --color-on-surface:         #1d1c12;
+  --color-on-surface-variant: #404943;
+  --color-outline:            #707973;
+  --color-outline-variant:    #bfc9c1;
+  --color-error:              #ba1a1a;
+  --color-accent-gold:        #f4c95d;
+
+  --glass-bg: rgba(242, 238, 221, 0.75);
+  --glass-border: rgba(15, 82, 56, 0.15);
+  --glass-shadow: 0 4px 20px rgba(0,0,0,0.05);
+
+  /* Scrim for category background images */
+  --scrim: linear-gradient(
+    rgba(240,236,220,0.72) 0%,
+    rgba(240,236,220,0.25) 18%,
+    rgba(240,236,220,0.25) 68%,
+    rgba(240,236,220,0.75) 100%
+  );
+
+  /* Typography */
+  --font-headline: 'Quicksand', sans-serif;
+  --font-body:     'Work Sans', sans-serif;
+  --font-grid:     'Space Grotesk', sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+  --grid-gutter: 24px;
+  --safe-margin: 20px;
+
+  /* Shape */
+  --radius-sm:   0.25rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-2xl:  1.25rem;
+  --radius-full: 9999px;
+  --radius-leaf: 2rem 0.5rem 2rem 0.5rem;
+}
+
+/* Dark (Midnight) tokens — applied via data-theme="midnight" */
+/* keep in sync with src/theme/tokens.ts — see tokens.sync.test.ts */
+[data-theme="midnight"] {
+  --color-primary:            #84a98c;
+  --color-primary-rgb:        132, 169, 140;
+  --color-primary-container:  #52796f;
+  --color-on-primary:         #1a2421;
+  --color-secondary:          #cad2c5;
+  --color-secondary-container:#84a98c;
+  --color-tertiary:           #354f52;
+  --color-tertiary-container: #2f3e46;
+  --color-on-tertiary:        #cad2c5;
+  --color-surface:            #1a2421;
+  --color-surface-dim:        #1a2421;
+  --color-surface-container:  #2f3e46;
+  --color-surface-container-low: #202a25;
+  --color-surface-container-high: #354f52;
+  --color-on-surface:         #cad2c5;
+  --color-on-surface-variant: #84a98c;
+  --color-outline:            #52796f;
+  --color-outline-variant:    #354f52;
+  --color-error:              #ffb4ab;
+  --color-accent-gold:        #ffe099;
+
+  --glass-bg: rgba(26, 36, 33, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-shadow: none;
+
+  --scrim: linear-gradient(
+    rgba(26,36,33,0.85) 0%,
+    rgba(26,36,33,0.45) 18%,
+    rgba(26,36,33,0.45) 68%,
+    rgba(26,36,33,0.90) 100%
+  );
+}
+
+/* Autumn Canopy tokens (store-unlockable) — applied via data-theme="autumn" */
+/* keep in sync with src/theme/tokens.ts — see tokens.sync.test.ts */
+[data-theme="autumn"] {
+  --color-primary:            #a8551b;
+  --color-primary-rgb:        168, 85, 27;
+  --color-primary-container:  #d97b3f;
+  --color-on-primary:         #ffffff;
+  --color-secondary:          #7c4a1e;
+  --color-secondary-container:#f0c294;
+  --color-tertiary:           #8a3b12;
+  --color-tertiary-container: #c1621f;
+  --color-on-tertiary:        #ffffff;
+  --color-surface:            #fdf1e3;
+  --color-surface-dim:        #e8d3b8;
+  --color-surface-container:  #f5e3cc;
+  --color-surface-container-low: #faeddb;
+  --color-surface-container-high: #efdcc0;
+  --color-on-surface:         #2e1d0f;
+  --color-on-surface-variant: #5c4530;
+  --color-outline:            #8a7259;
+  --color-outline-variant:    #d4c0a3;
+  --color-error:              #ba1a1a;
+  --color-accent-gold:        #e0a840;
+
+  --glass-bg: rgba(245, 227, 204, 0.78);
+  --glass-border: rgba(168, 85, 27, 0.18);
+  --glass-shadow: 0 4px 20px rgba(60, 30, 10, 0.08);
+
+  --scrim: linear-gradient(
+    rgba(253,241,227,0.75) 0%,
+    rgba(253,241,227,0.28) 18%,
+    rgba(253,241,227,0.28) 68%,
+    rgba(253,241,227,0.78) 100%
+  );
+}
+
+/* Ocean Trench tokens (store-unlockable) — applied via data-theme="ocean" */
+/* keep in sync with src/theme/tokens.ts — see tokens.sync.test.ts */
+[data-theme="ocean"] {
+  --color-primary:            #3fd0c9;
+  --color-primary-rgb:        63, 208, 201;
+  --color-primary-container:  #1f7a75;
+  --color-on-primary:         #022826;
+  --color-secondary:          #8fd6e8;
+  --color-secondary-container:#1e5866;
+  --color-tertiary:           #4a6fa5;
+  --color-tertiary-container: #2c4670;
+  --color-on-tertiary:        #eaf2ff;
+  --color-surface:            #071a22;
+  --color-surface-dim:        #071a22;
+  --color-surface-container:  #0f2933;
+  --color-surface-container-low: #0a212a;
+  --color-surface-container-high: #163542;
+  --color-on-surface:         #d3ecf2;
+  --color-on-surface-variant: #7fa8b3;
+  --color-outline:            #3d6875;
+  --color-outline-variant:    #1c3944;
+  --color-error:              #ffb4ab;
+  --color-accent-gold:        #7fe8d4;
+
+  --glass-bg: rgba(7, 26, 34, 0.95);
+  --glass-border: rgba(63, 208, 201, 0.12);
+  --glass-shadow: none;
+
+  --scrim: linear-gradient(
+    rgba(7,26,34,0.85) 0%,
+    rgba(7,26,34,0.45) 18%,
+    rgba(7,26,34,0.45) 68%,
+    rgba(7,26,34,0.90) 100%
+  );
+}
+
+/* ── Global resets & material icons ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  max-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glass panel */
+.glass-panel {
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  box-shadow: none;
+}
+
+/* Bioluminescent line */
+/* Bioluminescent / glow classes removed for tactile minimalism */
+
+/* ── Top Navigation Header (TopNavBar) ─────────────────────────────────────── */
+.ws-top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  z-index: 50;
+  background: var(--color-surface-container-low);
+  border-bottom: 1px solid var(--color-outline-variant);
+  box-shadow: none;
+}
+
+.ws-top-nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+  height: 100%;
+}
+
+.ws-top-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.ws-top-nav__logo-text {
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-size: 1.75rem;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+
+}
+
+.ws-top-nav__menu {
+  display: none;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+  .ws-top-nav__menu {
+    display: flex;
+  }
+}
+
+.ws-top-nav__link {
+  font-family: var(--font-headline);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.ws-top-nav__link:hover {
+  color: var(--color-primary);
+  background: rgba(0, 228, 121, 0.1);
+}
+
+.ws-top-nav__link--active {
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  border-radius: 0;
+  padding-bottom: 2px;
+}
+
+.ws-top-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.ws-top-nav__icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ws-top-nav__icon-btn:hover {
+  color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.ws-top-nav__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(0, 228, 121, 0.3);
+  background: var(--color-surface-container-high);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ws-top-nav__avatar:hover {
+  transform: scale(1.05);
+  border-color: var(--color-primary);
+}
+
+/* ── Side Navigation (SideNavBar - Desktop XL) ─────────────────────────────── */
+.ws-side-nav {
+  position: fixed;
+  left: 0;
+  top: 80px;
+  bottom: 0;
+  width: 256px;
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  padding: var(--space-md);
+  background: var(--color-surface-container-low);
+  border-right: 1px solid var(--color-outline-variant);
+  box-shadow: none;
+}
+
+@media (min-width: 1280px) {
+  .ws-side-nav {
+    display: flex;
+  }
+}
+
+.ws-side-nav__profile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+}
+
+.ws-side-nav__avatar-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: rgba(0, 228, 121, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(0, 228, 121, 0.2);
+}
+
+.ws-side-nav__nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.ws-side-nav__nav-item:hover {
+  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ws-side-nav__nav-item--active {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  box-shadow: none;
+}
+
+.ws-side-nav__powerups {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+}
+
+/* ── Main Layout Container ─────────────────────────────────────────────────── */
+.ws-main-layout {
+  padding-top: 64px;
+  padding-bottom: 72px;
+  height: 100vh;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: var(--safe-margin);
+  padding-right: var(--safe-margin);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1280px) {
+  .ws-main-layout {
+    padding-left: 280px;
+  }
+}
+
+/* ── Daily Goal Card Header Toolbar ────────────────────────────────────────── */
+.ws-daily-goal-card {
+  padding: var(--space-lg);
+  border-radius: var(--radius-leaf);
+  margin-bottom: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+  .ws-daily-goal-card {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* ── Game Canvas & Planter Container ────────────────────────────────────────── */
+.ws-planter {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ws-planter canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  touch-action: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+}
+
+/* ── Gameplay Grid Column & Controls Toolbar ───────────────────────────────── */
+.ws-gameplay-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--grid-gutter);
+}
+
+@media (min-width: 1024px) {
+  .ws-gameplay-grid {
+    grid-template-columns: 8fr 4fr;
+    align-items: stretch;
+  }
+}
+
+.ws-game-board-panel {
+  padding: 16px;
+  border-radius: var(--radius-2xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Tactical Toolkit & Controls Buttons ────────────────────────────────────── */
+.ws-control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 18px;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-container-high);
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 2px 4px 0px rgba(15, 82, 56, 0.15), inset 1px 1px 0px rgba(255, 255, 255, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ws-control-btn:hover {
+  background: var(--color-surface-container);
+  color: var(--color-primary);
+}
+
+.ws-control-btn:active {
+  transform: translate(2px, 4px);
+  box-shadow: none;
+}
+
+.ws-primary-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 12px 24px;
+  border-radius: var(--radius-leaf);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 2px 4px 0px rgba(15, 82, 56, 0.3), inset 1px 1px 0px rgba(255, 255, 255, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ws-primary-action-btn:hover {
+  background: var(--color-primary-container);
+}
+
+.ws-primary-action-btn:active {
+  transform: translate(2px, 4px);
+  box-shadow: none;
+}
+
+/* ── Found Words Right Panel Toolbar ────────────────────────────────────────── */
+.ws-found-words-panel {
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.ws-found-words-header {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ws-found-words-list {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.ws-found-word-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 4px solid var(--color-primary);
+  font-family: var(--font-headline);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--color-primary);
+  transition: all 0.2s ease;
+}
+
+.ws-context-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  background: rgba(0, 228, 121, 0.1);
+  border: 1px solid rgba(0, 228, 121, 0.3);
+  color: var(--color-primary);
+  box-shadow: 0 0 10px rgba(0, 228, 121, 0.1);
+}
+
+/* ── Mobile Bottom Navigation Bar (BottomNavBar) ────────────────────────────── */
+.ws-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: var(--color-surface-container-low);
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+@media (min-width: 1280px) {
+  .ws-bottom-nav {
+    display: none;
+  }
+}
+
+.ws-bottom-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.ws-bottom-nav__item--active {
+  color: var(--color-primary);
+  background: rgba(0, 228, 121, 0.15);
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+.ws-footer {
+  margin-top: auto;
+  padding: 10px 0;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--color-on-surface-variant);
+}
+
+.ws-footer p {
+  margin: 0;
+}
+
+/* ── Winning Success Overlay & Celebration Animations ────────────────────── */
+.ws-success-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  background: rgba(19, 19, 19, 0.78);
+  backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  animation: successFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes successFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(16px);
+  }
+}
+
+@keyframes successPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-12deg);
+  }
+  70% {
+    transform: scale(1.18) rotate(4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.ws-success-overlay__heading {
+  font-family: var(--font-headline);
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--color-primary);
+
+  margin: 0;
+  animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+.ws-success-overlay__category {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+  animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+}
+
+.ws-success-overlay__actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+  animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s both;
+}
+
+.ws-success-overlay__actions button {
+  border-radius: var(--radius-xl) !important;
+  font-family: var(--font-headline) !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+  padding: 14px 32px !important;
+  font-size: 1.15rem !important;
+  box-shadow: 0 0 20px rgba(0, 228, 121, 0.35) !important;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease !important;
+}
+
+.ws-success-overlay__actions button:hover {
+  transform: scale(1.08) translateY(-2px) !important;
+  box-shadow: 0 0 35px rgba(0, 228, 121, 0.7) !important;
+}
+
+.ws-success-overlay__actions button:active {
+  transform: scale(0.96) !important;
+}
+
+/* ── Mobile First Responsive Design System Overrides ─────────────────────── */
+@media (max-width: 767px) {
+  .ws-top-nav {
+    height: 48px;
+  }
+
+  .ws-top-nav__inner {
+    padding: 0 10px;
+  }
+
+  .ws-top-nav__brand {
+    gap: 2px;
+  }
+
+  .ws-top-nav__logo-text {
+    font-size: 1.05rem;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+  }
+
+  .ws-top-nav__actions {
+    gap: 6px;
+  }
+
+  .ws-top-nav__stat-pill {
+    padding: 3px 8px !important;
+    gap: 4px !important;
+  }
+
+  .ws-seeds-label {
+    display: none;
+  }
+
+  .ws-main-layout {
+    padding-top: 54px;
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .ws-daily-goal-card {
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+
+  .ws-bottom-nav {
+    height: calc(54px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .ws-found-words-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 4px;
+    max-height: 110px;
+    overflow-y: auto;
+    justify-content: center;
+  }
+
+  .ws-found-word-card {
+    padding: 4px 10px;
+    font-size: 0.76rem;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.06em;
+  }
+}
+
+/* ── Mobile Compact Integrated Header & Tactical Bar ──────────────────────── */
+.ws-mobile-header-bar {
+  display: none;
+}
+
+.ws-mobile-tactical-bar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .ws-daily-goal-card {
+    display: none !important;
+  }
+
+  .ws-mobile-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 14px;
+    margin-bottom: 24px;
+    border-radius: var(--radius-xl);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .ws-mobile-header-bar__left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ws-mobile-header-bar__level {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    background: rgba(0, 228, 121, 0.15);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(0, 228, 121, 0.3);
+  }
+
+  .ws-mobile-header-bar__cat {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--color-on-surface);
+  }
+
+  .ws-mobile-header-bar__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .ws-mobile-header-bar__progress {
+    color: var(--color-primary);
+  }
+
+  .ws-mobile-header-bar__seeds {
+    color: var(--color-secondary);
+  }
+
+  .ws-mobile-tactical-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+  }
+
+  .ws-mobile-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--color-on-surface);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .ws-mobile-tool-btn:active {
+    transform: scale(0.95);
+    background: rgba(0, 228, 121, 0.2);
+  }
+
+  .ws-planter {
+    max-width: min(92vw, min(56vh, 360px)) !important;
+    margin: 0 auto;
+  }
+
+  .ws-game-board-panel {
+    padding: 6px !important;
+  }
+
+  .ws-found-words-header {
+    display: none !important;
+  }
+
+  .ws-found-words-panel {
+    padding: 6px !important;
+  }
+}
+
+@keyframes bubblePop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .ws-desktop-only {
+    display: none !important;
+  }
+}
+
+@keyframes ws-pulse-glow {
+  0% {
+    box-shadow: 0 0 10px var(--color-primary), 0 0 20px var(--color-secondary);
+  }
+  100% {
+    box-shadow: 0 0 25px var(--color-primary), 0 0 45px var(--color-secondary);
+  }
+}

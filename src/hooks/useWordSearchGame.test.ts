@@ -1,0 +1,178 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { renderHook, act, waitFor } from "@testing-library/react";
+import { useWordSearchGame } from "./useWordSearchGame";
+import { findWordPlacement } from "../gameMechanics";
+import { DEFAULT_SAVE_DATA } from "../persistence";
+
+vi.mock("@tauri-apps/api/core", () => ({
+    invoke: vi.fn((cmd: string) => {
+        if (cmd === "load_game_state") {
+            return Promise.resolve(JSON.stringify({
+                ...DEFAULT_SAVE_DATA,
+                level: 7,
+                seeds: 999,
+                levelsCompleted: 6,
+                categoriesSeen: ["Animals"],
+                bonusWordsFound: 2,
+            }));
+        }
+        if (cmd === "get_puzzle_words") {
+            return Promise.resolve({ category: "Animals", words: ["CAT", "DOG", "BIRD"] });
+        }
+        return Promise.resolve(null);
+    }),
+}));
+
+// Locates a word actually on the board and simulates the drag that finds
+// it, using the same search helper the hint/compass/spectrometer power-ups
+// use -- avoids hardcoding grid coordinates against a randomized layout.
+async function findAWord(result: { current: ReturnType<typeof useWordSearchGame> }) {
+    await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+    const word = result.current.wordsToFind[0];
+    const placement = findWordPlacement(result.current.gridData, result.current.gridSize, word);
+    if (!placement) throw new Error(`test setup: could not locate "${word}" on the generated board`);
+    const { r, c, dr, dc } = placement;
+    const endR = r + (word.length - 1) * dr;
+    const endC = c + (word.length - 1) * dc;
+    await act(async () => {
+        await result.current.submitSelection({ r, c }, { r: endR, c: endC });
+    });
+    return word;
+}
+
+describe("useWordSearchGame", () => {
+    beforeEach(() => {
+        localStorage.clear();
+    });
+
+    it("goToLevel changes level without resetting seeds", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+
+        await act(async () => {
+            // Give async initGame time to settle if needed
+        });
+
+        act(() => {
+            result.current.goToLevel(5);
+        });
+
+        expect(result.current.level).toBe(5);
+    });
+
+    it("reshuffle preserves level and seeds", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+
+        await act(async () => {
+            result.current.goToLevel(3);
+        });
+
+        const initialLevel = result.current.level;
+        const initialSeeds = result.current.seeds;
+
+        await act(async () => {
+            result.current.reshuffle();
+        });
+
+        expect(result.current.level).toBe(initialLevel);
+        expect(result.current.seeds).toBe(initialSeeds);
+    });
+
+    it("reshuffle keeps already-found words found (doesn't wipe progress)", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+        const word = await findAWord(result);
+
+        expect(result.current.foundWords[word]).toBeTruthy();
+
+        act(() => {
+            result.current.reshuffle();
+        });
+
+        expect(result.current.foundWords[word]).toBeTruthy();
+    });
+
+    it("revealAndSolveWord actually solves the word (unlike the free hint, which only points at it)", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+        await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+        const word = result.current.wordsToFind[0];
+
+        expect(result.current.foundWords[word]).toBeFalsy();
+
+        act(() => {
+            result.current.revealAndSolveWord(word);
+        });
+
+        expect(result.current.foundWords[word]).toBeTruthy();
+    });
+
+    it("retryLevel clears foundWords and foundLines without resetting level or seeds", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+
+        await act(async () => {
+            result.current.goToLevel(2);
+        });
+
+        const gridBefore = result.current.gridData;
+
+        act(() => {
+            result.current.retryLevel();
+        });
+
+        expect(result.current.foundWords).toEqual({});
+        expect(result.current.foundLines).toEqual([]);
+        expect(result.current.gridData).toEqual(gridBefore);
+    });
+
+    it("returns categoriesSeen and foundDiagonal state reflecting real stats", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+
+        expect(result.current.categoriesSeen).toBeInstanceOf(Set);
+        expect(typeof result.current.foundDiagonal).toBe("boolean");
+    });
+
+    it("restart() resets every persisted field, not just level and seeds", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+
+        act(() => {
+            result.current.goToLevel(9);
+            result.current.addSeeds(500);
+            result.current.buyPlantSeed("emerald-fern", 0);
+            result.current.unlockTheme("autumn");
+            result.current.unlockGoldenCrest();
+        });
+
+        await waitFor(() => {
+            expect(result.current.level).toBe(9);
+            expect(result.current.seeds).toBeGreaterThanOrEqual(500);
+            expect(result.current.ownedPlants).toContain("emerald-fern");
+            expect(result.current.unlockedThemes).toContain("autumn");
+            expect(result.current.hasGoldenCrest).toBe(true);
+        });
+
+        act(() => {
+            result.current.restart();
+        });
+
+        expect(result.current.level).toBe(DEFAULT_SAVE_DATA.level);
+        expect(result.current.seeds).toBe(DEFAULT_SAVE_DATA.seeds);
+        expect(result.current.ownedPlants).toEqual(DEFAULT_SAVE_DATA.ownedPlants);
+        expect(result.current.unlockedThemes).toEqual(DEFAULT_SAVE_DATA.unlockedThemes);
+        expect(result.current.hasGoldenCrest).toBe(DEFAULT_SAVE_DATA.hasGoldenCrest);
+        expect(Array.from(result.current.unlockedAchievements)).toEqual(DEFAULT_SAVE_DATA.unlockedAchievements);
+        expect(Array.from(result.current.categoriesSeen)).toEqual(DEFAULT_SAVE_DATA.categoriesSeen);
+    });
+
+    it("recovers progress from the native Tauri save when localStorage is empty", async () => {
+        (window as unknown as { __TAURI_INTERNALS__?: object }).__TAURI_INTERNALS__ = {};
+        try {
+            const { result } = renderHook(() => useWordSearchGame());
+
+            await waitFor(() => {
+                expect(result.current.level).toBe(7);
+            });
+            expect(result.current.seeds).toBe(999);
+            expect(result.current.bonusWordsFound).toBe(2);
+        } finally {
+            delete (window as unknown as { __TAURI_INTERNALS__?: object }).__TAURI_INTERNALS__;
+        }
+    });
+});
