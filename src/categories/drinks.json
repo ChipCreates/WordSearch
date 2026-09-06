@@ -1,0 +1,31 @@
+{
+  "name": "Drinks",
+  "tier": "easy",
+  "words": [
+    "BROTH",
+    "CIDER",
+    "CITRUS",
+    "COCOA",
+    "COFFEE",
+    "COLA",
+    "CORDIAL",
+    "ESPRESSO",
+    "FLOAT",
+    "JUICE",
+    "LATTE",
+    "LEMONADE",
+    "MILK",
+    "MOCHA",
+    "NECTAR",
+    "PUNCH",
+    "SELTZER",
+    "SHAKE",
+    "SLUSHIE",
+    "SMOOTHIE",
+    "SODA",
+    "SPRITE",
+    "TEA",
+    "TONIC",
+    "WATER"
+  ]
+}

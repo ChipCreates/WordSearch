@@ -61,12 +61,14 @@ export function getRandomFillLetter(placedWords?: string[]): string {
  * one cell bigger than "normal" (Standard) and caps two cells higher, so
  * the difficulty toggle changes board size, not just word category --
  * "normal" is unchanged from the pre-existing curve so nobody's puzzles
- * silently resize.
+ * silently resize. "easy" starts smaller, caps lower, and grows slower
+ * still, for players who want a gentler curve than Standard.
  */
-export function calculateGridSize(level: number, mode: "normal" | "hard" = "normal"): number {
-    const baseSize = mode === "hard" ? 5 : 4;
-    const cap = mode === "hard" ? 12 : 10;
-    return Math.min(cap, baseSize + Math.floor((level - 1) / 5));
+export function calculateGridSize(level: number, mode: "easy" | "normal" | "hard" = "normal"): number {
+    const baseSize = mode === "hard" ? 5 : mode === "easy" ? 3 : 4;
+    const cap = mode === "hard" ? 12 : mode === "easy" ? 8 : 10;
+    const growthEvery = mode === "easy" ? 6 : 5;
+    return Math.min(cap, baseSize + Math.floor((level - 1) / growthEvery));
 }
 
 export type WordPlacement = { r: number; c: number; dr: number; dc: number };

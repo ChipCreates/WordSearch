@@ -22,7 +22,11 @@ fn get_puzzle_words(count: usize, max_length: usize, level: usize, tier: String)
 
     let mut rng = thread_rng();
 
-    let wanted_tier = if tier == "challenging" { Tier::Challenging } else { Tier::Standard };
+    let wanted_tier = match tier.as_str() {
+        "easy" => Tier::Easy,
+        "challenging" => Tier::Challenging,
+        _ => Tier::Standard,
+    };
     let pool: Vec<&categories::Category> = CATEGORIES.iter().filter(|c| c.tier == wanted_tier).collect();
     let category = pool[(level.saturating_sub(1)) % pool.len()];
 
@@ -91,7 +95,7 @@ mod tests {
     #[test]
     fn test_get_puzzle_words_never_panics() {
         for level in 1..=50 {
-            for tier in ["standard", "challenging"] {
+            for tier in ["easy", "standard", "challenging"] {
                 let puzzle = get_puzzle_words(5, 10, level, tier.to_string());
                 assert!(!puzzle.category.is_empty());
             }

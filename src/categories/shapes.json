@@ -1,0 +1,32 @@
+{
+  "name": "Shapes",
+  "tier": "easy",
+  "words": [
+    "ANGLE",
+    "ARC",
+    "ARROW",
+    "CIRCLE",
+    "CONE",
+    "CRESCENT",
+    "CROSS",
+    "CUBE",
+    "CURVE",
+    "CYLINDER",
+    "DIAMOND",
+    "DOT",
+    "HEART",
+    "HEXAGON",
+    "LINE",
+    "OCTAGON",
+    "OVAL",
+    "PENTAGON",
+    "POINT",
+    "RECTANGLE",
+    "RHOMBUS",
+    "SPHERE",
+    "SPIRAL",
+    "SQUARE",
+    "STAR",
+    "TRIANGLE"
+  ]
+}

@@ -129,6 +129,7 @@ function SettingsContent({
                     size="small"
                     onChange={(_, v: Tier | null) => v && onDifficultyModeChange(v)}
                 >
+                    <ToggleButton value="easy"        id="settings-diff-easy">Easy</ToggleButton>
                     <ToggleButton value="standard"    id="settings-diff-standard">Standard</ToggleButton>
                     <ToggleButton value="challenging" id="settings-diff-challenging">Challenging</ToggleButton>
                 </ToggleButtonGroup>

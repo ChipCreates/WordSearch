@@ -1,0 +1,30 @@
+{
+  "name": "Transportation",
+  "tier": "easy",
+  "words": [
+    "BIKE",
+    "BOAT",
+    "BUS",
+    "CANOE",
+    "CAR",
+    "DRIVE",
+    "FERRY",
+    "HELICOPTER",
+    "KAYAK",
+    "PLANE",
+    "RIDE",
+    "ROCKET",
+    "SCOOTER",
+    "SKATEBOARD",
+    "SLED",
+    "SUBWAY",
+    "TAXI",
+    "TRAIN",
+    "TRAM",
+    "TROLLEY",
+    "TRUCK",
+    "UNICYCLE",
+    "WAGON",
+    "WALK"
+  ]
+}

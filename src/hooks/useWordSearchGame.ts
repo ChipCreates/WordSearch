@@ -189,7 +189,7 @@ export function useWordSearchGame() {
         setStatus("Generating puzzle...");
         setLevelComplete(false);
         setDoubleSeedsActive(false);
-        const size = calculateGridSize(level, difficultyMode === "challenging" ? "hard" : "normal");
+        const size = calculateGridSize(level, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
         const count = Math.max(3, size - 1);
         const maxWordLength = size <= 4 ? size : size - 1;
 

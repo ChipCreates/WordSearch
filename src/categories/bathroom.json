@@ -1,0 +1,32 @@
+{
+  "name": "Bathroom Items",
+  "tier": "easy",
+  "words": [
+    "BATHTUB",
+    "BIN",
+    "BRUSH",
+    "COMB",
+    "CURTAIN",
+    "DRAIN",
+    "FAUCET",
+    "FLOSS",
+    "HAMPER",
+    "LOO",
+    "LOTION",
+    "MIRROR",
+    "RAZOR",
+    "RUG",
+    "SCALE",
+    "SHAMPOO",
+    "SHOWER",
+    "SINK",
+    "SOAP",
+    "SPONGE",
+    "TISSUE",
+    "TOILET",
+    "TOOTHBRUSH",
+    "TOOTHPASTE",
+    "TOWEL",
+    "TUB"
+  ]
+}

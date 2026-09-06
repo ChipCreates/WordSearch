@@ -15,7 +15,7 @@ export type SaveData = {
     unlockedThemes: string[];
     hasGoldenCrest: boolean;
     categoriesSeenBackfilled: boolean;
-    difficultyMode: "standard" | "challenging";
+    difficultyMode: "easy" | "standard" | "challenging";
     themeMode: "system" | "sprout" | "midnight";
     musicMuted: boolean;
     musicVolume: number;

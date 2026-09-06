@@ -10,7 +10,7 @@ import { invoke } from "@tauri-apps/api/core";
 // (scripts/gen_categories.py, the dictionary's earlier equivalent) to
 // guarantee they stay in exact sync with what the Tauri build ships.
 export type Puzzle = { category: string; words: string[] };
-export type Tier = "standard" | "challenging";
+export type Tier = "easy" | "standard" | "challenging";
 
 type CategoryData = { name: string; tier: Tier; words: string[] };
 
@@ -51,6 +51,7 @@ function webPool(tier: Tier): CategoryData[] {
 // used to backfill categoriesSeen for players whose `level` was already
 // advanced before that counter (and difficulty modes) existed.
 export const CATEGORY_NAMES_BY_TIER: Record<Tier, string[]> = {
+    easy: webPool("easy").map(c => c.name),
     standard: webPool("standard").map(c => c.name),
     challenging: webPool("challenging").map(c => c.name),
 };
