@@ -1,8 +1,32 @@
 # Word Sprout
 
-A themed word search game built with Tauri, React, and Rust — desktop app, Android app, and installable web app, all from one codebase.
+**Find the words. Grow the garden. Get hooked.**
 
-**[Play it now in your browser →](https://chipcreates.github.io/WordSprout/)**
+Word Sprout is a word search that doesn't stop at "puzzle solved." Every word you find earns Seeds. Every level you clear pushes you further up a living greenhouse. Those Seeds buy power-ups, exotic plants for your own botanical sanctuary, and cosmetic bragging rights — so "one more level" turns into an hour before you've noticed. Built as one codebase that runs natively on Windows, macOS, Linux, and Android, and installs straight from a browser tab everywhere else, including iOS.
+
+## ▶ Play Now
+
+### [chipcreates.github.io/WordSprout](https://chipcreates.github.io/WordSprout/) — zero install, works offline after the first visit
+
+Prefer a native app? Grab the latest build for your platform:
+
+| | | |
+|---|---|---|
+| 🪟 [**Windows**](../../releases/latest) | 🍎 [**macOS**](../../releases/latest) | 🐧 [**Linux**](../../releases/latest) |
+| 🤖 [**Android**](../../releases/latest) | 📱 **iPhone/iPad** — see below ↓ | |
+
+All native builds live on the [Releases page](../../releases/latest) — grab the file for your platform and OS version. Full install steps (and what to do about the "unknown publisher" warning you'll see, since none of this is code-signed) are in **[INSTALL.md](INSTALL.md)**.
+
+#### Got an iPhone or iPad?
+
+There's no App Store listing — Apple's Safari lets you install the web version as a real app instead, icon and all, with full offline play:
+
+1. Open **[chipcreates.github.io/WordSprout](https://chipcreates.github.io/WordSprout/)** in **Safari** (this only works in Safari, not Chrome).
+2. Tap the **Share** button (the square with an arrow pointing up).
+3. Scroll down and tap **Add to Home Screen**.
+4. Tap **Add** in the top-right corner.
+
+Word Sprout now sits on your home screen with its own icon, opens full-screen with no browser chrome, and keeps working with the phone in airplane mode.
 
 <p>
   <img src="docs/screenshots/desktop.jpg" alt="Word Sprout desktop screenshot — Animals category" width="620">
@@ -11,86 +35,49 @@ A themed word search game built with Tauri, React, and Rust — desktop app, And
   <img src="docs/screenshots/mobile.jpg" alt="Word Sprout mobile screenshot — Dance Styles category" width="260">
 </p>
 
-## Features
+## Why you'll get hooked
 
-- **44 themed categories across two difficulty tiers** — a Standard tier (Animals, Food, Nature, Weather, Ocean Life, Sports, Household, and more) and a Challenging tier (Chemistry, Legal Terms, Etymology, Cryptic/Obscure Adjectives, and more). Categories cycle as you level up, and each category's word list is curated on its own; background art is grouped into three moods (nature, mystical, or a neutral default) rather than one image per category.
-- **Progressive difficulty** — the grid grows from 4×4 to 10×10 on Standard, or 5×5 to 12×12 on Challenging, as you climb levels, with the word count scaling to match (modeled on real word-search games like Vita Word Search rather than an arbitrary curve).
-- **Bonus words** — dragging out any real English word placed in the grid, not just the ones on the list, earns bonus Seeds. Backed by a 125,312-word dictionary (the [ENABLE word list](data/dictionary/CREDITS.md), filtered to grid-usable lengths and profanity-screened).
-- **13 achievements** — level-count and Seed milestones, seeing every category, discovering bonus words, and a "Diagonal Detective" badge for finding a diagonally-placed word — tracked persistently and viewable from a trophy button in the header.
-- **Botanical Sanctuary & Seed Store** — spend Seeds earned from play on a garden of collectible plants (water and fertilize them toward bloom bounties) or on power-ups like hints, board reshuffles, a compass, and unlockable Autumn/Ocean visual themes.
-- **Level-complete celebration** — found-word highlights collapse into dots, hold on screen, then the board fades to reveal the category art behind it, closing with the action buttons gliding to the center of the window.
-- **Installable PWA** — the web build works fully offline after the first visit (service worker precaches the app, background art, and dictionary) and installs to a phone or Mac's home screen/dock like a native app.
+### 🔍 44 categories, and none of them get old
 
-## Play it
+Standard categories (Animals, Food, Sports, Horror Themes, Mythical Creatures) and 16 brutal Challenging ones (Chemistry, Legal Terms, Etymology, Cryptic/Obscure Adjectives) rotate as you level up, each with its own hand-curated word list. Boards grow from a friendly 4×4 up to a punishing 10×10 on Standard — 5×5 to 12×12 if you switch to Challenging mode — so the game keeps pace with how good you're getting instead of staying easy forever.
 
-| Platform | How |
-|---|---|
-| **Web** | Open **[chipcreates.github.io/WordSprout](https://chipcreates.github.io/WordSprout/)** in any modern browser. On iPhone/Mac Safari, use Share → "Add to Home Screen" for a full-screen, offline-capable app. |
-| **Desktop** | Download a prebuilt Windows, macOS, or Linux binary from [Releases](../../releases/latest), or build from source (see below). |
-| **Android** | Download the APK from [Releases](../../releases/latest), or build from source (see below). |
+### 🌾 Bonus words hiding in plain sight
 
-## How to install and run
+The list on the side isn't the whole puzzle. Drag out *any* real English word hiding in the grid — not just the ones asked for — and bank bonus Seeds for it. There are 125,312 of them to find, courtesy of the full ENABLE word list, so the board is a lot more generous than it looks.
 
-Prebuilt Windows, macOS, Linux, and Android binaries for every tagged version are published automatically to the [Releases page](../../releases/latest) by [`.github/workflows/release.yml`](.github/workflows/release.yml). None of these are signed by a certificate registered with Microsoft, Apple, a Linux distro, or Google Play, so you'll see an "unknown publisher"-style warning the first time you install one — that's expected for a self-published indie app, not a sign of tampering.
+### 🎉 Levels that actually celebrate you
 
-| Platform | File | Steps |
+Clear a level and the found words collapse into glowing dots, hold for a beat, then the whole board dissolves to reveal the category art underneath — closing with the action buttons gliding into place. It's a small thing. It still feels great every single time.
+
+### 🎒 A tactical toolkit when you're stuck
+
+Seeds buy you out of trouble, not just around it:
+
+| Power-up | What it does | Cost |
 |---|---|---|
-| **Windows** | `.msi` or `-setup.exe` | Run the installer. Windows SmartScreen will warn about an unrecognized publisher — click "More info" → "Run anyway". |
-| **macOS** | `.dmg` | Open the disk image and drag the app to Applications. Gatekeeper will refuse to open an unsigned app on first launch — right-click (or Control-click) the app → "Open" → "Open" again to confirm, or run `xattr -cr /Applications/Word\ Sprout.app` in Terminal. Universal binary — runs natively on both Intel and Apple Silicon. |
-| **Linux** | `.AppImage` | `chmod +x Word-Sprout_*.AppImage && ./Word-Sprout_*.AppImage` |
-| **Linux (Debian/Ubuntu)** | `.deb` | `sudo dpkg -i word-sprout_*.deb` |
-| **Android** | `.apk` | Download on-device (or transfer over), tap the file, and allow "install from unknown sources" for your browser/file manager when prompted. |
+| 🔍 Single Letter Sprout | Reveals a target word's starting letter | 50 Seeds |
+| 🌀 Lumina Cyclone | Reshuffles the board — progress stays intact | 100 Seeds |
+| 🌱 Super Root Hint | Instantly reveals and solves an entire word | 250 Seeds |
+| 🧭 Bioluminescent Compass | Points a directional guide at your next word | 350 Seeds |
+| 🔬 Flora Spectrometer | Lights up every unfound word's starting cell | 500 Seeds |
+| 🧪 Nitrogen Booster | Doubles Seed rewards for the rest of the level | 600 Seeds |
 
-## Tech stack
+### 🌿 A living Botanical Sanctuary that grows while you play
 
-- **Frontend**: React 19, TypeScript, Vite, MUI (Material UI)
-- **Desktop/Android shell**: [Tauri v2](https://tauri.app/) — Rust backend, native webview
-- **Rendering**: the letter grid and celebration animation are hand-drawn on `<canvas>`, not DOM elements
-- **Web build**: a separate Vite config/target (`vite.web.config.ts`) with [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) for the service worker and manifest — deployed to GitHub Pages via GitHub Actions on every push to `master`
+Spend Seeds on any of **20 plants**, spanning seven rarity tiers from *Common* moss up to a single *Cosmic* Ficus that'll run you 20,000 Seeds. Water each one every couple of hours for a small Seed trickle, or pay to fertilize and skip the wait — either way, once a plant hits full bloom it pays out a bounty of its own, from 250 Seeds for your first Moss Sprout up to a jaw-dropping 50,000 for that Cosmic Ficus. It's a second game running quietly underneath the word search, and it rewards checking back in.
 
-### One codebase, three targets
+### 🏪 A Seed Store worth saving up for
 
-The Tauri desktop/Android app gets puzzle words and bonus-word validation from Rust (`src-tauri/src/categories.rs`, `dictionary.rs`) over IPC. The web build has no Tauri runtime to call into, so [`src/backend.ts`](src/backend.ts) picks between the real IPC call and a local-JS equivalent at runtime, based on whether the Tauri bridge is actually present. `public/dictionary.json` and `src/webCategories.json` are generated directly from the Rust source, not hand-transcribed, so the web build's word lists stay in exact sync with what the native apps ship.
+Beyond power-ups and plants, Seeds unlock two full cosmetic environment themes — the amber **Autumn Canopy** and the deep-sea **Ocean Trench** — plus an exclusive glowing **Golden Sprout Crest** for your botanist profile, for players willing to grind to the top.
 
-## Building from source
+### 🏆 13 achievements daring you to keep going
 
-### Prerequisites
+From *Night Bloomer* (finish your very first level) to *Zenith Climber* (reach level 50) to the sneaky *Diagonal Detective* (find one single word placed on the diagonal), there's a badge tracking almost everything you do — visible any time from the trophy case.
 
-- [Node.js](https://nodejs.org/) 20+
-- [Rust](https://www.rust-lang.org/tools/install) (stable toolchain)
-- [Tauri prerequisites](https://tauri.app/start/prerequisites/) for your platform
-- For Android: [Android Studio](https://developer.android.com/studio) (SDK + NDK) and a configured `ANDROID_HOME`/`NDK_HOME`
+### 📲 Install it anywhere, keep it everywhere
 
-```bash
-npm install
-```
+The web build is a fully installable, offline-capable PWA — service worker, manifest, and all — so "playing Word Sprout" doesn't have to mean "having a signal." Combined with real native apps for Windows, macOS, Linux, and Android, there's no platform where you can't pick this up.
 
-### Desktop
+---
 
-```bash
-npm run tauri dev      # dev, with hot reload
-npm run tauri build    # production build
-```
-
-### Android
-
-```bash
-npm run tauri android dev              # dev, on an emulator or connected device
-npm run tauri android build -- --debug # debug APK
-npm run tauri android build            # release build
-```
-
-### Web (PWA)
-
-A separate build target from the Tauri app — same game, no Tauri runtime required.
-
-```bash
-npm run build:web      # outputs to dist-web/
-npm run preview:web    # serve the production build locally
-```
-
-Pushes to `master` that touch the app automatically rebuild and redeploy the web build to GitHub Pages via [`.github/workflows/deploy-web.yml`](.github/workflows/deploy-web.yml).
-
-## Credits
-
-Category background art sourced from Pixabay — see [`public/backgrounds/CREDITS.md`](public/backgrounds/CREDITS.md) for full attribution.
+Building it yourself, or want the full technical rundown of how one codebase ships to five platforms? That's all in **[INSTALL.md](INSTALL.md)**.
