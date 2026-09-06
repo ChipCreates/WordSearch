@@ -54,6 +54,7 @@ export default function App() {
         submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
+        favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound,
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth,
@@ -667,6 +668,10 @@ export default function App() {
                 onClose={() => setSettingsOpen(false)}
                 difficultyMode={difficultyMode}
                 onDifficultyModeChange={setDifficultyMode}
+                favoriteCategories={favoriteCategories}
+                onFavoriteCategoriesChange={setFavoriteCategories}
+                useFavorites={useFavorites}
+                onUseFavoritesChange={setUseFavorites}
                 musicMuted={musicMuted}
                 onToggleMusicMuted={toggleMusicMuted}
                 musicVolume={musicVolume}

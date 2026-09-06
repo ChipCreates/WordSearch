@@ -16,26 +16,42 @@ struct PuzzleWords {
 }
 
 #[tauri::command]
-fn get_puzzle_words(count: usize, max_length: usize, level: usize, tier: String) -> PuzzleWords {
+fn get_puzzle_words(
+    count: usize,
+    max_length: usize,
+    level: usize,
+    tier: String,
+    category_name: Option<String>,
+    exclude_words: Vec<String>,
+) -> PuzzleWords {
     use rand::seq::SliceRandom;
     use rand::thread_rng;
 
     let mut rng = thread_rng();
 
-    let wanted_tier = match tier.as_str() {
-        "easy" => Tier::Easy,
-        "challenging" => Tier::Challenging,
-        _ => Tier::Standard,
+    // An explicit category name (custom "favorite categories" mode) wins
+    // over the tier pool -- the caller has already picked which category
+    // to show at this level, from whichever tier it happens to belong to.
+    let category = if let Some(name) = category_name {
+        CATEGORIES.iter().find(|c| c.name == name)
+    } else {
+        let wanted_tier = match tier.as_str() {
+            "easy" => Tier::Easy,
+            "challenging" => Tier::Challenging,
+            _ => Tier::Standard,
+        };
+        let pool: Vec<&categories::Category> = CATEGORIES.iter().filter(|c| c.tier == wanted_tier).collect();
+        if pool.is_empty() { None } else { Some(pool[(level.saturating_sub(1)) % pool.len()]) }
     };
-    let pool: Vec<&categories::Category> = CATEGORIES.iter().filter(|c| c.tier == wanted_tier).collect();
-    let category = pool[(level.saturating_sub(1)) % pool.len()];
 
-    let mut valid_words: Vec<&str> = category
-        .words
-        .iter()
-        .filter(|w| w.len() <= max_length)
-        .copied()
-        .collect();
+    let Some(category) = category else {
+        return PuzzleWords { category: String::new(), words: Vec::new() };
+    };
+
+    let excluded: std::collections::HashSet<&str> = exclude_words.iter().map(|s| s.as_str()).collect();
+    let candidates: Vec<&str> = category.words.iter().filter(|w| w.len() <= max_length).copied().collect();
+    let fresh: Vec<&str> = candidates.iter().filter(|w| !excluded.contains(*w)).copied().collect();
+    let mut valid_words: Vec<&str> = if fresh.len() >= count { fresh } else { candidates };
 
     valid_words.shuffle(&mut rng);
 
@@ -96,7 +112,7 @@ mod tests {
     fn test_get_puzzle_words_never_panics() {
         for level in 1..=50 {
             for tier in ["easy", "standard", "challenging"] {
-                let puzzle = get_puzzle_words(5, 10, level, tier.to_string());
+                let puzzle = get_puzzle_words(5, 10, level, tier.to_string(), None, vec![]);
                 assert!(!puzzle.category.is_empty());
             }
         }
@@ -130,7 +146,7 @@ mod tests {
             assert!(!names.is_empty(), "tier {tier} should list at least one category");
             for (i, expected_name) in names.iter().enumerate() {
                 let level = i + 1;
-                let puzzle = get_puzzle_words(5, 10, level, tier.clone());
+                let puzzle = get_puzzle_words(5, 10, level, tier.clone(), None, vec![]);
                 assert_eq!(&puzzle.category, expected_name, "tier={tier} level={level}");
             }
         }
@@ -153,9 +169,23 @@ mod tests {
 
     #[test]
     fn test_word_length_filtering() {
-        let p = get_puzzle_words(10, 5, 1, "standard".to_string());
+        let p = get_puzzle_words(10, 5, 1, "standard".to_string(), None, vec![]);
         for word in p.words {
             assert!(word.len() <= 5, "Word {} exceeded max length of 5", word);
+        }
+    }
+
+    #[test]
+    fn test_custom_category_and_exclusion() {
+        // Explicit category_name overrides the tier pool entirely.
+        let p = get_puzzle_words(5, 10, 1, "standard".to_string(), Some("Mythology".to_string()), vec![]);
+        assert_eq!(p.category, "Mythology");
+
+        // Excluded words are avoided as long as enough non-excluded ones exist.
+        let first = get_puzzle_words(10, 10, 1, "standard".to_string(), Some("Mythology".to_string()), vec![]);
+        let p2 = get_puzzle_words(5, 10, 1, "standard".to_string(), Some("Mythology".to_string()), first.words.clone());
+        for w in &p2.words {
+            assert!(!first.words.contains(w), "word {} should have been excluded", w);
         }
     }
 }

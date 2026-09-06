@@ -3,7 +3,7 @@ import { getPuzzleWords, validateWord, CATEGORY_NAMES, type Tier } from "../back
 import { DIRECTIONS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 import { loadSaveDataSync, loadSaveData, writeSaveData, hasLocalSave, isTauri, CURRENT_SCHEMA_VERSION, DEFAULT_SAVE_DATA } from "../persistence";
-import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS } from "../gameMechanics";
+import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel } from "../gameMechanics";
 
 function canPlaceWord(grid: string[][], size: number, word: string, row: number, col: number, dir: number[]) {
     for (let i = 0; i < word.length; i++) {
@@ -55,6 +55,8 @@ export function useWordSearchGame() {
     const [level, setLevel] = useState(initialSave.level);
     const [seeds, setSeeds] = useState(initialSave.seeds);
     const [difficultyMode, setDifficultyMode] = useState<Tier>(initialSave.difficultyMode);
+    const [favoriteCategories, setFavoriteCategories] = useState<string[]>(initialSave.favoriteCategories);
+    const [useFavorites, setUseFavorites] = useState(initialSave.useFavorites);
     const [status, setStatus] = useState("Loading...");
     const [levelComplete, setLevelComplete] = useState(false);
     const [category, setCategory] = useState("");
@@ -90,6 +92,12 @@ export function useWordSearchGame() {
         stateRef.current = { gridData, wordsToFind, foundWords };
     }, [gridData, wordsToFind, foundWords]);
 
+    // Session-only memory of each favorite category's last puzzle, so custom
+    // mode's small pool doesn't immediately repeat the same words the next
+    // time that category's turn comes back around. Deliberately not
+    // persisted -- this only needs to survive within a play session.
+    const recentWordsByCategoryRef = useRef<Map<string, string[]>>(new Map());
+
     // Native-save recovery: writeSaveData() mirrors every save to the Tauri
     // filesystem, but the initial state above only ever reads localStorage
     // (loadSaveDataSync is, by construction, synchronous and therefore
@@ -105,6 +113,8 @@ export function useWordSearchGame() {
             setLevel(native.level);
             setSeeds(native.seeds);
             setDifficultyMode(native.difficultyMode);
+            setFavoriteCategories(native.favoriteCategories);
+            setUseFavorites(native.useFavorites);
             setUnlockedAchievements(new Set(native.unlockedAchievements));
             setLevelsCompleted(native.levelsCompleted);
             setCategoriesSeen(new Set(native.categoriesSeen));
@@ -133,6 +143,8 @@ export function useWordSearchGame() {
                 level,
                 seeds,
                 difficultyMode,
+                favoriteCategories,
+                useFavorites,
                 levelsCompleted,
                 categoriesSeen: Array.from(categoriesSeen),
                 foundDiagonal,
@@ -152,6 +164,8 @@ export function useWordSearchGame() {
         level,
         seeds,
         difficultyMode,
+        favoriteCategories,
+        useFavorites,
         levelsCompleted,
         categoriesSeen,
         foundDiagonal,
@@ -193,12 +207,26 @@ export function useWordSearchGame() {
         const count = Math.max(3, size - 1);
         const maxWordLength = size <= 4 ? size : size - 1;
 
-        const puzzle = await getPuzzleWords(count + Math.min(count, 8), maxWordLength, level, difficultyMode);
+        const usingFavorites = useFavorites && favoriteCategories.length >= MIN_FAVORITE_CATEGORIES;
+        const categoryName = usingFavorites ? favoriteCategoryForLevel(favoriteCategories, level) : undefined;
+        const excludeWords = categoryName ? recentWordsByCategoryRef.current.get(categoryName) : undefined;
+
+        const puzzle = await getPuzzleWords({
+            count: count + Math.min(count, 8),
+            maxLength: maxWordLength,
+            level,
+            tier: difficultyMode,
+            categoryName,
+            excludeWords,
+        });
         setCategory(puzzle.category);
         setCategoriesSeen(prev => prev.has(puzzle.category) ? prev : new Set(prev).add(puzzle.category));
         const words = puzzle.words;
         const mainWords = words.slice(0, count);
         const bonusWords = words.slice(count);
+        if (categoryName) {
+            recentWordsByCategoryRef.current.set(categoryName, mainWords);
+        }
 
         const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
 
@@ -227,7 +255,7 @@ export function useWordSearchGame() {
         setStatus("Puzzle generated. Find the words!");
     };
 
-    useEffect(() => { initGame(); }, [level, difficultyMode]);
+    useEffect(() => { initGame(); }, [level, difficultyMode, useFavorites, favoriteCategories]);
 
     const submitSelection = async (startCell: Cell, endCell: Cell) => {
         const { gridData, wordsToFind, foundWords } = stateRef.current;
@@ -440,6 +468,7 @@ export function useWordSearchGame() {
         submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
+        favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound,
         // Botanical Sanctuary state & handlers
         ownedPlants, wateredTimestamps, growthByPlant,

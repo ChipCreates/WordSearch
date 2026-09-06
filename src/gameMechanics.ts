@@ -10,6 +10,42 @@ export const REWARDS = {
     GARDEN_HARVEST_SEEDS: 150,
 } as const;
 
+// Below this many favorited categories, custom mode would cycle through too
+// small a pool to feel different from just playing one or two categories on
+// repeat -- so the toggle stays disabled until the player clears this bar.
+export const MIN_FAVORITE_CATEGORIES = 10;
+
+// Deterministic pseudo-random reorder of `categories`, reshuffled once per
+// full pass through the list (keyed by `cycle`) instead of once ever -- a
+// small favorites list would otherwise show categories in the exact same
+// fixed order every N levels, which is far more noticeable with 10 categories
+// than it is cycling through a full 28-54 category tier.
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+    let s = seed || 1;
+    const rand = () => {
+        s ^= s << 13; s ^= s >>> 17; s ^= s << 5;
+        s |= 0;
+        return ((s >>> 0) % 100000) / 100000;
+    };
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+/**
+ * Picks which favorite category to show at a given level. Cycles through
+ * every favorite once (in a per-cycle shuffled order) before repeating.
+ */
+export function favoriteCategoryForLevel(favorites: string[], level: number): string {
+    const n = favorites.length;
+    const cycle = Math.floor((level - 1) / n);
+    const posInCycle = (level - 1) % n;
+    return seededShuffle(favorites, cycle + 1)[posInCycle];
+}
+
 /**
  * Standard English relative letter frequencies for realistic board fill.
  */

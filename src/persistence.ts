@@ -16,6 +16,8 @@ export type SaveData = {
     hasGoldenCrest: boolean;
     categoriesSeenBackfilled: boolean;
     difficultyMode: "easy" | "standard" | "challenging";
+    favoriteCategories: string[];
+    useFavorites: boolean;
     themeMode: "system" | "sprout" | "midnight";
     musicMuted: boolean;
     musicVolume: number;
@@ -41,6 +43,8 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     hasGoldenCrest: false,
     categoriesSeenBackfilled: false,
     difficultyMode: "standard",
+    favoriteCategories: [],
+    useFavorites: false,
     themeMode: "system",
     musicMuted: false,
     musicVolume: 0.5,

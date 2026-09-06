@@ -16,9 +16,27 @@ describe("backend category parity", () => {
         fixture[tier].forEach((expectedName, i) => {
             const level = i + 1;
             it(`level ${level} (${tier}) selects "${expectedName}"`, async () => {
-                const puzzle = await getPuzzleWords(5, 10, level, tier);
+                const puzzle = await getPuzzleWords({ count: 5, maxLength: 10, level, tier });
                 expect(puzzle.category).toBe(expectedName);
             });
         });
+    });
+});
+
+describe("backend custom category mode", () => {
+    it("categoryName overrides the tier pool entirely", async () => {
+        const puzzle = await getPuzzleWords({ count: 5, maxLength: 10, level: 1, tier: "standard", categoryName: "Mythology" });
+        expect(puzzle.category).toBe("Mythology");
+    });
+
+    it("excludeWords are avoided when enough non-excluded words remain", async () => {
+        const first = await getPuzzleWords({ count: 10, maxLength: 10, level: 1, tier: "standard", categoryName: "Mythology" });
+        const second = await getPuzzleWords({
+            count: 5, maxLength: 10, level: 1, tier: "standard",
+            categoryName: "Mythology", excludeWords: first.words,
+        });
+        for (const w of second.words) {
+            expect(first.words).not.toContain(w);
+        }
     });
 });

@@ -56,6 +56,11 @@ export const CATEGORY_NAMES_BY_TIER: Record<Tier, string[]> = {
     challenging: webPool("challenging").map(c => c.name),
 };
 
+// Every category with its tier, for UI that lets a player browse/select
+// from the full set regardless of which tier it belongs to (the custom
+// "favorite categories" picker).
+export const ALL_CATEGORIES: { name: string; tier: Tier }[] = WEB_CATEGORIES.map(c => ({ name: c.name, tier: c.tier }));
+
 let dictionaryPromise: Promise<Set<string>> | null = null;
 function loadDictionary(): Promise<Set<string>> {
     if (!dictionaryPromise) {
@@ -71,14 +76,42 @@ if (!isTauri()) {
     loadDictionary();
 }
 
-export async function getPuzzleWords(count: number, maxLength: number, level: number, tier: Tier): Promise<Puzzle> {
+export type PuzzleRequest = {
+    count: number;
+    maxLength: number;
+    level: number;
+    tier: Tier;
+    // When set, pulls from this exact category (used by the "favorite
+    // categories" custom mode) instead of cycling through `tier`'s pool.
+    categoryName?: string;
+    // Words shown in this category's last puzzle -- excluded from the
+    // candidate pool where possible so picking the same small handful of
+    // favorite categories over and over doesn't immediately repeat words,
+    // without needing to persist any history for it.
+    excludeWords?: string[];
+};
+
+export async function getPuzzleWords(req: PuzzleRequest): Promise<Puzzle> {
     if (isTauri()) {
-        return invoke("get_puzzle_words", { count, maxLength, level, tier });
+        return invoke("get_puzzle_words", {
+            count: req.count,
+            maxLength: req.maxLength,
+            level: req.level,
+            tier: req.tier,
+            categoryName: req.categoryName ?? null,
+            excludeWords: req.excludeWords ?? [],
+        });
     }
-    const pool = webPool(tier);
-    const category = pool[(level - 1) % pool.length];
-    const validWords = category.words.filter(w => w.length <= maxLength);
-    const words = shuffle(validWords).slice(0, count);
+    const category = req.categoryName
+        ? WEB_CATEGORIES.find(c => c.name === req.categoryName)
+        : webPool(req.tier)[(req.level - 1) % webPool(req.tier).length];
+    if (!category) return { category: "", words: [] };
+
+    const exclude = new Set(req.excludeWords ?? []);
+    const candidates = category.words.filter(w => w.length <= req.maxLength);
+    const fresh = candidates.filter(w => !exclude.has(w));
+    const pool = fresh.length >= req.count ? fresh : candidates;
+    const words = shuffle(pool).slice(0, req.count);
     return { category: category.name, words };
 }
 

@@ -1,6 +1,7 @@
+import { useState } from "react";
 import {
     Box, Typography, Slider, Switch, FormControlLabel,
-    ToggleButtonGroup, ToggleButton, IconButton, useMediaQuery,
+    ToggleButtonGroup, ToggleButton, IconButton, useMediaQuery, Button,
     Dialog, DialogTitle, DialogContent,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -12,6 +13,8 @@ import ParkOutlinedIcon from "@mui/icons-material/ParkOutlined";
 import WavesOutlinedIcon from "@mui/icons-material/WavesOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import type { Tier } from "../backend";
+import { MIN_FAVORITE_CATEGORIES } from "../gameMechanics";
+import CategoryPickerDialog from "./CategoryPickerDialog";
 
 type ThemeMode = "sprout" | "midnight" | "autumn" | "ocean";
 
@@ -20,6 +23,10 @@ type Props = {
     onClose: () => void;
     difficultyMode: Tier;
     onDifficultyModeChange: (mode: Tier) => void;
+    favoriteCategories: string[];
+    onFavoriteCategoriesChange: (names: string[]) => void;
+    useFavorites: boolean;
+    onUseFavoritesChange: (value: boolean) => void;
     musicMuted: boolean;
     onToggleMusicMuted: () => void;
     musicVolume: number;
@@ -73,10 +80,13 @@ function SoundRow({
 // ── Shared inner content ──────────────────────────────────────────────────────
 function SettingsContent({
     difficultyMode, onDifficultyModeChange,
+    favoriteCategories, onFavoriteCategoriesChange, useFavorites, onUseFavoritesChange,
     musicMuted, onToggleMusicMuted, musicVolume, onMusicVolumeChange,
     sfxMuted, onToggleSfxMuted, sfxVolume, onSfxVolumeChange,
     themeMode, onThemeModeChange, unlockedThemes,
 }: Omit<Props, "open" | "onClose">) {
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const canUseFavorites = favoriteCategories.length >= MIN_FAVORITE_CATEGORIES;
     const autumnUnlocked = unlockedThemes.includes("autumn");
     const oceanUnlocked = unlockedThemes.includes("ocean");
 
@@ -133,6 +143,39 @@ function SettingsContent({
                     <ToggleButton value="standard"    id="settings-diff-standard">Standard</ToggleButton>
                     <ToggleButton value="challenging" id="settings-diff-challenging">Challenging</ToggleButton>
                 </ToggleButtonGroup>
+            </div>
+
+            {/* My Categories */}
+            <div className="ws-settings-section">
+                <div className="ws-settings-section__label">My Categories</div>
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={useFavorites && canUseFavorites}
+                            disabled={!canUseFavorites}
+                            onChange={(_, checked) => onUseFavoritesChange(checked)}
+                            size="small"
+                        />
+                    }
+                    label={
+                        <Typography variant="body2" sx={{ fontFamily: "var(--font-body)" }}>
+                            Use only my favorite categories
+                        </Typography>
+                    }
+                />
+                <Typography variant="caption" sx={{ display: "block", mb: 1, color: "var(--color-on-surface-variant)" }}>
+                    {favoriteCategories.length} selected
+                    {!canUseFavorites && ` -- pick at least ${MIN_FAVORITE_CATEGORIES} to enable`}
+                </Typography>
+                <Button size="small" variant="outlined" onClick={() => setPickerOpen(true)} fullWidth>
+                    Choose Categories
+                </Button>
+                <CategoryPickerDialog
+                    open={pickerOpen}
+                    onClose={() => setPickerOpen(false)}
+                    selected={favoriteCategories}
+                    onChange={onFavoriteCategoriesChange}
+                />
             </div>
 
             {/* Sound */}
