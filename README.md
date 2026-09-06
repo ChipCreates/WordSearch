@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/screenshots/banner.jpg" alt="Word Sprout — grow your mind">
+</p>
+
 # Word Sprout
 
 **Find the words. Grow the garden. Get hooked.**
