@@ -5,10 +5,10 @@ A themed word search game built with Tauri, React, and Rust — desktop app, And
 **[Play it now in your browser →](https://chipcreates.github.io/WordSprout/)**
 
 <p>
-  <img src="docs/screenshots/desktop.jpg" alt="Word Sprout desktop screenshot — Ocean category" width="620">
+  <img src="docs/screenshots/desktop.jpg" alt="Word Sprout desktop screenshot — Animals category" width="620">
 </p>
 <p>
-  <img src="docs/screenshots/mobile.jpg" alt="Word Sprout mobile screenshot — Music category" width="260">
+  <img src="docs/screenshots/mobile.jpg" alt="Word Sprout mobile screenshot — Animals category" width="260">
 </p>
 
 ## Features
