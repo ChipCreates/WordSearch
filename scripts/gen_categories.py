@@ -101,6 +101,12 @@ DISPLAY_NAMES = {
         "baking": "Baking",
         "toys": "Toys",
         "beach_summer": "Beach & Summer",
+        "lakes": "Lakes",
+        "cities": "Cities",
+        "the_zoo": "The Zoo",
+        "county_fair": "County Fair",
+        "renfest": "Renaissance Festival",
+        "world_events": "World Events",
     },
     "challenging": {
         "chemistry": "Chemistry Elements/Terms",
@@ -131,6 +137,11 @@ DISPLAY_NAMES = {
         "heraldry": "Heraldry",
         "cryptography": "Cryptography",
         "anatomy": "Anatomy",
+        "history": "History",
+        "corporate_life": "Corporate Life",
+        "business": "Business",
+        "computers": "Computers",
+        "trades": "The Trades",
     },
 }
 

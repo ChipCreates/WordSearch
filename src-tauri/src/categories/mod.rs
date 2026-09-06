@@ -30,9 +30,11 @@ mod board_games;
 mod camping;
 mod card_games;
 mod circus;
+mod cities;
 mod colors;
 mod comedy;
 mod countries;
+mod county_fair;
 mod crime_noir;
 mod dance_styles;
 mod desserts;
@@ -49,6 +51,7 @@ mod household;
 mod insects;
 mod kitchen_items;
 mod knights_castles;
+mod lakes;
 mod movies_tv;
 mod musical_genres;
 mod musical_instruments;
@@ -60,12 +63,14 @@ mod occupations;
 mod ocean_life;
 mod photography;
 mod pirates;
+mod renfest;
 mod romance;
 mod school_subjects;
 mod sci_fi;
 mod space_astronomy;
 mod sports;
 mod superheroes;
+mod the_zoo;
 mod tools;
 mod toys;
 mod vehicles;
@@ -74,13 +79,17 @@ mod war_films;
 mod weather;
 mod weddings;
 mod western;
+mod world_events;
 mod anatomy;
 mod archaeology;
 mod architecture;
 mod astrology_zodiac;
+mod business;
 mod chemistry;
 mod computer_science;
+mod computers;
 mod cooking_techniques;
+mod corporate_life;
 mod cryptic_adjectives;
 mod cryptography;
 mod economics_finance;
@@ -89,6 +98,7 @@ mod forensics;
 mod geology_minerals;
 mod grammar_linguistics;
 mod heraldry;
+mod history;
 mod legal_terms;
 mod literary_devices;
 mod medical_terminology;
@@ -100,6 +110,7 @@ mod paleontology;
 mod philosophy;
 mod physics;
 mod psychology;
+mod trades;
 mod types_of_government;
 mod weaving_textiles;
 
@@ -148,9 +159,11 @@ pub static CATEGORIES: &[Category] = &[
     Category { name: "Camping & Outdoors", tier: Tier::Standard, words: camping::WORDS },
     Category { name: "Card Games", tier: Tier::Standard, words: card_games::WORDS },
     Category { name: "Circus & Carnival", tier: Tier::Standard, words: circus::WORDS },
+    Category { name: "Cities", tier: Tier::Standard, words: cities::WORDS },
     Category { name: "Colors", tier: Tier::Standard, words: colors::WORDS },
     Category { name: "Comedy", tier: Tier::Standard, words: comedy::WORDS },
     Category { name: "Countries", tier: Tier::Standard, words: countries::WORDS },
+    Category { name: "County Fair", tier: Tier::Standard, words: county_fair::WORDS },
     Category { name: "Crime & Noir", tier: Tier::Standard, words: crime_noir::WORDS },
     Category { name: "Dance Styles", tier: Tier::Standard, words: dance_styles::WORDS },
     Category { name: "Desserts", tier: Tier::Standard, words: desserts::WORDS },
@@ -167,6 +180,7 @@ pub static CATEGORIES: &[Category] = &[
     Category { name: "Insects", tier: Tier::Standard, words: insects::WORDS },
     Category { name: "Kitchen Items", tier: Tier::Standard, words: kitchen_items::WORDS },
     Category { name: "Knights & Castles", tier: Tier::Standard, words: knights_castles::WORDS },
+    Category { name: "Lakes", tier: Tier::Standard, words: lakes::WORDS },
     Category { name: "Movies & TV", tier: Tier::Standard, words: movies_tv::WORDS },
     Category { name: "Musical Genres", tier: Tier::Standard, words: musical_genres::WORDS },
     Category { name: "Musical Instruments", tier: Tier::Standard, words: musical_instruments::WORDS },
@@ -178,12 +192,14 @@ pub static CATEGORIES: &[Category] = &[
     Category { name: "Ocean Life", tier: Tier::Standard, words: ocean_life::WORDS },
     Category { name: "Photography", tier: Tier::Standard, words: photography::WORDS },
     Category { name: "Pirates", tier: Tier::Standard, words: pirates::WORDS },
+    Category { name: "Renaissance Festival", tier: Tier::Standard, words: renfest::WORDS },
     Category { name: "Romance", tier: Tier::Standard, words: romance::WORDS },
     Category { name: "School Subjects", tier: Tier::Standard, words: school_subjects::WORDS },
     Category { name: "Sci-Fi", tier: Tier::Standard, words: sci_fi::WORDS },
     Category { name: "Space & Astronomy", tier: Tier::Standard, words: space_astronomy::WORDS },
     Category { name: "Sports", tier: Tier::Standard, words: sports::WORDS },
     Category { name: "Superheroes & Comics", tier: Tier::Standard, words: superheroes::WORDS },
+    Category { name: "The Zoo", tier: Tier::Standard, words: the_zoo::WORDS },
     Category { name: "Tools", tier: Tier::Standard, words: tools::WORDS },
     Category { name: "Toys", tier: Tier::Standard, words: toys::WORDS },
     Category { name: "Vehicles", tier: Tier::Standard, words: vehicles::WORDS },
@@ -192,13 +208,17 @@ pub static CATEGORIES: &[Category] = &[
     Category { name: "Weather", tier: Tier::Standard, words: weather::WORDS },
     Category { name: "Weddings", tier: Tier::Standard, words: weddings::WORDS },
     Category { name: "Western", tier: Tier::Standard, words: western::WORDS },
+    Category { name: "World Events", tier: Tier::Standard, words: world_events::WORDS },
     Category { name: "Anatomy", tier: Tier::Challenging, words: anatomy::WORDS },
     Category { name: "Archaeology", tier: Tier::Challenging, words: archaeology::WORDS },
     Category { name: "Architecture", tier: Tier::Challenging, words: architecture::WORDS },
     Category { name: "Astrology/Zodiac", tier: Tier::Challenging, words: astrology_zodiac::WORDS },
+    Category { name: "Business", tier: Tier::Challenging, words: business::WORDS },
     Category { name: "Chemistry Elements/Terms", tier: Tier::Challenging, words: chemistry::WORDS },
     Category { name: "Computer Science", tier: Tier::Challenging, words: computer_science::WORDS },
+    Category { name: "Computers", tier: Tier::Challenging, words: computers::WORDS },
     Category { name: "Cooking Techniques", tier: Tier::Challenging, words: cooking_techniques::WORDS },
+    Category { name: "Corporate Life", tier: Tier::Challenging, words: corporate_life::WORDS },
     Category { name: "Cryptic/Obscure Adjectives", tier: Tier::Challenging, words: cryptic_adjectives::WORDS },
     Category { name: "Cryptography", tier: Tier::Challenging, words: cryptography::WORDS },
     Category { name: "Economics & Finance", tier: Tier::Challenging, words: economics_finance::WORDS },
@@ -207,6 +227,7 @@ pub static CATEGORIES: &[Category] = &[
     Category { name: "Geology/Minerals", tier: Tier::Challenging, words: geology_minerals::WORDS },
     Category { name: "Grammar/Linguistics", tier: Tier::Challenging, words: grammar_linguistics::WORDS },
     Category { name: "Heraldry", tier: Tier::Challenging, words: heraldry::WORDS },
+    Category { name: "History", tier: Tier::Challenging, words: history::WORDS },
     Category { name: "Legal Terms", tier: Tier::Challenging, words: legal_terms::WORDS },
     Category { name: "Literary Devices", tier: Tier::Challenging, words: literary_devices::WORDS },
     Category { name: "Medical Terminology", tier: Tier::Challenging, words: medical_terminology::WORDS },
@@ -218,6 +239,7 @@ pub static CATEGORIES: &[Category] = &[
     Category { name: "Philosophy", tier: Tier::Challenging, words: philosophy::WORDS },
     Category { name: "Physics", tier: Tier::Challenging, words: physics::WORDS },
     Category { name: "Psychology", tier: Tier::Challenging, words: psychology::WORDS },
+    Category { name: "The Trades", tier: Tier::Challenging, words: trades::WORDS },
     Category { name: "Types of Government", tier: Tier::Challenging, words: types_of_government::WORDS },
     Category { name: "Weaving/Textiles", tier: Tier::Challenging, words: weaving_textiles::WORDS },
 ];
