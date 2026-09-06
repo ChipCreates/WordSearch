@@ -26,20 +26,20 @@ A themed word search game built with Tauri, React, and Rust — desktop app, And
 | Platform | How |
 |---|---|
 | **Web** | Open **[chipcreates.github.io/WordSprout](https://chipcreates.github.io/WordSprout/)** in any modern browser. On iPhone/Mac Safari, use Share → "Add to Home Screen" for a full-screen, offline-capable app. |
-| **Desktop** | Download a prebuilt Linux binary from [Releases](../../releases/latest), or build from source (see below) — Windows/macOS aren't currently built or tested, but you can build from source on those platforms via Tauri. |
+| **Desktop** | Download a prebuilt Windows, macOS, or Linux binary from [Releases](../../releases/latest), or build from source (see below). |
 | **Android** | Download the APK from [Releases](../../releases/latest), or build from source (see below). |
 
 ## How to install and run
 
-Prebuilt Linux and Android binaries for every tagged version are published automatically to the [Releases page](../../releases/latest) by [`.github/workflows/release.yml`](.github/workflows/release.yml). These aren't signed by a certificate registered with a Linux distro or Google Play, so you may see an "unknown publisher"-style warning the first time you install one — that's expected for a self-published indie app, not a sign of tampering.
+Prebuilt Windows, macOS, Linux, and Android binaries for every tagged version are published automatically to the [Releases page](../../releases/latest) by [`.github/workflows/release.yml`](.github/workflows/release.yml). None of these are signed by a certificate registered with Microsoft, Apple, a Linux distro, or Google Play, so you'll see an "unknown publisher"-style warning the first time you install one — that's expected for a self-published indie app, not a sign of tampering.
 
 | Platform | File | Steps |
 |---|---|---|
+| **Windows** | `.msi` or `-setup.exe` | Run the installer. Windows SmartScreen will warn about an unrecognized publisher — click "More info" → "Run anyway". |
+| **macOS** | `.dmg` | Open the disk image and drag the app to Applications. Gatekeeper will refuse to open an unsigned app on first launch — right-click (or Control-click) the app → "Open" → "Open" again to confirm, or run `xattr -cr /Applications/Word\ Sprout.app` in Terminal. Universal binary — runs natively on both Intel and Apple Silicon. |
 | **Linux** | `.AppImage` | `chmod +x Word-Sprout_*.AppImage && ./Word-Sprout_*.AppImage` |
 | **Linux (Debian/Ubuntu)** | `.deb` | `sudo dpkg -i word-sprout_*.deb` |
 | **Android** | `.apk` | Download on-device (or transfer over), tap the file, and allow "install from unknown sources" for your browser/file manager when prompted. |
-
-Windows and macOS aren't published as prebuilt binaries — there's no hardware or code-signing certificate available to build or test them. They can still be built from source on those platforms (see below); Tauri supports both.
 
 ## Tech stack
 

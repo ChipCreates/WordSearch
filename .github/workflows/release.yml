@@ -1,8 +1,11 @@
 name: Build and publish release binaries
 
-# Builds the Linux desktop app and the signed Android APK, then attaches
-# both to a GitHub Release for the pushed tag. Scoped to Linux + Android
-# only -- no Windows/macOS hardware or certs to build or test those.
+# Builds the desktop app for Linux, Windows, and macOS (universal binary --
+# both Intel and Apple Silicon), plus the signed Android APK, then attaches
+# all of it to a GitHub Release for the pushed tag. Windows and macOS
+# builds are unsigned (no code-signing certificate for either platform) --
+# same story as the Linux/Android artifacts, just a bigger "unknown
+# publisher" warning on first launch.
 #
 # Push a tag like `v0.2.0` to trigger this. It creates the release as a
 # draft so you can review the notes/assets before publishing.
@@ -46,6 +49,71 @@ jobs:
           releaseBody: "See the assets below to download this version."
           releaseDraft: true
           prerelease: false
+
+  windows:
+    needs: desktop
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Word Sprout ${{ github.ref_name }}"
+          releaseBody: "See the assets below to download this version."
+          releaseDraft: true
+          prerelease: false
+
+  macos:
+    needs: desktop
+    permissions:
+      contents: write
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Word Sprout ${{ github.ref_name }}"
+          releaseBody: "See the assets below to download this version."
+          releaseDraft: true
+          prerelease: false
+          args: --target universal-apple-darwin
 
   android:
     needs: desktop
