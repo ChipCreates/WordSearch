@@ -34,16 +34,15 @@ export type FoundLine = { startR: number; startC: number; endR: number; endC: nu
 // clock), so it covers both the forming time and the hold, not just the
 // hold on its own.
 export const CORNER_RADIUS_PX = 12;
-// Give the constellation enough time to read on both desktop and mobile.
-// The original sub-second sweep was easy to miss, especially on touch devices.
-export const CELEBRATE_DOTS_FORM_MS = 180;
-export const CELEBRATE_TRAIL_MS = 1500;
-export const CELEBRATE_BURST_MS = 750;
+// A brisk sweep through every collapsed word, followed by a short glow.
+export const CELEBRATE_DOTS_FORM_MS = 140;
+export const CELEBRATE_TRAIL_MS = 900;
+export const CELEBRATE_BURST_MS = 400;
 export const CELEBRATE_HOLD_MS = CELEBRATE_TRAIL_MS + CELEBRATE_BURST_MS;
 export const CELEBRATE_FADE_DELAY_MS = CELEBRATE_DOTS_FORM_MS + CELEBRATE_HOLD_MS;
-export const CELEBRATE_FADE_DURATION_MS = 700;
+export const CELEBRATE_FADE_DURATION_MS = 450;
 // Fourth phase, once the board+word-list fade above has finished: the button
 // block glides from its sidebar spot to the center of the window, as the
 // closing beat of the celebration.
 export const CELEBRATE_BUTTONS_MOVE_DELAY_MS = CELEBRATE_FADE_DELAY_MS + CELEBRATE_FADE_DURATION_MS;
-export const CELEBRATE_BUTTONS_MOVE_DURATION_MS = 650;
+export const CELEBRATE_BUTTONS_MOVE_DURATION_MS = 400;

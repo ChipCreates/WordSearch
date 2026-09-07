@@ -148,7 +148,8 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(mx, my, cellSize * 0.28, 0, 2 * Math.PI);
-                ctx.fillStyle = "transparent";
+                ctx.fillStyle = line.color;
+                ctx.globalAlpha = 0.35;
                 ctx.shadowColor = line.color;
                 ctx.shadowBlur = 18;
                 ctx.fill();
