@@ -47,7 +47,7 @@ export default function App() {
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
-        categoriesSeen, foundDiagonal, bonusWordsFound,
+        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth,
         doubleSeedsActive,
@@ -509,6 +509,11 @@ export default function App() {
                                         onSwipe={() => playSfx("swipe")}
                                         celebrate={levelComplete}
                                     />
+                                    {bonusDiscovery && (
+                                        <div role="status" style={{ margin: "8px 12px 0", padding: "8px 12px", borderRadius: 12, background: "rgba(236, 177, 255, 0.18)", border: "1px solid rgba(236, 177, 255, 0.55)", color: "var(--color-secondary)", fontWeight: 800, textAlign: "center" }}>
+                                            ✨ Bonus sprout! {bonusDiscovery.word} +{bonusDiscovery.seeds} Seeds
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Mobile Tactical Toolbar */}
@@ -533,6 +538,9 @@ export default function App() {
                                         <span style={{ padding: "4px 12px", borderRadius: 4, background: "rgba(236, 177, 255, 0.2)", color: "var(--color-secondary)", border: "1px solid rgba(236, 177, 255, 0.3)", fontSize: "0.85rem", fontWeight: 600 }}>
                                             {foundCount} / {wordsToFind.length}
                                         </span>
+                                    </div>
+                                    <div aria-label={`${bonusWordsThisLevel.length} bonus words found`} style={{ marginTop: 8, padding: "8px 10px", borderRadius: 10, background: "rgba(236, 177, 255, 0.1)", color: "var(--color-secondary)", fontSize: "0.8rem", fontWeight: 700 }}>
+                                        ✨ Bonus sprouts: {bonusWordsThisLevel.length ? bonusWordsThisLevel.join(", ") : "Find extra words for Seeds"}
                                     </div>
 
                                     <div className="ws-found-words-list">
@@ -613,6 +621,8 @@ export default function App() {
                         category={category}
                         level={level}
                         seeds={seeds}
+                        bonusWords={bonusWordsThisLevel}
+                        bonusSeeds={bonusSeedsThisLevel}
                         onNextLevel={() => { playSfx("click"); nextLevel(); }}
                         onRestart={() => { playSfx("click"); restart(); }}
                     />

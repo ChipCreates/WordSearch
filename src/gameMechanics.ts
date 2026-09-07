@@ -10,6 +10,35 @@ export const REWARDS = {
     GARDEN_HARVEST_SEEDS: 150,
 } as const;
 
+export const MIN_BONUS_WORD_LENGTH = 3;
+
+export type WordSelectionResult =
+    | { kind: "target-found"; word: string }
+    | { kind: "bonus-found"; word: string }
+    | { kind: "already-found"; word: string }
+    | { kind: "invalid"; word: string };
+
+export function classifyWordSelection(
+    candidate: string,
+    reversedCandidate: string,
+    targetWords: string[],
+    foundWords: Record<string, string>,
+    validBonusCandidates: Set<string>,
+): WordSelectionResult {
+    const word = candidate.toUpperCase();
+    const reversed = reversedCandidate.toUpperCase();
+    const target = targetWords.find(value => value === word || value === reversed);
+    if (target) {
+        return foundWords[target] ? { kind: "already-found", word: target } : { kind: "target-found", word: target };
+    }
+
+    const bonus = validBonusCandidates.has(word) ? word : validBonusCandidates.has(reversed) ? reversed : null;
+    if (bonus && bonus.length >= MIN_BONUS_WORD_LENGTH) {
+        return foundWords[bonus] ? { kind: "already-found", word: bonus } : { kind: "bonus-found", word: bonus };
+    }
+    return { kind: "invalid", word };
+}
+
 // Below this many favorited categories, custom mode would cycle through too
 // small a pool to feel different from just playing one or two categories on
 // repeat -- so the toggle stays disabled until the player clears this bar.

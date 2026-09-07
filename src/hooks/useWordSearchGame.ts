@@ -3,7 +3,7 @@ import { getPuzzleWords, validateWord, CATEGORY_NAMES, type Tier } from "../back
 import { HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 import { loadSaveDataSync, loadSaveData, writeSaveData, hasLocalSave, isTauri, CURRENT_SCHEMA_VERSION, DEFAULT_SAVE_DATA } from "../persistence";
-import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel } from "../gameMechanics";
+import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel, classifyWordSelection } from "../gameMechanics";
 import { consumePowerupCharge as consumeCharge, purchasePowerupCharge as purchaseCharge, type PowerupId, type PowerupInventory } from "../powerups";
 import { generatePuzzle, placeWordOnGrid } from "../puzzleGenerator";
 
@@ -39,6 +39,14 @@ export function useWordSearchGame() {
 
     // Lifetime stat feeding the "found a word that wasn't on the list" achievement
     const [bonusWordsFound, setBonusWordsFound] = useState(initialSave.bonusWordsFound);
+    const [bonusWordsThisLevel, setBonusWordsThisLevel] = useState<string[]>([]);
+    const [bonusSeedsThisLevel, setBonusSeedsThisLevel] = useState(0);
+    const [bonusDiscovery, setBonusDiscovery] = useState<{ word: string; seeds: number } | null>(null);
+    useEffect(() => {
+        if (!bonusDiscovery) return;
+        const timer = setTimeout(() => setBonusDiscovery(null), 2200);
+        return () => clearTimeout(timer);
+    }, [bonusDiscovery]);
     // Store-unlocked cosmetics
     const [unlockedThemes, setUnlockedThemes] = useState<string[]>(initialSave.unlockedThemes);
     const [hasGoldenCrest, setHasGoldenCrest] = useState(initialSave.hasGoldenCrest);
@@ -168,6 +176,9 @@ export function useWordSearchGame() {
         setLevelComplete(false);
         setDoubleSeedsActive(false);
         setFreeHintUsesRemaining(1);
+        setBonusWordsThisLevel([]);
+        setBonusSeedsThisLevel(0);
+        setBonusDiscovery(null);
         const size = calculateGridSize(level, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
         const count = Math.max(3, size - 1);
         const maxWordLength = size <= 4 ? size : size - 1;
@@ -232,28 +243,23 @@ export function useWordSearchGame() {
 
         const reversedWord = currentWord.split('').reverse().join('');
 
-        let matchedWord: string | null = null;
-        let isBonus = false;
-
-        if (wordsToFind.includes(currentWord)) {
-            matchedWord = currentWord;
-        } else if (wordsToFind.includes(reversedWord)) {
-            matchedWord = reversedWord;
-        } else {
-            const isDictForward = await validateWord(currentWord);
-            if (isDictForward && !foundWords[currentWord]) {
-                matchedWord = currentWord;
-                isBonus = true;
-            } else if (reversedWord !== currentWord) {
-                const isDictReverse = await validateWord(reversedWord);
-                if (isDictReverse && !foundWords[reversedWord]) {
-                    matchedWord = reversedWord;
-                    isBonus = true;
-                }
-            }
+        const validBonusCandidates = new Set<string>();
+        if (!wordsToFind.includes(currentWord) && !wordsToFind.includes(reversedWord)) {
+            if (await validateWord(currentWord)) validBonusCandidates.add(currentWord);
+            if (reversedWord !== currentWord && await validateWord(reversedWord)) validBonusCandidates.add(reversedWord);
+        }
+        const selection = classifyWordSelection(currentWord, reversedWord, wordsToFind, foundWords, validBonusCandidates);
+        if (selection.kind === "already-found") {
+            setStatus(`${selection.word} is already found.`);
+            return;
+        }
+        if (selection.kind === "invalid") {
+            setStatus("That selection is not a target or bonus word.");
+            return;
         }
 
-        if (matchedWord && !foundWords[matchedWord]) {
+        const matchedWord = selection.word;
+        if (selection.kind === "target-found" || selection.kind === "bonus-found") {
             const randomColor = HIGHLIGHT_COLORS[Math.floor(Math.random() * HIGHLIGHT_COLORS.length)];
             const newLine: FoundLine = { startR: startCell.r, startC: startCell.c, endR: endCell.r, endC: endCell.c, color: randomColor };
             const nextFoundWords = { ...foundWords, [matchedWord]: randomColor };
@@ -263,9 +269,14 @@ export function useWordSearchGame() {
             if (dr !== 0 && dc !== 0) setFoundDiagonal(true);
 
             const rewardMultiplier = doubleSeedsActive ? 2 : 1;
-            if (isBonus) {
-                setSeeds((s: number) => s + REWARDS.BONUS_WORD_SEEDS * rewardMultiplier);
+            if (selection.kind === "bonus-found") {
+                const bonusSeeds = REWARDS.BONUS_WORD_SEEDS * rewardMultiplier;
+                setSeeds((s: number) => s + bonusSeeds);
                 setBonusWordsFound((n: number) => n + 1);
+                setBonusWordsThisLevel(prev => [...prev, matchedWord]);
+                setBonusSeedsThisLevel(total => total + bonusSeeds);
+                setBonusDiscovery({ word: matchedWord, seeds: bonusSeeds });
+                setStatus(`Bonus sprout! ${matchedWord} +${bonusSeeds} Seeds`);
             } else {
                 const foundMainCount = wordsToFind.filter(w => nextFoundWords[w]).length;
                 if (foundMainCount === wordsToFind.length) {
@@ -353,6 +364,9 @@ export function useWordSearchGame() {
         setFoundWords({});
         setFoundLines([]);
         setLevelComplete(false);
+        setBonusWordsThisLevel([]);
+        setBonusSeedsThisLevel(0);
+        setBonusDiscovery(null);
     };
 
     const nextLevel = () => setLevel((l: number) => l + 1);
@@ -463,7 +477,7 @@ export function useWordSearchGame() {
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
-        categoriesSeen, foundDiagonal, bonusWordsFound,
+        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
         // Botanical Sanctuary state & handlers
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth,
