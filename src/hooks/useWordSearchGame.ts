@@ -1,53 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getPuzzleWords, validateWord, CATEGORY_NAMES, type Tier } from "../backend";
-import { DIRECTIONS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
+import { HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 import { loadSaveDataSync, loadSaveData, writeSaveData, hasLocalSave, isTauri, CURRENT_SCHEMA_VERSION, DEFAULT_SAVE_DATA } from "../persistence";
 import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel } from "../gameMechanics";
 import { consumePowerupCharge as consumeCharge, purchasePowerupCharge as purchaseCharge, type PowerupId, type PowerupInventory } from "../powerups";
-
-function canPlaceWord(grid: string[][], size: number, word: string, row: number, col: number, dir: number[]) {
-    for (let i = 0; i < word.length; i++) {
-        const r = row + (i * dir[1]);
-        const c = col + (i * dir[0]);
-        if (r < 0 || r >= size || c < 0 || c >= size) return false;
-        if (grid[r][c] !== '' && grid[r][c] !== word[i]) return false;
-    }
-    return true;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-}
-
-function placeWord(grid: string[][], size: number, word: string) {
-    const shuffledDirs = shuffle(DIRECTIONS);
-    for (const dir of shuffledDirs) {
-        const validStarts: [number, number][] = [];
-        for (let row = 0; row < size; row++) {
-            for (let col = 0; col < size; col++) {
-                if (canPlaceWord(grid, size, word, row, col, dir)) {
-                    validStarts.push([row, col]);
-                }
-            }
-        }
-        if (validStarts.length > 0) {
-            const [row, col] = validStarts[Math.floor(Math.random() * validStarts.length)];
-            for (let i = 0; i < word.length; i++) {
-                const r = row + (i * dir[1]);
-                const c = col + (i * dir[0]);
-                grid[r][c] = word[i];
-            }
-            return true;
-        }
-    }
-    return false;
-}
+import { generatePuzzle, placeWordOnGrid } from "../puzzleGenerator";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -235,30 +193,19 @@ export function useWordSearchGame() {
             recentWordsByCategoryRef.current.set(categoryName, mainWords);
         }
 
-        const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
+        const generated = generatePuzzle({
+            targetWords: mainWords,
+            bonusWords,
+            category: puzzle.category,
+            level,
+            mode: difficultyMode,
+        });
 
-        const placed = new Set<string>();
-        const placeAll = (list: string[]) => {
-            [...list].sort((a, b) => b.length - a.length).forEach(word => {
-                if (placeWord(grid, size, word)) placed.add(word);
-            });
-        };
-        placeAll(mainWords);
-        placeAll(bonusWords);
-
-        for (let r = 0; r < size; r++) {
-            for (let c = 0; c < size; c++) {
-                if (grid[r][c] === '') {
-                    grid[r][c] = getRandomFillLetter(mainWords);
-                }
-            }
-        }
-
-        setWordsToFind(mainWords.filter(w => placed.has(w)));
+        setWordsToFind(generated.targetWords);
         setFoundWords({});
         setFoundLines([]);
-        setGridSize(size);
-        setGridData(grid);
+        setGridSize(generated.gridSize);
+        setGridData(generated.grid);
         setStatus("Puzzle generated. Find the words!");
     };
 
@@ -389,7 +336,7 @@ export function useWordSearchGame() {
 
         const unfoundWords = wordsToFind.filter(w => !foundWords[w]);
         unfoundWords.forEach(word => {
-            placeWord(grid, size, word);
+            placeWordOnGrid(grid, word);
         });
         for (let r = 0; r < size; r++) {
             for (let c = 0; c < size; c++) {
