@@ -214,6 +214,38 @@ body {
 }
 .ws-playing-backdrop img { object-fit: cover; object-position: center; }
 .ws-main-layout { position: relative; }
+
+/* Local lazy destinations keep the application shell mounted while a view is loading. */
+.ws-destination-skeleton {
+  width: min(100%, 1080px);
+  min-height: 320px;
+  margin: 0 auto;
+  padding: clamp(20px, 4vw, 36px);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl, 24px);
+  background: color-mix(in srgb, var(--color-surface-container) 88%, transparent);
+}
+.ws-destination-skeleton--dialog {
+  width: min(100%, 620px);
+  min-height: 280px;
+  margin: 8vh auto;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+.ws-destination-skeleton__heading { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+.ws-destination-skeleton__heading-copy { display: grid; gap: 10px; flex: 1; }
+.ws-destination-skeleton__cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ws-destination-skeleton__card { display: grid; gap: 14px; min-height: 128px; padding: 20px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg, 16px); background: rgba(255, 255, 255, 0.035); }
+.ws-skeleton-block { display: block; border-radius: 999px; background: linear-gradient(105deg, rgba(255,255,255,0.08) 25%, rgba(255,255,255,0.2) 40%, rgba(255,255,255,0.08) 55%); background-size: 300% 100%; animation: ws-skeleton-shimmer 1.6s ease-in-out infinite; }
+.ws-skeleton-block--icon { width: 52px; height: 52px; border-radius: 16px; }
+.ws-skeleton-block--title { width: min(240px, 70%); height: 24px; }
+.ws-skeleton-block--subtitle { width: min(360px, 90%); height: 14px; }
+.ws-skeleton-block--card-title { width: 60%; height: 18px; }
+.ws-skeleton-block--card-line { width: 92%; height: 12px; }
+.ws-skeleton-block--short { width: 68%; }
+.ws-lazy-dialog-fallback { position: fixed; z-index: 1400; inset: 0; display: grid; place-items: start center; padding: 24px; background: rgba(0, 0, 0, 0.58); }
+@keyframes ws-skeleton-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .ws-skeleton-block { animation: none; } }
+@media (max-width: 600px) { .ws-destination-skeleton__cards { grid-template-columns: 1fr; } .ws-lazy-dialog-fallback { padding: 16px; } }
 .glass-panel.ws-game-board-panel {
   --color-on-surface: #f2f8d9;
   background: rgba(8, 29, 20, .76);

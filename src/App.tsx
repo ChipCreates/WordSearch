@@ -16,6 +16,7 @@ import PlayerProfileSheet from "./components/PlayerProfileSheet";
 import ContextSidebar from "./components/sidebar/ContextSidebar";
 import ResponsiveContextStrip from "./components/sidebar/ResponsiveContextStrip";
 import MobilePowerupDrawer from "./components/sidebar/MobilePowerupDrawer";
+import DestinationSkeleton from "./components/DestinationSkeleton";
 const SettingsDialog = lazy(() => import("./components/SettingsDialog"));
 const AboutDialog = lazy(() => import("./components/AboutDialog"));
 const LevelsView = lazy(() => import("./components/LevelsView"));
@@ -184,7 +185,6 @@ export default function App() {
     };
 
     return (
-        <Suspense fallback={<div className="ws-loading-screen" role="status">Loading your conservatory…</div>}>
         <ThemeProvider theme={muiTheme}>
             <CssBaseline />
 
@@ -359,15 +359,18 @@ export default function App() {
                         onCollectFieldNote={claimFieldNote}
                     />
                     {activeTab === "levels" ? (
-                        <LevelsView
+                        <Suspense fallback={<DestinationSkeleton destination="levels" />}>
+                            <LevelsView
                             currentLevel={level}
                             onSelectLevel={(lvl) => {
                                 goToLevel(lvl);
                                 setActiveTab("play");
                             }}
-                        />
+                            />
+                        </Suspense>
                     ) : activeTab === "achievements" ? (
-                        <AchievementsView
+                        <Suspense fallback={<DestinationSkeleton destination="achievements" />}>
+                            <AchievementsView
                             unlockedAchievements={unlockedAchievements}
                             stats={{
                                 levelsCompleted,
@@ -384,9 +387,11 @@ export default function App() {
                                 uniqueCategoriesCompleted,
                                 powerupsUsed,
                             }}
-                        />
+                            />
+                        </Suspense>
                     ) : activeTab === "garden" ? (
-                        <GardenView
+                        <Suspense fallback={<DestinationSkeleton destination="garden" />}>
+                            <GardenView
                             seeds={seeds}
                             ownedPlants={ownedPlants}
                             wateredTimestamps={wateredTimestamps}
@@ -398,7 +403,8 @@ export default function App() {
                             updatePlantGrowth={updatePlantGrowth}
                             recordPlantBloom={recordPlantBloom}
                             showToast={showToast}
-                        />
+                            />
+                        </Suspense>
                     ) : (
                         <>
                             {/* Mobile Compact Header Bar (shown on mobile screens < 768px) */}
@@ -654,46 +660,58 @@ export default function App() {
             </div>
 
             {/* ── Dialogs ───────────────────────────────────────────────────── */}
-            {settingsOpen && <SettingsDialog
-                open={settingsOpen}
-                onClose={() => setSettingsOpen(false)}
-                difficultyMode={difficultyMode}
-                onDifficultyModeChange={setDifficultyMode}
-                favoriteCategories={favoriteCategories}
-                onFavoriteCategoriesChange={setFavoriteCategories}
-                useFavorites={useFavorites}
-                onUseFavoritesChange={setUseFavorites}
-                musicMuted={musicMuted}
-                onToggleMusicMuted={toggleMusicMuted}
-                musicVolume={musicVolume}
-                onMusicVolumeChange={setMusicVolume}
-                sfxMuted={sfxMuted}
-                onToggleSfxMuted={toggleSfxMuted}
-                sfxVolume={sfxVolume}
-                onSfxVolumeChange={setSfxVolume}
-                themeMode={themeMode}
-                onThemeModeChange={handleThemeModeChange}
-                unlockedThemes={unlockedThemes}
-            />}
+            {settingsOpen && (
+                <Suspense fallback={<div className="ws-lazy-dialog-fallback"><DestinationSkeleton destination="settings" /></div>}>
+                    <SettingsDialog
+                        open={settingsOpen}
+                        onClose={() => setSettingsOpen(false)}
+                        difficultyMode={difficultyMode}
+                        onDifficultyModeChange={setDifficultyMode}
+                        favoriteCategories={favoriteCategories}
+                        onFavoriteCategoriesChange={setFavoriteCategories}
+                        useFavorites={useFavorites}
+                        onUseFavoritesChange={setUseFavorites}
+                        musicMuted={musicMuted}
+                        onToggleMusicMuted={toggleMusicMuted}
+                        musicVolume={musicVolume}
+                        onMusicVolumeChange={setMusicVolume}
+                        sfxMuted={sfxMuted}
+                        onToggleSfxMuted={toggleSfxMuted}
+                        sfxVolume={sfxVolume}
+                        onSfxVolumeChange={setSfxVolume}
+                        themeMode={themeMode}
+                        onThemeModeChange={handleThemeModeChange}
+                        unlockedThemes={unlockedThemes}
+                    />
+                </Suspense>
+            )}
 
-                {aboutOpen && <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} onReplayOnboarding={replayOnboarding} />}
+            {aboutOpen && (
+                <Suspense fallback={<div className="ws-lazy-dialog-fallback"><DestinationSkeleton destination="about" /></div>}>
+                    <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} onReplayOnboarding={replayOnboarding} />
+                </Suspense>
+            )}
 
-            {seedStoreOpen && <SeedStoreDialog
-                open={seedStoreOpen}
-                onClose={() => setSeedStoreOpen(false)}
-                seeds={seeds}
-                ownedPlants={ownedPlants}
-                onBuyPlantSeed={buyPlantSeed}
-                onSpendSeeds={spendSeeds}
-                doubleSeedsActive={doubleSeedsActive}
-                powerupInventory={powerupInventory}
-                onPurchasePowerupCharge={purchasePowerupCharge}
-                unlockedThemes={unlockedThemes}
-                onUnlockTheme={unlockTheme}
-                hasGoldenCrest={hasGoldenCrest}
-                onUnlockGoldenCrest={unlockGoldenCrest}
-                showToast={showToast}
-            />}
+            {seedStoreOpen && (
+                <Suspense fallback={<div className="ws-lazy-dialog-fallback"><DestinationSkeleton destination="store" /></div>}>
+                    <SeedStoreDialog
+                        open={seedStoreOpen}
+                        onClose={() => setSeedStoreOpen(false)}
+                        seeds={seeds}
+                        ownedPlants={ownedPlants}
+                        onBuyPlantSeed={buyPlantSeed}
+                        onSpendSeeds={spendSeeds}
+                        doubleSeedsActive={doubleSeedsActive}
+                        powerupInventory={powerupInventory}
+                        onPurchasePowerupCharge={purchasePowerupCharge}
+                        unlockedThemes={unlockedThemes}
+                        onUnlockTheme={unlockTheme}
+                        hasGoldenCrest={hasGoldenCrest}
+                        onUnlockGoldenCrest={unlockGoldenCrest}
+                        showToast={showToast}
+                    />
+                </Suspense>
+            )}
 
             <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />
 
@@ -710,6 +728,5 @@ export default function App() {
                 </Alert>
             </Snackbar>
         </ThemeProvider>
-        </Suspense>
     );
 }
