@@ -37,6 +37,13 @@ import {
 
 const THEME_STORAGE_KEY = "wordsearch.themeMode";
 
+const isTwelveByTwelvePreview = import.meta.env.DEV
+    && typeof window !== "undefined"
+    && new URLSearchParams(window.location.search).get("preview") === "12x12";
+const TWELVE_BY_TWELVE_PREVIEW_GRID = Array.from({ length: 12 }, (_, row) =>
+    Array.from({ length: 12 }, (_, column) => "WORDSPROUTLEVEL12"[(row * 12 + column) % "WORDSPROUTLEVEL12".length]),
+);
+
 type ThemeMode = "sprout" | "midnight" | "autumn" | "ocean";
 type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
 
@@ -61,6 +68,9 @@ export default function App() {
         activateSuperRoot, activateCompass, activateSpectrometer, activateDoubleSeeds,
         spectrometerCells, compassDirection,
     } = useWordSearchGame();
+
+    const renderedGridSize = isTwelveByTwelvePreview ? 12 : gridSize;
+    const renderedGridData = isTwelveByTwelvePreview ? TWELVE_BY_TWELVE_PREVIEW_GRID : gridData;
 
     const {
         musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
@@ -454,15 +464,15 @@ export default function App() {
                             {/* Gameplay Grid & Found Words Side Panel */}
                             <div className="ws-gameplay-grid">
                                 {/* Left: Canvas Word Grid Panel */}
-                                <div className={`glass-panel ws-game-board-panel${gridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
+                                <div className={`glass-panel ws-game-board-panel${renderedGridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
                                     <div className="ws-mobile-board-header">
                                         <strong>{category || "Botanical"}</strong>
                                         <span>{foundCount}/{wordsToFind.length}</span>
                                     </div>
                                     <GameCanvas
-                                        gridSize={gridSize}
-                                        gridData={gridData}
-                                        foundLines={foundLines}
+                                        gridSize={renderedGridSize}
+                                        gridData={renderedGridData}
+                                        foundLines={isTwelveByTwelvePreview ? [] : foundLines}
                                         hintCell={hintCell}
                                         spectrometerCells={spectrometerCells}
                                         compassDirection={compassDirection}
