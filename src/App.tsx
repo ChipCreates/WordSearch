@@ -13,10 +13,10 @@ import GameCanvas from "./components/GameCanvas";
 import SuccessScreen from "./components/SuccessScreen";
 import AchievementBanner from "./components/AchievementBanner";
 import PlayerProfileSheet from "./components/PlayerProfileSheet";
+import ContextSidebar from "./components/sidebar/ContextSidebar";
 const SettingsDialog = lazy(() => import("./components/SettingsDialog"));
 const AboutDialog = lazy(() => import("./components/AboutDialog"));
 const LevelsView = lazy(() => import("./components/LevelsView"));
-const GreenhouseFloorplanPanel = lazy(() => import("./components/GreenhouseFloorplanPanel"));
 const SeedStoreDialog = lazy(() => import("./components/SeedStoreDialog"));
 const AchievementsView = lazy(() => import("./components/AchievementsView"));
 const GardenView = lazy(() => import("./components/GardenView"));
@@ -30,10 +30,6 @@ import {
     AutoFixHighOutlined,
     ShuffleOutlined,
     RefreshOutlined,
-    VolumeOffOutlined,
-    VolumeUpOutlined,
-    MusicOffOutlined,
-    MusicNoteOutlined,
     CheckCircleOutlined,
     LockOutlined,
     CheckRounded,
@@ -46,7 +42,7 @@ type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
 
 export default function App() {
     const {
-        level, seeds, status, levelComplete, category, levelsCompleted,
+        level, highestUnlockedLevel, seeds, status, levelComplete, category, levelsCompleted,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
@@ -301,138 +297,34 @@ export default function App() {
                     </div>
                 </header>
 
-                {/* ── Side Navigation Sidebar (SideNavBar - Desktop XL) ─────────── */}
-                <aside className="ws-side-nav">
-                    {/* User profile section */}
-                    <div className="ws-side-nav__profile">
-                        <button
-                            className="ws-side-nav__avatar-box ws-botanist-avatar"
-                            style={{ "--avatar-position": avatarBackgroundPosition } as CSSProperties}
-                            onClick={() => { playSfx("click"); setProfileOpen(true); }}
-                            aria-label={`Open player information: ${botanistRank.title}`}
-                            title="Player information"
-                        >
-                        </button>
-                        <div className="ws-side-nav__profile-copy">
-                            <div className="ws-side-nav__rank-title">
-                                {botanistRank.title}
-                                {hasGoldenCrest && (
-                                    <span title="Golden Sprout Crest" style={{ fontSize: "0.9rem", filter: "drop-shadow(0 0 6px rgba(244, 201, 93, 0.8))" }}>🏆</span>
-                                )}
-                            </div>
-                            <div className="ws-side-nav__rank-level">Level {level}</div>
-                        </div>
-                    </div>
-
-                    {/* Tactical Toolkit or Greenhouse Floorplan */}
-                    {activeTab === "play" ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-                            <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, color: "var(--color-on-surface-variant)", paddingLeft: 4 }}>
-                                Tactical Toolkit
-                            </div>
-                            {levelComplete ? (
-                                <button
-                                    className="ws-primary-action-btn"
-                                    onClick={() => { playSfx("click"); nextLevel(); }}
-                                    style={{ width: "100%", justifyContent: "center", padding: "10px 16px", fontSize: "0.95rem" }}
-                                >
-                                    <EcoLeaf />
-                                    <span>Next Level 🌱</span>
-                                </button>
-                            ) : (
-                                <button
-                                    className="ws-primary-action-btn"
-                                    disabled={!hintAvailable}
-                                    title={!hintAvailable ? "Buy a hint charge in the Seed Store" : undefined}
-                                    onClick={() => { playSfx("click"); handleRevealHint(); }}
-                                    style={{ width: "100%", justifyContent: "center", padding: "10px 16px", fontSize: "0.95rem" }}
-                                >
-                                    <AutoFixHighOutlined />
-                                    <span>Hint · {freeHintUsesRemaining > 0 ? "Free" : `x${powerupInventory["single-letter-sprout"]}`}</span>
-                                </button>
-                            )}
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                                <button className="ws-control-btn" disabled={powerupInventory["lumina-cyclone"] === 0} title={powerupInventory["lumina-cyclone"] === 0 ? "Buy a Shuffle charge in the Seed Store" : "Shuffle the unfound words"} onClick={() => { playSfx("click"); reshuffle(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
-                                    <ShuffleOutlined style={{ fontSize: 16 }} />
-                                    <span>Shuffle · x{powerupInventory["lumina-cyclone"]}</span>
-                                </button>
-                                <button className="ws-control-btn" onClick={() => { playSfx("click"); retryLevel(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
-                                    <RefreshOutlined style={{ fontSize: 16 }} />
-                                    <span>Restart</span>
-                                        </button>
-                                    </div>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                                        <button className="ws-control-btn" disabled={!powerupInventory["super-root"]} title={!powerupInventory["super-root"] ? "Buy a Super Root charge in the Seed Store" : "Solve one unfound target word"} onClick={() => { playSfx("click"); activateSuperRoot(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
-                                            <span aria-hidden="true">🌱</span><span>Root · x{powerupInventory["super-root"]}</span>
-                                        </button>
-                                        <button className="ws-control-btn" disabled={!powerupInventory["bioluminescent-compass"]} title={!powerupInventory["bioluminescent-compass"] ? "Buy a Compass charge in the Seed Store" : "Point toward an unfound word"} onClick={() => { playSfx("click"); activateCompass(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
-                                            <span aria-hidden="true">🧭</span><span>Compass · x{powerupInventory["bioluminescent-compass"]}</span>
-                                        </button>
-                                        <button className="ws-control-btn" disabled={!powerupInventory["flora-spectrometer"]} title={!powerupInventory["flora-spectrometer"] ? "Buy a Spectrometer charge in the Seed Store" : "Highlight all unfound word starts"} onClick={() => { playSfx("click"); activateSpectrometer(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
-                                            <span aria-hidden="true">🔬</span><span>Spectro · x{powerupInventory["flora-spectrometer"]}</span>
-                                        </button>
-                                        <button className="ws-control-btn" disabled={!powerupInventory["nitrogen-booster"] || doubleSeedsActive} title={doubleSeedsActive ? "2× Seeds active for this puzzle" : !powerupInventory["nitrogen-booster"] ? "Buy a Nitrogen Booster charge in the Seed Store" : "Double completion and bonus rewards"} onClick={() => { playSfx("click"); activateDoubleSeeds(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
-                                            <span aria-hidden="true">⚡</span><span>{doubleSeedsActive ? "2× Active" : `2× Seeds · x${powerupInventory["nitrogen-booster"]}`}</span>
-                                        </button>
-                                    </div>
-                                    {doubleSeedsActive && <div role="status" style={{ padding: "7px 9px", borderRadius: 8, background: "rgba(244, 201, 93, 0.16)", border: "1px solid rgba(244, 201, 93, 0.45)", color: "var(--color-on-surface)", fontSize: "0.78rem", fontWeight: 800 }}>⚡ 2× Seeds active for this puzzle</div>}
-                        </div>
-                    ) : activeTab === "levels" ? (
-                        <GreenhouseFloorplanPanel level={level} ownedPlants={ownedPlants} growthByPlant={growthByPlant} />
-                    ) : null}
-
-                    {/* Bottom Quick Audio & Info Dock */}
-                    <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--glass-border)", display: "flex", flexDirection: "column", gap: 6 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 6px" }}>
-                            <span style={{ fontSize: "0.8rem", color: "var(--color-on-surface-variant)", fontWeight: 600 }}>Audio Controls</span>
-                            <div style={{ display: "flex", gap: 6 }}>
-                                <button
-                                    onClick={toggleSfxMuted}
-                                    title={sfxMuted ? "Unmute SFX" : "Mute SFX"}
-                                    style={{
-                                        background: sfxMuted ? "rgba(255, 100, 100, 0.2)" : "rgba(0, 228, 121, 0.15)",
-                                        border: "1px solid var(--glass-border)",
-                                        color: sfxMuted ? "#ff6b6b" : "var(--color-primary)",
-                                        borderRadius: "50%",
-                                        width: 32,
-                                        height: 32,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    {sfxMuted ? <VolumeOffOutlined style={{ fontSize: 18 }} /> : <VolumeUpOutlined style={{ fontSize: 18 }} />}
-                                </button>
-                                <button
-                                    onClick={toggleMusicMuted}
-                                    title={musicMuted ? "Unmute Music" : "Mute Music"}
-                                    style={{
-                                        background: musicMuted ? "rgba(255, 100, 100, 0.2)" : "rgba(0, 228, 121, 0.15)",
-                                        border: "1px solid var(--glass-border)",
-                                        color: musicMuted ? "#ff6b6b" : "var(--color-primary)",
-                                        borderRadius: "50%",
-                                        width: 32,
-                                        height: 32,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    {musicMuted ? <MusicOffOutlined style={{ fontSize: 18 }} /> : <MusicNoteOutlined style={{ fontSize: 18 }} />}
-                                </button>
-                            </div>
-                        </div>
-                        <button
-                            className="ws-about-art-btn"
-                            onClick={() => setAboutOpen(true)}
-                            style={{ background: "none", border: "none", color: "var(--color-on-surface-variant)", fontSize: "0.8rem", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "6px 8px" }}
-                        >
-                            <NavigationArt name="help" /> About & How to Play
-                        </button>
-                    </div>
-                </aside>
+                {/* ── Context-sensitive sidebar ──────────────────────────────── */}
+                <ContextSidebar
+                    activeTab={activeTab}
+                    highestUnlockedLevel={highestUnlockedLevel}
+                    playingLevel={level}
+                    levelComplete={levelComplete}
+                    hasGoldenCrest={hasGoldenCrest}
+                    avatarBackgroundPosition={avatarBackgroundPosition}
+                    profileRankTitle={botanistRank.title}
+                    onOpenProfile={() => { playSfx("click"); setProfileOpen(true); }}
+                    onNextLevel={() => { playSfx("click"); nextLevel(); }}
+                    onRevealHint={() => { playSfx("click"); handleRevealHint(); }}
+                    onShuffle={() => { playSfx("click"); reshuffle(); }}
+                    onRetry={() => { playSfx("click"); retryLevel(); }}
+                    onSuperRoot={() => { playSfx("click"); activateSuperRoot(); }}
+                    onCompass={() => { playSfx("click"); activateCompass(); }}
+                    onSpectrometer={() => { playSfx("click"); activateSpectrometer(); }}
+                    onDoubleSeeds={() => { playSfx("click"); activateDoubleSeeds(); }}
+                    hintAvailable={hintAvailable}
+                    freeHintUsesRemaining={freeHintUsesRemaining}
+                    powerupInventory={powerupInventory}
+                    doubleSeedsActive={doubleSeedsActive}
+                    sfxMuted={sfxMuted}
+                    musicMuted={musicMuted}
+                    onToggleSfx={toggleSfxMuted}
+                    onToggleMusic={toggleMusicMuted}
+                    onHelp={() => setAboutOpen(true)}
+                />
 
                 {/* ── Main Content Container ───────────────────────────────────── */}
                 <main className={`ws-main-layout${activeTab === "levels" ? " ws-main-layout--levels" : ""}`}>

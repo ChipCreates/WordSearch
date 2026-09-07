@@ -23,4 +23,16 @@ export function getBotanistRank(level: number): BotanistRank {
     return RANKS.find(rank => safeLevel >= rank.minLevel && (rank.maxLevel === null || safeLevel <= rank.maxLevel)) ?? RANKS[0];
 }
 
+export function getNextBotanistRank(level: number): BotanistRank | null {
+    const current = getBotanistRank(level);
+    return RANKS.find(rank => rank.minLevel > current.minLevel) ?? null;
+}
+
+export function getRankProgress(level: number): number {
+    const rank = getBotanistRank(level);
+    if (rank.maxLevel === null) return 1;
+    const span = rank.maxLevel - rank.minLevel + 1;
+    return Math.min(1, Math.max(0, (Math.max(1, Math.floor(level)) - rank.minLevel + 1) / span));
+}
+
 export { RANKS as BOTANIST_RANKS };

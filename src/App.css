@@ -464,6 +464,98 @@ body {
   line-height: 1.25;
 }
 
+.ws-sidebar-rank-progress {
+  height: 5px;
+  margin: 6px 0 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.1);
+}
+
+.ws-sidebar-rank-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+}
+
+.ws-sidebar-rank-progress + small {
+  color: var(--color-on-surface-variant);
+  font-size: 0.68rem;
+}
+
+.ws-sidebar-context {
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+  padding-right: 2px;
+}
+
+.ws-sidebar-section-label,
+.ws-sidebar-audio-label {
+  padding-left: 4px;
+  color: var(--color-on-surface-variant);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ws-sidebar-tool-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ws-sidebar-booster-status {
+  padding: 7px 9px;
+  border: 1px solid rgba(244, 201, 93, 0.45);
+  border-radius: 8px;
+  background: rgba(244, 201, 93, 0.16);
+  color: var(--color-on-surface);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.ws-sidebar-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  color: var(--color-on-surface-variant);
+  font-size: 0.8rem;
+}
+
+.ws-sidebar-summary strong { color: var(--color-primary); font-family: var(--font-headline); font-size: 1rem; }
+
+.ws-sidebar-utilities {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.ws-sidebar-audio-row { display: flex; gap: 6px; padding: 0 6px; }
+.ws-sidebar-audio-row button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  background: rgba(0, 228, 121, 0.15);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
 .ws-side-nav__nav-item {
   display: flex;
   align-items: center;
