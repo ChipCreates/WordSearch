@@ -92,10 +92,12 @@ export default function ContextSidebar(props: Props) {
         </div>
 
         <div className="ws-sidebar-utilities">
-            <div className="ws-sidebar-audio-label">Audio Controls</div>
-            <div className="ws-sidebar-audio-row">
-                <button onClick={props.onToggleSfx} aria-label={props.sfxMuted ? "Unmute sound effects" : "Mute sound effects"} title={props.sfxMuted ? "Unmute SFX" : "Mute SFX"}>{props.sfxMuted ? <VolumeOffOutlined /> : <VolumeUpOutlined />}</button>
-                <button onClick={props.onToggleMusic} aria-label={props.musicMuted ? "Unmute music" : "Mute music"} title={props.musicMuted ? "Unmute Music" : "Mute Music"}>{props.musicMuted ? <MusicOffOutlined /> : <MusicNoteOutlined />}</button>
+            <div className="ws-sidebar-audio-controls">
+                <div className="ws-sidebar-audio-label">Audio Controls</div>
+                <div className="ws-sidebar-audio-row">
+                    <button onClick={props.onToggleSfx} aria-label={props.sfxMuted ? "Unmute sound effects" : "Mute sound effects"} title={props.sfxMuted ? "Unmute SFX" : "Mute SFX"}>{props.sfxMuted ? <VolumeOffOutlined /> : <VolumeUpOutlined />}</button>
+                    <button onClick={props.onToggleMusic} aria-label={props.musicMuted ? "Unmute music" : "Mute music"} title={props.musicMuted ? "Unmute Music" : "Mute Music"}>{props.musicMuted ? <MusicOffOutlined /> : <MusicNoteOutlined />}</button>
+                </div>
             </div>
             <button className="ws-about-art-btn" onClick={props.onHelp}><NavigationArt name="help" /> About & How to Play</button>
         </div>

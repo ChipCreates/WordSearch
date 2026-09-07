@@ -372,7 +372,7 @@ body {
   z-index: 40;
   display: none;
   flex-direction: column;
-  padding: var(--space-md);
+  padding: 20px 18px 18px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -392,8 +392,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-  padding: 18px 14px 16px;
+  margin-bottom: 24px;
+  padding: 20px 16px 18px;
   border: 1px solid rgba(132, 169, 140, 0.28);
   border-radius: 22px;
   background: linear-gradient(145deg, rgba(25, 58, 43, 0.72), rgba(10, 30, 24, 0.42));
@@ -489,9 +489,9 @@ body {
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 4px;
-  padding-right: 2px;
+  gap: 18px;
+  margin-top: 6px;
+  padding: 0 4px 12px 2px;
 }
 
 .ws-sidebar-section-label,
@@ -507,7 +507,12 @@ body {
 .ws-sidebar-tool-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px 10px;
+}
+
+.ws-sidebar-tool-grid .ws-control-btn {
+  min-height: 58px;
+  line-height: 1.25;
 }
 
 .ws-sidebar-booster-status {
@@ -523,8 +528,8 @@ body {
 .ws-sidebar-summary {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
+  gap: 12px;
+  padding: 16px 14px;
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   background: rgba(255,255,255,0.04);
@@ -537,13 +542,14 @@ body {
 .ws-sidebar-utilities {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 14px;
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 18px;
   border-top: 1px solid var(--glass-border);
 }
 
-.ws-sidebar-audio-row { display: flex; gap: 6px; padding: 0 6px; }
+.ws-sidebar-audio-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 6px; }
+.ws-sidebar-audio-row { display: flex; flex: 0 0 auto; gap: 8px; }
 .ws-sidebar-audio-row button {
   display: grid;
   width: 36px;
@@ -555,6 +561,28 @@ body {
   color: var(--color-primary);
   cursor: pointer;
 }
+
+.ws-sidebar-audio-row button:hover { background: rgba(0, 228, 121, 0.28); }
+.ws-sidebar-audio-row button:focus-visible,
+.ws-about-art-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+
+.ws-sidebar-utilities .ws-about-art-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ws-sidebar-utilities .ws-about-art-btn:hover { background: rgba(255,255,255,0.06); color: var(--color-on-surface); }
 
 .ws-responsive-context-strip {
   display: none;
