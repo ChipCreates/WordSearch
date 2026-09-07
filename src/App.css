@@ -1921,18 +1921,20 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   .ws-mobile-board-header span { flex: 0 0 auto; margin-left: 10px; color: var(--color-primary); font-size: 0.9rem; font-weight: 800; }
 
   .ws-planter {
-    max-width: min(92vw, min(56vh, 360px)) !important;
+    max-width: min(92vw, min(48vh, 330px)) !important;
     margin: 0 auto;
   }
 
   /* Keep the target list in the first viewport on the small early boards. */
   .ws-game-board-panel--compact .ws-planter {
-    max-width: min(88vw, min(45vh, 310px)) !important;
+    max-width: min(84vw, min(38vh, 270px)) !important;
   }
 
   .ws-game-board-panel {
-    padding: 14px !important;
+    padding: 10px !important;
   }
+
+  .ws-game-board-panel--compact { padding: 8px !important; }
 
   .ws-found-words-header {
     display: none !important;
@@ -1989,19 +1991,20 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 
 @media (max-width: 420px) {
   .ws-bottom-nav__item {
+    min-height: 72px;
     padding: 2px 0;
-    font-size: 0.6rem;
+    font-size: 0.64rem;
     line-height: 1;
   }
 
   .ws-bottom-nav__item .ws-navigation-art {
-    width: 40px;
-    height: 40px;
+    width: 46px;
+    height: 46px;
   }
 
   .ws-bottom-nav__emoji {
-    height: 40px;
-    font-size: 1.4rem;
+    height: 46px;
+    font-size: 1.5rem;
   }
 }
 
