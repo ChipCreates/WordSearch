@@ -1883,6 +1883,9 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     gap: 6px;
   }
 
+  .ws-bottom-nav__item { min-width: 0; flex: 1 1 0; padding-left: 2px; padding-right: 2px; font-size: 0.68rem; }
+  .ws-bottom-nav__emoji { display: grid; height: 48px; place-items: center; font-size: 1.65rem; line-height: 1; }
+
   .ws-mobile-header-bar__level {
     font-family: var(--font-headline);
     font-weight: 800;
@@ -1950,24 +1953,6 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     margin: 10px 0 12px;
   }
 
-  .ws-mobile-toolkit__trigger {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    width: 100%;
-    min-height: 48px;
-    padding: 9px 14px;
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    background: rgba(18, 39, 31, 0.82);
-    color: var(--color-on-surface);
-    font: inherit;
-    cursor: pointer;
-  }
-
-  .ws-mobile-toolkit__trigger strong { color: var(--color-primary); font-family: var(--font-headline); }
-  .ws-mobile-toolkit__hint { flex: 1; color: var(--color-on-surface-variant); font-size: 0.78rem; text-align: left; }
-
   .ws-mobile-toolkit__panel {
     position: fixed;
     z-index: 90;
@@ -1996,7 +1981,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   .ws-mobile-toolkit__grid button small { color: var(--color-on-surface-variant); font-size: 0.72rem; font-weight: 600; }
   .ws-mobile-toolkit__grid button:hover { border-color: var(--color-primary); background: rgba(0,228,121,0.14); }
   .ws-mobile-toolkit__grid button:disabled { opacity: 0.48; cursor: not-allowed; }
-  .ws-mobile-toolkit__grid button:focus-visible, .ws-mobile-toolkit__trigger:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+  .ws-mobile-toolkit__grid button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
 }
 
 @keyframes bubblePop {

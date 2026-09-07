@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { AutoFixHighOutlined, CloseRounded, RefreshOutlined, ShuffleOutlined } from "@mui/icons-material";
 import type { PowerupInventory } from "../../powerups";
 
@@ -14,31 +14,29 @@ type Props = {
     onCompass: () => void;
     onSpectrometer: () => void;
     onDoubleSeeds: () => void;
+    open: boolean;
+    onClose: () => void;
+    returnFocusRef: RefObject<HTMLButtonElement | null>;
 };
 
 export default function MobilePowerupDrawer(props: Props) {
-    const [open, setOpen] = useState(false);
-    const triggerRef = useRef<HTMLButtonElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
-    const close = () => {
-        setOpen(false);
-        window.setTimeout(() => triggerRef.current?.focus(), 0);
-    };
     useEffect(() => {
-        if (!open) return;
+        if (!props.open) return;
         closeRef.current?.focus();
-        const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") close(); };
+        const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") props.onClose(); };
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [open]);
+    }, [props.open, props.onClose]);
+    const close = () => {
+        props.onClose();
+        window.setTimeout(() => props.returnFocusRef.current?.focus(), 0);
+    };
     const run = (action: () => void) => { action(); close(); };
     const inventoryLabel = (id: keyof PowerupInventory) => ` · x${props.powerupInventory[id]}`;
 
     return <div className="ws-mobile-toolkit">
-        <button ref={triggerRef} className="ws-mobile-toolkit__trigger" aria-expanded={open} aria-controls="mobile-field-kit" onClick={() => setOpen(value => !value)}>
-            <span aria-hidden="true">🧰</span><strong>Field Kit</strong><span className="ws-mobile-toolkit__hint">{props.freeHintUsesRemaining ? "Free hint ready" : "Power-ups & restart"}</span><span aria-hidden="true">{open ? "⌃" : "⌄"}</span>
-        </button>
-        {open && <div id="mobile-field-kit" className="ws-mobile-toolkit__panel" role="dialog" aria-label="Field Kit power-ups">
+        {props.open && <div id="mobile-field-kit" className="ws-mobile-toolkit__panel" role="dialog" aria-label="Field Kit power-ups">
             <div className="ws-mobile-toolkit__header"><div><strong>Field Kit</strong><span>Choose one action</span></div><button ref={closeRef} className="ws-mobile-toolkit__close" aria-label="Close Field Kit" onClick={close}><CloseRounded /></button></div>
             <div className="ws-mobile-toolkit__grid">
                 <button disabled={!props.hintAvailable} onClick={() => run(props.onRevealHint)}><AutoFixHighOutlined /><span>Hint</span><small>{props.freeHintUsesRemaining ? "Free" : inventoryLabel("single-letter-sprout")}</small></button>

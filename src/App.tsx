@@ -73,6 +73,8 @@ export default function App() {
     });
 
     const [activeTab, setActiveTab] = useState<ActiveTab>("play");
+    const [fieldKitOpen, setFieldKitOpen] = useState(false);
+    const fieldKitButtonRef = useRef<HTMLButtonElement>(null);
     const onboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
     const botanistRank = getBotanistRank(level);
     const avatarColumnPositions = ["0%", "24.8%", "49.5%", "74.3%", "99%"];
@@ -492,6 +494,9 @@ export default function App() {
                                 </div>
 
                                 <MobilePowerupDrawer
+                                    open={fieldKitOpen}
+                                    onClose={() => setFieldKitOpen(false)}
+                                    returnFocusRef={fieldKitButtonRef}
                                     hintAvailable={hintAvailable}
                                     freeHintUsesRemaining={freeHintUsesRemaining}
                                     powerupInventory={powerupInventory}
@@ -572,6 +577,16 @@ export default function App() {
 
                 {/* ── Mobile Bottom Navigation Bar (BottomNavBar) ────────────────── */}
                 <nav className="ws-bottom-nav">
+                    <button
+                        ref={fieldKitButtonRef}
+                        className={`ws-bottom-nav__item ${fieldKitOpen ? "ws-bottom-nav__item--active" : ""}`}
+                        aria-expanded={fieldKitOpen}
+                        aria-controls="mobile-field-kit"
+                        onClick={() => { playSfx("click"); setFieldKitOpen(open => !open); }}
+                    >
+                        <span className="ws-bottom-nav__emoji" aria-hidden="true">🧰</span>
+                        <span>Field Kit</span>
+                    </button>
                     <button
                         className={`ws-bottom-nav__item ${activeTab === "play" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("play"); }}
