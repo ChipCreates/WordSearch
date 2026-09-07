@@ -1355,7 +1355,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     align-items: center;
     justify-content: space-between;
     padding: 6px 14px;
-    margin-bottom: 24px;
+    margin-bottom: 10px;
     border-radius: var(--radius-xl);
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
@@ -1437,6 +1437,11 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     margin: 0 auto;
   }
 
+  /* Keep the target list in the first viewport on the small early boards. */
+  .ws-game-board-panel--compact .ws-planter {
+    max-width: min(88vw, min(45vh, 310px)) !important;
+  }
+
   .ws-game-board-panel {
     padding: 14px !important;
   }
@@ -1447,6 +1452,11 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 
   .ws-found-words-panel {
     padding: 6px !important;
+    margin-bottom: 10px;
+  }
+
+  .ws-found-words-list {
+    max-height: 138px;
   }
 }
 

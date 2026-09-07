@@ -495,7 +495,7 @@ export default function App() {
                             {/* Gameplay Grid & Found Words Side Panel */}
                             <div className="ws-gameplay-grid">
                                 {/* Left: Canvas Word Grid Panel */}
-                                <div className="glass-panel ws-game-board-panel" style={{ flexDirection: "column" }}>
+                                <div className={`glass-panel ws-game-board-panel${gridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
                                     <GameCanvas
                                         gridSize={gridSize}
                                         gridData={gridData}
