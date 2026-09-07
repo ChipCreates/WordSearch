@@ -9,6 +9,16 @@ describe("Icon System Migration", () => {
         expect(materialSymbolsElements.length).toBe(0);
     });
 
+    it("exposes one settings entry point without duplicating it in bottom navigation", () => {
+        const { container } = render(<App />);
+
+        expect(container.querySelector('.ws-top-nav__icon-btn[aria-label="Settings"]')).toBeTruthy();
+        expect(container.querySelectorAll('.ws-bottom-nav__item').length).toBe(5);
+        expect(container.querySelector('.ws-bottom-nav__item span:last-child')?.textContent).not.toBe("Settings");
+        expect(container.querySelector('[aria-label="Toggle Theme Mode"]')).toBeNull();
+        expect(container.querySelector('[aria-label="About & How to Play"]')).toBeNull();
+    });
+
     it("describes the current puzzle as a level goal, not a daily goal or streak", () => {
         render(<App />);
 

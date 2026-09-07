@@ -264,37 +264,14 @@ export default function App() {
                                 </span>
                             </div>
 
-                            {/* Theme Switcher Quick Toggle */}
+                            {/* Settings Quick Toggle — theme and help live in their dedicated surfaces. */}
                             <button
                                 className="ws-top-nav__icon-btn"
-                                onClick={() => {
-                                    playSfx("click");
-                                    handleThemeModeChange(themeMode === "sprout" ? "midnight" : "sprout");
-                                }}
-                                aria-label="Toggle Theme Mode"
-                                title={`Switch to ${themeMode === "sprout" ? "Midnight Dark" : "Sprout Light"} Theme`}
-                            >
-                                <NavigationArt name="theme" />
-                            </button>
-
-                            {/* Settings Quick Toggle */}
-                            <button
-                                className="ws-top-nav__icon-btn ws-desktop-only"
                                 onClick={() => { playSfx("click"); setSettingsOpen(true); }}
                                 aria-label="Settings"
                                 title="Settings"
                             >
                                 <NavigationArt name="settings" />
-                            </button>
-
-                            {/* Help & About Quick Toggle */}
-                            <button
-                                className="ws-top-nav__icon-btn"
-                                onClick={() => { playSfx("click"); setAboutOpen(true); }}
-                                aria-label="About & How to Play"
-                                title="About & How to Play"
-                            >
-                                <NavigationArt name="help" />
                             </button>
                         </div>
                     </div>
@@ -635,13 +612,6 @@ export default function App() {
                         <span>Field Kit</span>
                     </button>
 
-                    <button
-                        className="ws-bottom-nav__item"
-                        onClick={() => { playSfx("click"); setSettingsOpen(true); }}
-                    >
-                        <NavigationArt name="settings" />
-                        <span>Settings</span>
-                    </button>
                 </nav>
 
                 {/* ── Success Overlay ────────────────────────────────────────────── */}
