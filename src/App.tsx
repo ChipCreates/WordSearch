@@ -215,7 +215,10 @@ export default function App() {
                                 title="Player information"
                             />
                             <EcoLeaf className="ws-desktop-brand-leaf" style={{ fontSize: 58, color: "var(--color-primary)" }} />
-                            <span className="ws-top-nav__logo-text">Word Sprout</span>
+                            <div className="ws-top-nav__brand-copy">
+                                <span className="ws-top-nav__logo-text">Word Sprout</span>
+                                {activeTab === "play" && <span className="ws-mobile-header-progress"><span>Level {level}</span><span>Frontier {highestUnlockedLevel}</span></span>}
+                            </div>
                         </div>
 
                         {/* Primary View Destinations */}
@@ -384,17 +387,6 @@ export default function App() {
                         </Suspense>
                     ) : (
                         <>
-                            {/* Mobile Compact Header Bar (shown on mobile screens < 768px) */}
-                            <div className="ws-mobile-header-bar">
-                                <div className="ws-mobile-header-bar__left">
-                                    <span className="ws-mobile-header-bar__level">Lvl {level}</span>
-                                    <span className="ws-mobile-header-bar__cat">{category || "Botanical"}</span>
-                                </div>
-                                <div className="ws-mobile-header-bar__right">
-                                    <span className="ws-mobile-header-bar__progress">{foundCount}/{wordsToFind.length}</span>
-                                </div>
-                            </div>
-
                             {/* Level Goal Header Toolbar */}
                             <div className={`glass-panel ws-level-goal-card${levelComplete ? " ws-level-goal-card--complete" : ""}`}>
                                 {levelComplete ? (
@@ -463,6 +455,10 @@ export default function App() {
                             <div className="ws-gameplay-grid">
                                 {/* Left: Canvas Word Grid Panel */}
                                 <div className={`glass-panel ws-game-board-panel${gridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
+                                    <div className="ws-mobile-board-header">
+                                        <strong>{category || "Botanical"}</strong>
+                                        <span>{foundCount}/{wordsToFind.length}</span>
+                                    </div>
                                     <GameCanvas
                                         gridSize={gridSize}
                                         gridData={gridData}
