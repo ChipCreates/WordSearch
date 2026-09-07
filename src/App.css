@@ -1674,6 +1674,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 }
 .ws-bonus-sprouts {
   margin-top: 8px;
+  margin-bottom: 8px;
   padding: 2px 4px;
   color: var(--color-secondary);
   font-size: 0.8rem;
@@ -1684,7 +1685,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 
 @media (max-width: 767px) {
   .ws-footer { display: none; }
-  .ws-bonus-sprouts { margin-top: 5px; padding: 0 2px; }
+  .ws-bonus-sprouts { margin-top: 5px; margin-bottom: 8px; padding: 0 2px; }
 }
 
 /* ── Winning Success Overlay & Celebration Animations ────────────────────── */
