@@ -6,6 +6,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { PLANTS_CATALOG } from "../plantsCatalog";
 import { assetUrl } from "../categoryThemes";
+import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../powerups";
 
 type Props = {
     open: boolean;
@@ -13,14 +14,10 @@ type Props = {
     seeds: number;
     ownedPlants: string[];
     onBuyPlantSeed: (plantId: string, cost: number) => boolean;
-    onRedeemHint?: () => void;
-    onRedeemEntireWord?: () => void;
-    onRedeemReshuffle?: () => void;
     onSpendSeeds?: (cost: number) => boolean;
-    onRedeemCompass?: () => void;
-    onRedeemSpectrometer?: () => void;
-    onRedeemNitrogenBooster?: () => void;
     doubleSeedsActive?: boolean;
+    powerupInventory: PowerupInventory;
+    onPurchasePowerupCharge: (id: PowerupId) => boolean;
     unlockedThemes: string[];
     onUnlockTheme: (themeId: string) => void;
     hasGoldenCrest: boolean;
@@ -34,14 +31,10 @@ export default function SeedStoreDialog({
     seeds,
     ownedPlants,
     onBuyPlantSeed,
-    onRedeemHint,
-    onRedeemEntireWord,
-    onRedeemReshuffle,
     onSpendSeeds,
-    onRedeemCompass,
-    onRedeemSpectrometer,
-    onRedeemNitrogenBooster,
     doubleSeedsActive = false,
+    powerupInventory,
+    onPurchasePowerupCharge,
     unlockedThemes,
     onUnlockTheme,
     hasGoldenCrest,
@@ -64,6 +57,14 @@ export default function SeedStoreDialog({
         }
     };
 
+    const handleBuyCharge = (id: PowerupId) => {
+        if (onPurchasePowerupCharge(id)) {
+            showToast(`${POWERUP_DEFINITIONS[id].title} charge added to your inventory. 🌱`);
+        } else {
+            showToast("Not enough seeds to buy that charge yet. Keep finding words! 🌱");
+        }
+    };
+
     const autumnUnlocked = unlockedThemes.includes("autumn");
     const oceanUnlocked = unlockedThemes.includes("ocean");
 
@@ -77,92 +78,42 @@ export default function SeedStoreDialog({
         disabled?: boolean;
         ownedLabel?: string;
         owned?: boolean;
+        powerupId?: PowerupId;
         action: () => void;
     };
 
     const storeItems: StoreItem[] = [
         {
-            id: "sprout-radar",
-            title: "Single Letter Sprout",
-            description: "Highlights the starting letter of a target word",
-            cost: 50,
-            image: "/powerups/sprout_radar.png",
-            action: () => {
-                handleRedeem(50, () => {
-                    if (onRedeemHint) onRedeemHint();
-                    onClose();
-                });
-            },
+            ...POWERUP_DEFINITIONS["single-letter-sprout"],
+            powerupId: "single-letter-sprout",
+            action: () => handleBuyCharge("single-letter-sprout"),
         },
         {
-            id: "lumina-cyclone",
-            title: "Lumina Cyclone",
-            description: "Scrambles the board while keeping your progress",
-            cost: 100,
-            image: "/powerups/lumina_cyclone.png",
-            action: () => {
-                handleRedeem(100, () => {
-                    if (onRedeemReshuffle) onRedeemReshuffle();
-                    onClose();
-                });
-            },
+            ...POWERUP_DEFINITIONS["lumina-cyclone"],
+            powerupId: "lumina-cyclone",
+            action: () => handleBuyCharge("lumina-cyclone"),
         },
         {
-            id: "super-root",
-            title: "Super Root Hint",
-            description: "Instantly reveals and solves an entire target word",
-            cost: 250,
-            image: "/powerups/root_tunneler.png",
-            action: () => {
-                handleRedeem(250, () => {
-                    if (onRedeemEntireWord) onRedeemEntireWord();
-                    onClose();
-                });
-            },
+            ...POWERUP_DEFINITIONS["super-root"],
+            powerupId: "super-root",
+            action: () => handleBuyCharge("super-root"),
         },
         {
-            id: "bioluminescent-compass",
-            title: "Bioluminescent Compass",
-            description: "Shows a directional guide towards the next word",
-            cost: 350,
-            image: "/powerups/bioluminescent_compass.png",
-            action: () => {
-                handleRedeem(350, () => {
-                    onRedeemCompass?.();
-                    onClose();
-                    showToast("Compass activated! A guiding light points toward your next word. 🧭");
-                });
-            },
+            ...POWERUP_DEFINITIONS["bioluminescent-compass"],
+            powerupId: "bioluminescent-compass",
+            action: () => handleBuyCharge("bioluminescent-compass"),
         },
         {
-            id: "flora-spectrometer",
-            title: "Flora Spectrometer",
-            description: "Temporarily highlights every unfound word's starting cell",
-            cost: 500,
-            image: "/powerups/flora_spectrometer.png",
-            action: () => {
-                handleRedeem(500, () => {
-                    onRedeemSpectrometer?.();
-                    onClose();
-                    showToast("Spectrometer active! Every unfound word is glowing. 🔬");
-                });
-            },
+            ...POWERUP_DEFINITIONS["flora-spectrometer"],
+            powerupId: "flora-spectrometer",
+            action: () => handleBuyCharge("flora-spectrometer"),
         },
         {
-            id: "nitrogen-booster",
-            title: "Nitrogen Booster",
-            description: "Doubles seed rewards for the rest of this level",
-            cost: 600,
-            image: "/powerups/nitrogen_booster.png",
+            ...POWERUP_DEFINITIONS["nitrogen-booster"],
+            powerupId: "nitrogen-booster",
             disabled: doubleSeedsActive,
             ownedLabel: doubleSeedsActive ? "Active this level" : undefined,
-            action: () => {
-                handleRedeem(600, () => {
-                    onRedeemNitrogenBooster?.();
-                    onClose();
-                    showToast("Nitrogen Booster applied! Seed rewards are doubled for this level. 🧪");
-                });
-            },
+            action: () => handleBuyCharge("nitrogen-booster"),
         },
         {
             id: "autumn-theme",
@@ -434,6 +385,7 @@ export default function SeedStoreDialog({
                     <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
                         {storeItems.map(item => {
                             const canAfford = seeds >= item.cost;
+                            const chargeCount = item.powerupId ? powerupInventory[item.powerupId] : 0;
                             return (
                                 <Box key={item.id}>
                                     <Card
@@ -471,7 +423,12 @@ export default function SeedStoreDialog({
                                                 <Typography variant="body2" sx={{ fontWeight: 800, color: "var(--color-primary)" }}>
                                                     🌱 {item.cost} Seeds
                                                 </Typography>
-                                                {item.owned ? (
+                                                {item.powerupId && (
+                                                    <Typography variant="caption" sx={{ color: "var(--color-on-surface-variant)", display: "block", fontSize: "0.7rem" }}>
+                                                        Owned charges: x{chargeCount}
+                                                    </Typography>
+                                                )}
+                                                    {item.owned ? (
                                                     <Chip
                                                         label="UNLOCKED 🌱"
                                                         size="small"
@@ -498,7 +455,7 @@ export default function SeedStoreDialog({
                                                             color: "var(--color-on-primary)",
                                                         }}
                                                     >
-                                                        {item.ownedLabel ?? "Redeem"}
+                                                        {item.powerupId ? "Buy charge" : item.ownedLabel ?? "Redeem"}
                                                     </Button>
                                                 )}
                                             </Box>

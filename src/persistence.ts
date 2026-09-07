@@ -1,4 +1,5 @@
 import { CATEGORY_NAMES_BY_TIER } from "./backend";
+import { DEFAULT_POWERUP_INVENTORY, normalizePowerupInventory, type PowerupInventory } from "./powerups";
 
 export type SaveData = {
     version: number;
@@ -23,9 +24,10 @@ export type SaveData = {
     musicVolume: number;
     sfxMuted: boolean;
     sfxVolume: number;
+    powerupInventory: PowerupInventory;
 };
 
-export const CURRENT_SCHEMA_VERSION = 1;
+export const CURRENT_SCHEMA_VERSION = 2;
 
 export const DEFAULT_SAVE_DATA: SaveData = {
     version: CURRENT_SCHEMA_VERSION,
@@ -50,6 +52,7 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     musicVolume: 0.5,
     sfxMuted: false,
     sfxVolume: 0.5,
+    powerupInventory: { ...DEFAULT_POWERUP_INVENTORY },
 };
 
 const PRIMARY_KEY = "word_sprout_save_v1";
@@ -127,7 +130,7 @@ export async function loadSaveData(): Promise<SaveData> {
             const nativeState = await invoke<string | null>("load_game_state");
             if (nativeState) {
                 const parsed = JSON.parse(nativeState);
-                return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, version: CURRENT_SCHEMA_VERSION });
+                return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), version: CURRENT_SCHEMA_VERSION });
             }
         } catch (e) {
             console.warn("Tauri native load failed, falling back to localStorage", e);
@@ -148,7 +151,7 @@ export async function loadSaveData(): Promise<SaveData> {
             if (!Array.isArray(parsed.ownedPlants) || parsed.ownedPlants.length === 0) {
                 parsed.ownedPlants = ["moss-sprout"];
             }
-            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, version: CURRENT_SCHEMA_VERSION });
+            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), version: CURRENT_SCHEMA_VERSION });
         } catch {
             // fallback to legacy migration
         }
@@ -258,7 +261,7 @@ export function loadSaveDataSync(): SaveData {
             if (!Array.isArray(parsed.ownedPlants) || parsed.ownedPlants.length === 0) {
                 parsed.ownedPlants = ["moss-sprout"];
             }
-            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, version: CURRENT_SCHEMA_VERSION });
+            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), version: CURRENT_SCHEMA_VERSION });
         } catch {}
     }
 

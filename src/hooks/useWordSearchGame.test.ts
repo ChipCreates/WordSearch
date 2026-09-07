@@ -59,11 +59,18 @@ describe("useWordSearchGame", () => {
         expect(result.current.level).toBe(5);
     });
 
-    it("reshuffle preserves level and seeds", async () => {
+    it("reshuffle consumes a charge while preserving level and seeds", async () => {
         const { result } = renderHook(() => useWordSearchGame());
 
         await act(async () => {
             result.current.goToLevel(3);
+        });
+
+        act(() => {
+            result.current.addSeeds(200);
+        });
+        act(() => {
+            expect(result.current.purchasePowerupCharge("lumina-cyclone")).toBe(true);
         });
 
         const initialLevel = result.current.level;
@@ -75,6 +82,7 @@ describe("useWordSearchGame", () => {
 
         expect(result.current.level).toBe(initialLevel);
         expect(result.current.seeds).toBe(initialSeeds);
+        expect(result.current.powerupInventory["lumina-cyclone"]).toBe(0);
     });
 
     it("reshuffle keeps already-found words found (doesn't wipe progress)", async () => {
@@ -88,6 +96,28 @@ describe("useWordSearchGame", () => {
         });
 
         expect(result.current.foundWords[word]).toBeTruthy();
+    });
+
+    it("grants one free hint per generated level, then consumes a paid charge", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+
+        expect(result.current.freeHintUsesRemaining).toBe(1);
+        act(() => {
+            expect(result.current.claimHintUse()).toBe("free");
+        });
+        expect(result.current.freeHintUsesRemaining).toBe(0);
+        expect(result.current.claimHintUse()).toBeNull();
+
+        act(() => {
+            result.current.addSeeds(50);
+        });
+        act(() => {
+            expect(result.current.purchasePowerupCharge("single-letter-sprout")).toBe(true);
+        });
+        act(() => {
+            expect(result.current.claimHintUse()).toBe("paid");
+        });
+        expect(result.current.powerupInventory["single-letter-sprout"]).toBe(0);
     });
 
     it("revealAndSolveWord actually solves the word (unlike the free hint, which only points at it)", async () => {

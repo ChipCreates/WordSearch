@@ -4,6 +4,7 @@ import { DIRECTIONS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../cons
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 import { loadSaveDataSync, loadSaveData, writeSaveData, hasLocalSave, isTauri, CURRENT_SCHEMA_VERSION, DEFAULT_SAVE_DATA } from "../persistence";
 import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel } from "../gameMechanics";
+import { consumePowerupCharge as consumeCharge, purchasePowerupCharge as purchaseCharge, type PowerupId, type PowerupInventory } from "../powerups";
 
 function canPlaceWord(grid: string[][], size: number, word: string, row: number, col: number, dir: number[]) {
     for (let i = 0; i < word.length; i++) {
@@ -85,6 +86,8 @@ export function useWordSearchGame() {
     const [hasGoldenCrest, setHasGoldenCrest] = useState(initialSave.hasGoldenCrest);
     // Nitrogen Booster buff -- ephemeral, scoped to the current puzzle, not persisted
     const [doubleSeedsActive, setDoubleSeedsActive] = useState(false);
+    const [powerupInventory, setPowerupInventory] = useState<PowerupInventory>(initialSave.powerupInventory);
+    const [freeHintUsesRemaining, setFreeHintUsesRemaining] = useState(1);
 
     // Mirrors state for use inside submitSelection without stale closures.
     const stateRef = useRef({ gridData, wordsToFind, foundWords });
@@ -125,6 +128,7 @@ export function useWordSearchGame() {
             setBonusWordsFound(native.bonusWordsFound);
             setUnlockedThemes(native.unlockedThemes);
             setHasGoldenCrest(native.hasGoldenCrest);
+            setPowerupInventory(native.powerupInventory);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -155,6 +159,7 @@ export function useWordSearchGame() {
                 bonusWordsFound,
                 unlockedThemes,
                 hasGoldenCrest,
+                powerupInventory,
             });
         }, 400);
         return () => {
@@ -176,6 +181,7 @@ export function useWordSearchGame() {
         bonusWordsFound,
         unlockedThemes,
         hasGoldenCrest,
+        powerupInventory,
     ]);
 
     // Re-evaluate achievements on stat updates
@@ -203,6 +209,7 @@ export function useWordSearchGame() {
         setStatus("Generating puzzle...");
         setLevelComplete(false);
         setDoubleSeedsActive(false);
+        setFreeHintUsesRemaining(1);
         const size = calculateGridSize(level, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
         const count = Math.max(3, size - 1);
         const maxWordLength = size <= 4 ? size : size - 1;
@@ -356,6 +363,12 @@ export function useWordSearchGame() {
 
     const goToLevel = (lvl: number) => setLevel(lvl);
     const reshuffle = () => {
+        const consumed = consumeCharge(powerupInventory, "lumina-cyclone");
+        if (!consumed.consumed) {
+            setStatus("Buy a Shuffle charge in the Seed Store first.");
+            return false;
+        }
+        setPowerupInventory(consumed.inventory);
         if (!wordsToFind || !wordsToFind.length) return;
         const size = gridSize;
         const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
@@ -387,6 +400,7 @@ export function useWordSearchGame() {
         }
         setGridData(grid);
         setStatus("Board reshuffled!");
+        return true;
     };
     const retryLevel = () => {
         setFoundWords({});
@@ -414,6 +428,8 @@ export function useWordSearchGame() {
         setUnlockedThemes(DEFAULT_SAVE_DATA.unlockedThemes);
         setHasGoldenCrest(DEFAULT_SAVE_DATA.hasGoldenCrest);
         setDoubleSeedsActive(false);
+        setPowerupInventory(DEFAULT_SAVE_DATA.powerupInventory);
+        setFreeHintUsesRemaining(1);
     };
 
     const spendSeeds = useCallback((cost: number): boolean => {
@@ -427,6 +443,32 @@ export function useWordSearchGame() {
     const addSeeds = useCallback((amount: number) => {
         setSeeds((s: number) => s + amount);
     }, []);
+
+    const purchasePowerupCharge = useCallback((id: PowerupId): boolean => {
+        const result = purchaseCharge(seeds, powerupInventory, id);
+        if (!result.purchased) return false;
+        setSeeds(result.seeds);
+        setPowerupInventory(result.inventory);
+        return true;
+    }, [powerupInventory, seeds]);
+
+    const consumePowerupCharge = useCallback((id: PowerupId): boolean => {
+        const result = consumeCharge(powerupInventory, id);
+        if (!result.consumed) return false;
+        setPowerupInventory(result.inventory);
+        return true;
+    }, [powerupInventory]);
+
+    const claimHintUse = useCallback((): "free" | "paid" | null => {
+        if (freeHintUsesRemaining > 0) {
+            setFreeHintUsesRemaining(previous => previous - 1);
+            return "free";
+        }
+        const result = consumeCharge(powerupInventory, "single-letter-sprout");
+        if (!result.consumed) return null;
+        setPowerupInventory(result.inventory);
+        return "paid";
+    }, [freeHintUsesRemaining, powerupInventory]);
 
     // Botanical Sanctuary Handlers
     const buyPlantSeed = useCallback((plantId: string, cost: number): boolean => {
@@ -451,8 +493,13 @@ export function useWordSearchGame() {
     // Seed cost is deducted by the caller (SeedStoreDialog's handleRedeem)
     // before these run, matching how the hint/reshuffle redeems already work.
     const activateDoubleSeeds = useCallback(() => {
+        if (doubleSeedsActive) return false;
+        const result = consumeCharge(powerupInventory, "nitrogen-booster");
+        if (!result.consumed) return false;
+        setPowerupInventory(result.inventory);
         setDoubleSeedsActive(true);
-    }, []);
+        return true;
+    }, [doubleSeedsActive, powerupInventory]);
 
     const unlockTheme = useCallback((themeId: string) => {
         setUnlockedThemes(prev => prev.includes(themeId) ? prev : [...prev, themeId]);
@@ -475,6 +522,7 @@ export function useWordSearchGame() {
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth,
         // Store power-ups
         doubleSeedsActive, activateDoubleSeeds,
+        powerupInventory, freeHintUsesRemaining, purchasePowerupCharge, consumePowerupCharge, claimHintUse,
         unlockedThemes, unlockTheme,
         hasGoldenCrest, unlockGoldenCrest,
     };

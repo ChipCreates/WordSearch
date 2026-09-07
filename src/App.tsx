@@ -43,16 +43,17 @@ export default function App() {
     const {
         level, seeds, levelComplete, category,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
-        submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
+        submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound,
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth,
-        doubleSeedsActive, activateDoubleSeeds,
+        doubleSeedsActive,
         unlockedThemes, unlockTheme,
         hasGoldenCrest, unlockGoldenCrest,
+        powerupInventory, freeHintUsesRemaining, purchasePowerupCharge, claimHintUse,
     } = useWordSearchGame();
 
     const {
@@ -100,27 +101,13 @@ export default function App() {
     const [toast, setToast] = useState<string | null>(null);
     const showToast = (message: string) => setToast(message);
     const [hintCell, setHintCell] = useState<{ r: number; c: number } | null>(null);
-    const [compassDirection, setCompassDirection] = useState<{ dr: number; dc: number } | null>(null);
-    const [spectrometerCells, setSpectrometerCells] = useState<{ r: number; c: number }[]>([]);
     const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 
-    const compassTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const spectrometerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // A word being found (foundLines changing) or a fresh puzzle both make
-    // any active hint/compass/spectrometer stale -- clear all three together.
+    // A word being found or a fresh puzzle clears the active hint.
     useEffect(() => {
         setHintCell(null);
-        setCompassDirection(null);
-        setSpectrometerCells([]);
     }, [gridData, level, foundLines]);
-
-    useEffect(() => {
-        return () => {
-            if (compassTimerRef.current) clearTimeout(compassTimerRef.current);
-            if (spectrometerTimerRef.current) clearTimeout(spectrometerTimerRef.current);
-        };
-    }, []);
 
     useEffect(() => {
         if (levelComplete) {
@@ -134,50 +121,22 @@ export default function App() {
         }
     }, [levelComplete]);
 
-    // Free sidebar hint + 50-seed "Single Letter Sprout": points at the
-    // word's start cell, player still has to swipe it themselves.
+    const hintAvailable = freeHintUsesRemaining > 0 || powerupInventory["single-letter-sprout"] > 0;
+
+    // The first hint each level is free; later hints consume a purchased
+    // Single Letter Sprout charge.
     const handleRevealHint = () => {
         const unfoundWord = wordsToFind.find(w => !foundWords[w]);
         if (!unfoundWord || !gridData.length) return;
         const placement = findWordPlacement(gridData, gridSize, unfoundWord);
-        if (placement) setHintCell({ r: placement.r, c: placement.c });
-    };
-
-    // 250-seed "Super Root Hint": actually solves the word, via the hook
-    // (which owns foundWords/foundLines/level-complete bookkeeping).
-    const handleRevealEntireWord = () => {
-        const unfoundWord = wordsToFind.find(w => !foundWords[w]);
-        if (unfoundWord) revealAndSolveWord(unfoundWord);
-    };
-
-    // 350-seed "Bioluminescent Compass": a direction, not a cell -- points
-    // toward the nearest unfound word without revealing where exactly it is.
-    const handleActivateCompass = () => {
-        const unfoundWord = wordsToFind.find(w => !foundWords[w]);
-        if (!unfoundWord || !gridData.length) return;
-        const placement = findWordPlacement(gridData, gridSize, unfoundWord);
         if (!placement) return;
-        const center = (gridSize - 1) / 2;
-        const dr = Math.sign(placement.r - center) || placement.dr;
-        const dc = Math.sign(placement.c - center) || placement.dc || 1;
-        setCompassDirection({ dr, dc });
-        if (compassTimerRef.current) clearTimeout(compassTimerRef.current);
-        compassTimerRef.current = setTimeout(() => setCompassDirection(null), 10_000);
+        if (!claimHintUse()) {
+            showToast("No hint charges available. Buy one in the Seed Store. 🌱");
+            return;
+        }
+        setHintCell({ r: placement.r, c: placement.c });
     };
 
-    // 500-seed "Flora Spectrometer": every unfound word's start cell glows
-    // at once, briefly -- broader but shallower than a single hint.
-    const handleActivateSpectrometer = () => {
-        if (!gridData.length) return;
-        const cells = wordsToFind
-            .filter(w => !foundWords[w])
-            .map(w => findWordPlacement(gridData, gridSize, w))
-            .filter((p): p is NonNullable<typeof p> => p !== null)
-            .map(p => ({ r: p.r, c: p.c }));
-        setSpectrometerCells(cells);
-        if (spectrometerTimerRef.current) clearTimeout(spectrometerTimerRef.current);
-        spectrometerTimerRef.current = setTimeout(() => setSpectrometerCells([]), 8_000);
-    };
 
     // ── SFX edge-detection ────────────────────────────────────────────────────
     const prevSeedsRef = useRef(seeds);
@@ -375,17 +334,19 @@ export default function App() {
                             ) : (
                                 <button
                                     className="ws-primary-action-btn"
+                                    disabled={!hintAvailable}
+                                    title={!hintAvailable ? "Buy a hint charge in the Seed Store" : undefined}
                                     onClick={() => { playSfx("click"); handleRevealHint(); }}
                                     style={{ width: "100%", justifyContent: "center", padding: "10px 16px", fontSize: "0.95rem" }}
                                 >
                                     <AutoFixHighOutlined />
-                                    <span>Reveal Root</span>
+                                    <span>Hint · {freeHintUsesRemaining > 0 ? "Free" : `x${powerupInventory["single-letter-sprout"]}`}</span>
                                 </button>
                             )}
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                                <button className="ws-control-btn" onClick={() => { playSfx("click"); reshuffle(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                                <button className="ws-control-btn" disabled={powerupInventory["lumina-cyclone"] === 0} title={powerupInventory["lumina-cyclone"] === 0 ? "Buy a Shuffle charge in the Seed Store" : "Shuffle the unfound words"} onClick={() => { playSfx("click"); reshuffle(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
                                     <ShuffleOutlined style={{ fontSize: 16 }} />
-                                    <span>Shuffle</span>
+                                    <span>Shuffle · x{powerupInventory["lumina-cyclone"]}</span>
                                 </button>
                                 <button className="ws-control-btn" onClick={() => { playSfx("click"); retryLevel(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
                                     <RefreshOutlined style={{ fontSize: 16 }} />
@@ -544,8 +505,6 @@ export default function App() {
                                         gridData={gridData}
                                         foundLines={foundLines}
                                         hintCell={hintCell}
-                                        spectrometerCells={spectrometerCells}
-                                        compassDirection={compassDirection}
                                         onSelectionEnd={submitSelection}
                                         onSwipe={() => playSfx("swipe")}
                                         celebrate={levelComplete}
@@ -554,11 +513,11 @@ export default function App() {
 
                                 {/* Mobile Tactical Toolbar */}
                                 <div className="ws-mobile-tactical-bar">
-                                    <button className="ws-mobile-tool-btn" onClick={() => { playSfx("click"); handleRevealHint(); }}>
-                                        <AutoFixHighOutlined style={{ fontSize: 16 }} /> Hint
+                                    <button className="ws-mobile-tool-btn" disabled={!hintAvailable} title={!hintAvailable ? "Buy a hint charge in the Seed Store" : undefined} onClick={() => { playSfx("click"); handleRevealHint(); }}>
+                                        <AutoFixHighOutlined style={{ fontSize: 16 }} /> Hint · {freeHintUsesRemaining > 0 ? "Free" : `x${powerupInventory["single-letter-sprout"]}`}
                                     </button>
-                                    <button className="ws-mobile-tool-btn" onClick={() => { playSfx("click"); reshuffle(); }}>
-                                        <ShuffleOutlined style={{ fontSize: 16 }} /> Shuffle
+                                    <button className="ws-mobile-tool-btn" disabled={powerupInventory["lumina-cyclone"] === 0} title={powerupInventory["lumina-cyclone"] === 0 ? "Buy a Shuffle charge in the Seed Store" : undefined} onClick={() => { playSfx("click"); reshuffle(); }}>
+                                        <ShuffleOutlined style={{ fontSize: 16 }} /> Shuffle · x{powerupInventory["lumina-cyclone"]}
                                     </button>
                                     <button className="ws-mobile-tool-btn" onClick={() => { playSfx("click"); retryLevel(); }}>
                                         <RefreshOutlined style={{ fontSize: 16 }} /> Restart
@@ -691,14 +650,10 @@ export default function App() {
                 seeds={seeds}
                 ownedPlants={ownedPlants}
                 onBuyPlantSeed={buyPlantSeed}
-                onRedeemHint={handleRevealHint}
-                onRedeemEntireWord={handleRevealEntireWord}
-                onRedeemReshuffle={reshuffle}
                 onSpendSeeds={spendSeeds}
-                onRedeemCompass={handleActivateCompass}
-                onRedeemSpectrometer={handleActivateSpectrometer}
-                onRedeemNitrogenBooster={activateDoubleSeeds}
                 doubleSeedsActive={doubleSeedsActive}
+                powerupInventory={powerupInventory}
+                onPurchasePowerupCharge={purchasePowerupCharge}
                 unlockedThemes={unlockedThemes}
                 onUnlockTheme={unlockTheme}
                 hasGoldenCrest={hasGoldenCrest}

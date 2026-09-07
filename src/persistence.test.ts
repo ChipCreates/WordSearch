@@ -69,4 +69,20 @@ describe("Persistence Module", () => {
     // Verify primary key exists
     expect(localStorage.getItem("word_sprout_save_v1")).not.toBeNull();
   });
+
+  it("initializes the power-up inventory when loading a pre-inventory save", async () => {
+    localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      version: 1,
+      seeds: 275,
+      powerupInventory: undefined,
+    }));
+
+    const loaded = await loadSaveData();
+
+    expect(loaded.version).toBe(2);
+    expect(loaded.seeds).toBe(275);
+    expect(loaded.powerupInventory["single-letter-sprout"]).toBe(0);
+    expect(loaded.powerupInventory["lumina-cyclone"]).toBe(0);
+  });
 });
