@@ -220,6 +220,12 @@ body {
   box-shadow: inset 0 0 32px #03140d55, 0 6px 20px #03140d33;
 }
 
+.glass-panel.ws-level-goal-card {
+  background: color-mix(in srgb, var(--glass-bg) 68%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 0 32px rgba(var(--color-primary-rgb), 0.05), 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
 .glass-panel {
   background: var(--color-surface-container-low);
   border: 1px solid var(--color-outline-variant);
@@ -375,18 +381,52 @@ body {
   align-items: center;
   gap: var(--space-md);
   margin-bottom: var(--space-lg);
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-sm);
 }
 
 .ws-side-nav__avatar-box {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
-  background: rgba(0, 228, 121, 0.2);
+  width: 80px;
+  height: 132px;
+  border-radius: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px rgba(0, 228, 121, 0.2);
+  flex: 0 0 auto;
+}
+
+.ws-botanist-avatar {
+  background-image: url('/avatars/botanist-guardians-sprite.png');
+  background-size: 520% 200%;
+  background-position: var(--avatar-position);
+  background-repeat: no-repeat;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.ws-side-nav__profile-copy {
+  min-width: 0;
+  flex: 1;
+  align-self: center;
+}
+
+.ws-side-nav__rank-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary);
+  font-family: var(--font-headline);
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.ws-side-nav__rank-level {
+  margin-top: 5px;
+  color: var(--color-on-surface-variant);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .ws-side-nav__nav-item {
@@ -470,12 +510,77 @@ body {
 
 /* ── Level Goal Card Header Toolbar ────────────────────────────────────────── */
 .ws-level-goal-card {
-  padding: var(--space-lg);
+  padding: 22px var(--space-lg) var(--space-md);
   border-radius: var(--card-radius);
   margin-bottom: var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-md);
+  background: color-mix(in srgb, var(--glass-bg) 68%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 0 32px rgba(var(--color-primary-rgb), 0.05), 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.ws-level-goal-card__main { flex: 1; min-width: 0; }
+.ws-level-goal-card__heading-row,
+.ws-level-goal-card__goal-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.ws-level-goal-card__goal-copy {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.ws-level-goal-card__level {
+  margin: 0 0 6px;
+  color: var(--color-primary);
+  font-family: var(--font-headline);
+  font-size: clamp(1.8rem, 3vw, 2.35rem);
+  font-weight: 800;
+  line-height: 1;
+}
+.ws-level-goal-card__category {
+  color: var(--color-secondary);
+  font-family: var(--font-headline);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-align: right;
+}
+.ws-level-goal-card__goal-label {
+  display: inline;
+  color: var(--color-on-surface-variant);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ws-level-goal-card__goal-row strong {
+  color: var(--color-on-surface);
+  font-size: 0.9rem;
+}
+.ws-level-goal-card__count {
+  color: var(--color-primary);
+  font-family: var(--font-headline);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.ws-level-goal-card__progress {
+  height: 10px;
+  width: 100%;
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-high);
+}
+.ws-level-goal-card__progress > div {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.4s ease;
 }
 
 @media (min-width: 768px) {
@@ -483,6 +588,10 @@ body {
     flex-direction: row;
     align-items: center;
   }
+}
+
+@media (max-width: 767px) {
+  .ws-level-goal-card__goal-copy { gap: 6px; }
 }
 
 /* ── Game Canvas & Planter Container ────────────────────────────────────────── */

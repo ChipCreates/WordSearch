@@ -14,7 +14,7 @@ describe("Icon System Migration", () => {
 
         expect(screen.getAllByText("Level Goal").length).toBeGreaterThan(0);
         expect(screen.getAllByText(/Find all \d+ target words/).length).toBeGreaterThan(0);
-        expect(screen.getAllByText("LEVEL", { selector: "div" }).length).toBeGreaterThan(0);
+        expect(document.querySelector(".ws-level-goal-card__level")).toBeTruthy();
         expect(screen.queryAllByText("Daily Goal")).toHaveLength(0);
         expect(screen.queryAllByText("STREAK", { selector: "div" })).toHaveLength(0);
     });

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ThemeProvider, CssBaseline, Snackbar, Alert } from "@mui/material";
 
 import { sproutLightTheme, sproutDarkTheme, sproutAutumnTheme, sproutOceanTheme } from "./theme";
@@ -23,8 +23,8 @@ import OnboardingCoachmark from "./components/OnboardingCoachmark";
 import { nextOnboardingStep } from "./onboarding";
 import EcoLeaf from "./components/icons/EcoLeaf";
 import NavigationArt from "./components/NavigationArt";
+import { getBotanistRank } from "./botanistRanks";
 import {
-    SpaOutlined,
     AutoFixHighOutlined,
     ShuffleOutlined,
     RefreshOutlined,
@@ -74,6 +74,9 @@ export default function App() {
 
     const [activeTab, setActiveTab] = useState<ActiveTab>("play");
     const onboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
+    const botanistRank = getBotanistRank(level);
+    const avatarColumnPositions = ["0%", "24.8%", "49.5%", "74.3%", "99%"];
+    const avatarBackgroundPosition = `${avatarColumnPositions[botanistRank.avatarIndex % 5]} ${Math.floor(botanistRank.avatarIndex / 5) * 100}%`;
 
     const handleThemeModeChange = (mode: ThemeMode) => {
         setThemeMode(mode);
@@ -288,37 +291,22 @@ export default function App() {
                 <aside className="ws-side-nav">
                     {/* User profile section */}
                     <div className="ws-side-nav__profile">
-                        <div className="ws-side-nav__avatar-box">
-                            <EcoLeaf style={{ fontSize: 28, color: "var(--color-primary)" }} />
+                        <div
+                            className="ws-side-nav__avatar-box ws-botanist-avatar"
+                            style={{ "--avatar-position": avatarBackgroundPosition } as CSSProperties}
+                            role="img"
+                            aria-label={`${botanistRank.title} avatar`}
+                        >
                         </div>
-                        <div>
-                            <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-primary)", display: "flex", alignItems: "center", gap: 6 }}>
-                                Sprout Master
+                        <div className="ws-side-nav__profile-copy">
+                            <div className="ws-side-nav__rank-title">
+                                {botanistRank.title}
                                 {hasGoldenCrest && (
                                     <span title="Golden Sprout Crest" style={{ fontSize: "0.9rem", filter: "drop-shadow(0 0 6px rgba(244, 201, 93, 0.8))" }}>🏆</span>
                                 )}
                             </div>
-                            <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)" }}>Level {level} Botanist</div>
+                            <div className="ws-side-nav__rank-level">Level {level}</div>
                         </div>
-                    </div>
-
-                    {/* Biome Category Quick Selector */}
-                    <div className="glass-panel" style={{ padding: 14, borderRadius: "1rem", display: "flex", flexDirection: "column", gap: 8 }}>
-                        <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, color: "var(--color-on-surface-variant)" }}>
-                            Active Biome Category
-                        </div>
-                        <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-primary)", display: "flex", alignItems: "center", gap: 6 }}>
-                            <SpaOutlined style={{ fontSize: 20, color: "var(--color-secondary)" }} />
-                            {category || "Botanical"}
-                        </div>
-                        <button
-                            className="ws-control-btn"
-                            onClick={() => { playSfx("click"); setActiveTab("levels"); }}
-                            style={{ width: "100%", justifyContent: "center", marginTop: 4, padding: "6px 12px", fontSize: "0.8rem" }}
-                        >
-                            <NavigationArt name="levels" />
-                            Level Map & Categories
-                        </button>
                     </div>
 
                     {/* Tactical Toolkit or Greenhouse Floorplan */}
@@ -474,39 +462,22 @@ export default function App() {
 
                             {/* Level Goal Header Toolbar */}
                             <div className="glass-panel ws-level-goal-card">
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 8 }}>
-                                        <div>
-                                            <h2 className="glow-text-emerald" style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-primary)" }}>
-                                                Level Goal
-                                            </h2>
-                                            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--color-on-surface-variant)" }}>
-                                                Find all {wordsToFind.length} target words
-                                            </p>
-                                        </div>
-                                        <span style={{ fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-primary)" }}>
-                                            {foundCount}/{wordsToFind.length}
-                                        </span>
+                                <div className="ws-level-goal-card__main">
+                                    <div className="ws-level-goal-card__heading-row">
+                                        <h2 className="ws-level-goal-card__level glow-text-emerald">{category || "Botanical"}</h2>
                                     </div>
-                                    <div style={{ height: 14, width: "100%", background: "var(--color-surface-container-high)", borderRadius: 7, overflow: "hidden", border: "1px solid var(--glass-border)" }}>
-                                        <div className="bioluminescent-line" style={{ height: "100%", width: `${Math.min(100, (foundCount / (wordsToFind.length || 1)) * 100)}%`, borderRadius: 7, transition: "width 0.4s ease" }} />
+                                    <div className="ws-level-goal-card__goal-row">
+                                        <div className="ws-level-goal-card__goal-copy">
+                                            <span className="ws-level-goal-card__goal-label">Level Goal</span>
+                                            <strong>Find all {wordsToFind.length} target words</strong>
+                                        </div>
+                                        <span className="ws-level-goal-card__count">{foundCount}/{wordsToFind.length}</span>
+                                    </div>
+                                    <div className="ws-level-goal-card__progress">
+                                        <div className="bioluminescent-line" style={{ width: `${Math.min(100, (foundCount / (wordsToFind.length || 1)) * 100)}%` }} />
                                     </div>
                                 </div>
 
-                                <div style={{ display: "flex", gap: 20, alignItems: "center", borderLeft: "1px solid var(--glass-border)", paddingLeft: 20 }}>
-                                    <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                            <img src={assetUrl("seed.png")} alt="Seed" style={{ width: 34, height: 34, objectFit: "contain", filter: "drop-shadow(0 0 8px rgba(0,228,121,0.6))" }} />
-                                            <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--color-secondary)" }}>{seeds}</span>
-                                        </div>
-                                        <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.05em" }}>SEEDS</div>
-                                    </div>
-                                    <div style={{ width: 1, height: 36, background: "var(--glass-border)" }} />
-                                    <div style={{ textAlign: "center" }}>
-                                        <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--color-primary)" }}>#{level}</div>
-                                        <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.05em" }}>LEVEL</div>
-                                    </div>
-                                </div>
                             </div>
 
                             {/* Gameplay Grid & Found Words Side Panel */}

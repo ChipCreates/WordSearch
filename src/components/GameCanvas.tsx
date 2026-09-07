@@ -44,6 +44,13 @@ function surfaceLetterColor(canvas: HTMLCanvasElement): string {
         .trim() || "#1d1c12";
 }
 
+function surfacePrimaryColor(canvas: HTMLCanvasElement): string {
+    if (typeof window === "undefined") return "#00e479";
+    return getComputedStyle(canvas)
+        .getPropertyValue("--color-primary")
+        .trim() || "#00e479";
+}
+
 export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false, hintCell, spectrometerCells = [], compassDirection = null, status = "" }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const bubbleRef = useRef<HTMLDivElement>(null);
@@ -218,11 +225,19 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
         if (!celebrate && focusedCell) {
             ctx.save();
-            ctx.strokeStyle = "var(--color-primary)";
+            ctx.strokeStyle = surfacePrimaryColor(canvas);
             ctx.lineWidth = 3;
-            ctx.shadowColor = "#00e479";
+            ctx.shadowColor = surfacePrimaryColor(canvas);
             ctx.shadowBlur = 10;
-            ctx.strokeRect(focusedCell.c * cellSize + 4, focusedCell.r * cellSize + 4, cellSize - 8, cellSize - 8);
+            ctx.beginPath();
+            ctx.arc(
+                focusedCell.c * cellSize + cellSize / 2,
+                focusedCell.r * cellSize + cellSize / 2 - cellSize * 0.08,
+                Math.max(10, cellSize * 0.45),
+                0,
+                Math.PI * 2,
+            );
+            ctx.stroke();
             ctx.restore();
         }
 
