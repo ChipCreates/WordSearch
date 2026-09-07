@@ -1251,7 +1251,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     overflow: visible;
   }
 
-  .ws-desktop-brand-leaf { display: none; }
+  .ws-desktop-brand-leaf { display: none !important; }
 
   .ws-mobile-brand-avatar {
     display: block;
@@ -1298,7 +1298,8 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   }
 
   .ws-main-layout {
-    padding-top: 54px;
+    /* Reserve the avatar's portrait spill before the category bar begins. */
+    padding-top: 82px;
     padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
     padding-left: 10px;
     padding-right: 10px;
