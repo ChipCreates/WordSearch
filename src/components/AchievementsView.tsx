@@ -129,22 +129,24 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                                 style={{ filter: isUnlocked ? "drop-shadow(0 0 10px rgba(0, 228, 121, 0.75))" : "none" }}
                                             />
                                         ) : (
-                                            <span style={{ fontSize: "1.8rem" }}>{ach.icon}</span>
+                                            <span style={{ fontSize: "2.2rem" }}>{ach.icon}</span>
                                         )}
                                     </span>
-                                    <span className="ws-achievement-card__title-row">
+                                    <div className="ws-achievement-card__title-row">
                                         <h3 className="ws-achievement-card__title" style={{ color: isUnlocked ? "var(--color-primary)" : "var(--color-on-surface)" }}>
                                             {ach.name}
                                         </h3>
+                                    </div>
+                                    <span className="ws-achievement-card__status-icon" aria-hidden="true">
                                         {isUnlocked ? (
-                                            <CheckCircleOutlined style={{ fontSize: 20, color: "var(--color-primary)", flexShrink: 0 }} />
+                                            <CheckCircleOutlined style={{ fontSize: 20, color: "var(--color-primary)" }} />
                                         ) : (
-                                            <LockOutlined style={{ fontSize: 18, color: "var(--color-on-surface-variant)", flexShrink: 0 }} />
+                                            <LockOutlined style={{ fontSize: 18, color: "var(--color-on-surface-variant)" }} />
                                         )}
                                     </span>
                                 </div>
 
-                                <p style={{ margin: "10px 0 0 0", fontSize: "0.85rem", color: "var(--color-on-surface-variant)", lineHeight: 1.4 }}>
+                                <p className="ws-achievement-card__description">
                                     {ach.description}
                                 </p>
                             </div>

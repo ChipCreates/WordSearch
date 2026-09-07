@@ -43,7 +43,7 @@ export default function AchievementBanner({ achievement, onDismiss }: Props) {
             <button type="button" className="ws-achievement-banner__art"
                 onClick={e => { e.stopPropagation(); onDismiss(); }}
                 aria-label={`Achievement unlocked: ${achievement.name}. ${achievement.description}. Dismiss notification.`}>
-                <img className="ws-achievement-banner__frame" src={assetUrl("achievements/botanical-banner-frame-tall.png")} alt="" />
+                <img className="ws-achievement-banner__frame" src={assetUrl("achievements/botanical-banner-frame-circle.png")} alt="" />
                 <span className="ws-achievement-banner__badge" aria-hidden="true">
                     {badge ? <img src={badge.startsWith("http") ? badge : assetUrl(badge.replace(/^\//, ""))} alt="" /> : achievement.icon}
                 </span>

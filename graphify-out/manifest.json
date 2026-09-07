@@ -1,0 +1,944 @@
+{
+  ".vscode/extensions.json": {
+    "mtime": 1785605808.1912813,
+    "seen": 1788727453.0916805,
+    "ast_hash": "a4038619f5414c01f04abbbdd4730820",
+    "semantic_hash": "a4038619f5414c01f04abbbdd4730820"
+  },
+  "data/category_order.json": {
+    "mtime": 1786392945.206842,
+    "seen": 1788727453.091685,
+    "ast_hash": "2499c85defe69231149028ce3934ac35",
+    "semantic_hash": "2499c85defe69231149028ce3934ac35"
+  },
+  "package.json": {
+    "mtime": 1788720629.3459327,
+    "seen": 1788727453.0916874,
+    "ast_hash": "1244bc5f9eb25597b48cd1d6f6967115",
+    "semantic_hash": "1244bc5f9eb25597b48cd1d6f6967115"
+  },
+  "scripts/gen_categories.py": {
+    "mtime": 1786392299.021578,
+    "seen": 1788727453.0916882,
+    "ast_hash": "f2671ee17d271071fac60f41defa9296",
+    "semantic_hash": "f2671ee17d271071fac60f41defa9296"
+  },
+  "scripts/gen_dictionary.py": {
+    "mtime": 1786385813.417686,
+    "seen": 1788727453.09169,
+    "ast_hash": "c0845c7aa53c2ae5fdd5dc77d30c0bfb",
+    "semantic_hash": "c0845c7aa53c2ae5fdd5dc77d30c0bfb"
+  },
+  "scripts/gen_svg_backgrounds.py": {
+    "mtime": 1786385813.4177752,
+    "seen": 1788727453.091691,
+    "ast_hash": "36bfdb87e2e3da276080ee6d4360ef96",
+    "semantic_hash": "36bfdb87e2e3da276080ee6d4360ef96"
+  },
+  "scripts/make_transparent.py": {
+    "mtime": 1786385813.4177752,
+    "seen": 1788727453.091692,
+    "ast_hash": "36f20c7d38c4741d55860b124b7d314c",
+    "semantic_hash": "36f20c7d38c4741d55860b124b7d314c"
+  },
+  "scripts/refactor_css.py": {
+    "mtime": 1786385813.4178848,
+    "seen": 1788727453.0916932,
+    "ast_hash": "6173e8d7c5604dfb08f2e9105cd36eca",
+    "semantic_hash": "6173e8d7c5604dfb08f2e9105cd36eca"
+  },
+  "scripts/refactor_data.py": {
+    "mtime": 1786385813.4179387,
+    "seen": 1788727453.091694,
+    "ast_hash": "f3ac1b982cfde46e566de83e471d2fbb",
+    "semantic_hash": "f3ac1b982cfde46e566de83e471d2fbb"
+  },
+  "scripts/setup_placeholders.py": {
+    "mtime": 1786385813.4179387,
+    "seen": 1788727453.091695,
+    "ast_hash": "fcc7c855510ad12466e760ce5455eeca",
+    "semantic_hash": "fcc7c855510ad12466e760ce5455eeca"
+  },
+  "src-tauri/Cargo.toml": {
+    "mtime": 1788720663.1851308,
+    "seen": 1788727453.091696,
+    "ast_hash": "bc20f7debc66bc6dc0e4279366fdd05a",
+    "semantic_hash": "bc20f7debc66bc6dc0e4279366fdd05a"
+  },
+  "src-tauri/build.rs": {
+    "mtime": 1785605808.1895182,
+    "seen": 1788727453.091697,
+    "ast_hash": "1be34a5c61c2c35365de3dab14298f0b",
+    "semantic_hash": "1be34a5c61c2c35365de3dab14298f0b"
+  },
+  "src-tauri/capabilities/default.json": {
+    "mtime": 1785605808.1895182,
+    "seen": 1788727453.091698,
+    "ast_hash": "d2b1ea61ac2075eb0d44587bf81ee127",
+    "semantic_hash": "d2b1ea61ac2075eb0d44587bf81ee127"
+  },
+  "src-tauri/gen/android/app/build.gradle.kts": {
+    "mtime": 1786400652.291571,
+    "seen": 1788727453.0916986,
+    "ast_hash": "d8c205f66a90896e6fdf1f90de58a415",
+    "semantic_hash": "d8c205f66a90896e6fdf1f90de58a415"
+  },
+  "src-tauri/gen/android/app/src/main/java/com/chip/wordsprout/MainActivity.kt": {
+    "mtime": 1786400267.560949,
+    "seen": 1788727453.0916994,
+    "ast_hash": "54b52b95e3c08f122691a903de3900e4",
+    "semantic_hash": "54b52b95e3c08f122691a903de3900e4"
+  },
+  "src-tauri/gen/android/build.gradle.kts": {
+    "mtime": 1786398825.676347,
+    "seen": 1788727453.0917006,
+    "ast_hash": "34b5dd707d61fa7f4a197eee123722b2",
+    "semantic_hash": "34b5dd707d61fa7f4a197eee123722b2"
+  },
+  "src-tauri/gen/android/buildSrc/build.gradle.kts": {
+    "mtime": 1786398825.678347,
+    "seen": 1788727453.0917013,
+    "ast_hash": "0814415b6e7b2c6e126521dfe9960081",
+    "semantic_hash": "0814415b6e7b2c6e126521dfe9960081"
+  },
+  "src-tauri/gen/android/buildSrc/src/main/java/com/chip/wordsprout/kotlin/BuildTask.kt": {
+    "mtime": 1786398825.678347,
+    "seen": 1788727453.0917022,
+    "ast_hash": "15bad6983ebaf1ade25e168fa9c899a0",
+    "semantic_hash": "15bad6983ebaf1ade25e168fa9c899a0"
+  },
+  "src-tauri/gen/android/buildSrc/src/main/java/com/chip/wordsprout/kotlin/RustPlugin.kt": {
+    "mtime": 1786398825.678347,
+    "seen": 1788727453.091703,
+    "ast_hash": "27e9945f16c83be3c3e69f6b860bc9b5",
+    "semantic_hash": "27e9945f16c83be3c3e69f6b860bc9b5"
+  },
+  "src-tauri/gen/android/gradlew": {
+    "mtime": 1786400961.6325786,
+    "seen": 1788727453.0917041,
+    "ast_hash": "02c16663c6f0aa37f98d94d698c22b8c",
+    "semantic_hash": "02c16663c6f0aa37f98d94d698c22b8c"
+  },
+  "src-tauri/gen/android/settings.gradle": {
+    "mtime": 1786398825.6773472,
+    "seen": 1788727453.091705,
+    "ast_hash": "abd11d894caa36e33edcd381ba11f330",
+    "semantic_hash": "abd11d894caa36e33edcd381ba11f330"
+  },
+  "src-tauri/src/categories/animals.rs": {
+    "mtime": 1786392945.2004335,
+    "seen": 1788727453.091706,
+    "ast_hash": "c7061e10bea1db7c8ca29732436ee8e9",
+    "semantic_hash": "c7061e10bea1db7c8ca29732436ee8e9"
+  },
+  "src-tauri/src/categories/architecture.rs": {
+    "mtime": 1786392945.2040517,
+    "seen": 1788727453.0917072,
+    "ast_hash": "315f7ec9c853868da730c030892bdab7",
+    "semantic_hash": "315f7ec9c853868da730c030892bdab7"
+  },
+  "src-tauri/src/categories/astrology_zodiac.rs": {
+    "mtime": 1786392945.2041562,
+    "seen": 1788727453.0917082,
+    "ast_hash": "7300d8c0fb1dd0a2697a551f38cfff90",
+    "semantic_hash": "7300d8c0fb1dd0a2697a551f38cfff90"
+  },
+  "src-tauri/src/categories/card_games.rs": {
+    "mtime": 1786392945.2006075,
+    "seen": 1788727453.091709,
+    "ast_hash": "702e0fc8b9cc222a1da221a8dc99b70c",
+    "semantic_hash": "702e0fc8b9cc222a1da221a8dc99b70c"
+  },
+  "src-tauri/src/categories/chemistry.rs": {
+    "mtime": 1786392945.2042851,
+    "seen": 1788727453.0917099,
+    "ast_hash": "318f1ec4f1ea81aace62fac5ce941229",
+    "semantic_hash": "318f1ec4f1ea81aace62fac5ce941229"
+  },
+  "src-tauri/src/categories/colors.rs": {
+    "mtime": 1786392945.2007442,
+    "seen": 1788727453.0917108,
+    "ast_hash": "2671615613145a0c6b7976bb86a898cb",
+    "semantic_hash": "2671615613145a0c6b7976bb86a898cb"
+  },
+  "src-tauri/src/categories/cooking_techniques.rs": {
+    "mtime": 1786392945.2043972,
+    "seen": 1788727453.0917118,
+    "ast_hash": "f4e0ca107541472fd4d21b386ea50ebe",
+    "semantic_hash": "f4e0ca107541472fd4d21b386ea50ebe"
+  },
+  "src-tauri/src/categories/countries.rs": {
+    "mtime": 1786392945.2008917,
+    "seen": 1788727453.0917125,
+    "ast_hash": "6d6bd8d694671a465f5434008dbfce9f",
+    "semantic_hash": "6d6bd8d694671a465f5434008dbfce9f"
+  },
+  "src-tauri/src/categories/cryptic_adjectives.rs": {
+    "mtime": 1786392945.204528,
+    "seen": 1788727453.0917134,
+    "ast_hash": "0982ae78e4126b26f78be1d9679946e3",
+    "semantic_hash": "0982ae78e4126b26f78be1d9679946e3"
+  },
+  "src-tauri/src/categories/dance_styles.rs": {
+    "mtime": 1786392945.2010205,
+    "seen": 1788727453.0917146,
+    "ast_hash": "aa6c5591e0678cfb010ce5efcb7a0525",
+    "semantic_hash": "aa6c5591e0678cfb010ce5efcb7a0525"
+  },
+  "src-tauri/src/categories/desserts.rs": {
+    "mtime": 1786392945.2011516,
+    "seen": 1788727453.0917153,
+    "ast_hash": "732553162c030c6fbe1c4793e86e33e6",
+    "semantic_hash": "732553162c030c6fbe1c4793e86e33e6"
+  },
+  "src-tauri/src/categories/emotions.rs": {
+    "mtime": 1786392945.2013092,
+    "seen": 1788727453.091716,
+    "ast_hash": "cc9c478ef9028105f8482b20d6bbcd27",
+    "semantic_hash": "cc9c478ef9028105f8482b20d6bbcd27"
+  },
+  "src-tauri/src/categories/etymology_word_roots.rs": {
+    "mtime": 1786392945.2046332,
+    "seen": 1788727453.091717,
+    "ast_hash": "261b98eac4d39b28a86649e3de1b115b",
+    "semantic_hash": "261b98eac4d39b28a86649e3de1b115b"
+  },
+  "src-tauri/src/categories/food.rs": {
+    "mtime": 1786392945.2014809,
+    "seen": 1788727453.0917182,
+    "ast_hash": "381422143a1ee4938d18d5043a2aa6df",
+    "semantic_hash": "381422143a1ee4938d18d5043a2aa6df"
+  },
+  "src-tauri/src/categories/forensics.rs": {
+    "mtime": 1786392945.2054675,
+    "seen": 1788727453.091719,
+    "ast_hash": "6d54d0e44fea8afbbb05c66a368d669e",
+    "semantic_hash": "6d54d0e44fea8afbbb05c66a368d669e"
+  },
+  "src-tauri/src/categories/fruits.rs": {
+    "mtime": 1786392945.2016108,
+    "seen": 1788727453.0917196,
+    "ast_hash": "8b2c370e665373dec28de6f68bd275de",
+    "semantic_hash": "8b2c370e665373dec28de6f68bd275de"
+  },
+  "src-tauri/src/categories/gardening.rs": {
+    "mtime": 1786392945.2017393,
+    "seen": 1788727453.0917208,
+    "ast_hash": "94346e4a14cae83df2219c95720f8dad",
+    "semantic_hash": "94346e4a14cae83df2219c95720f8dad"
+  },
+  "src-tauri/src/categories/geology_minerals.rs": {
+    "mtime": 1786392945.2056031,
+    "seen": 1788727453.0917218,
+    "ast_hash": "51400f8e3646457cb9c861e6889d23e9",
+    "semantic_hash": "51400f8e3646457cb9c861e6889d23e9"
+  },
+  "src-tauri/src/categories/grammar_linguistics.rs": {
+    "mtime": 1786392945.2057092,
+    "seen": 1788727453.0917222,
+    "ast_hash": "a2380779ccb9988b12a6a42a2c122eb8",
+    "semantic_hash": "a2380779ccb9988b12a6a42a2c122eb8"
+  },
+  "src-tauri/src/categories/holidays.rs": {
+    "mtime": 1786392945.2018514,
+    "seen": 1788727453.091723,
+    "ast_hash": "bd6e013231942fa12836839b8b56446e",
+    "semantic_hash": "bd6e013231942fa12836839b8b56446e"
+  },
+  "src-tauri/src/categories/horror_themes.rs": {
+    "mtime": 1786392945.2019622,
+    "seen": 1788727453.0917237,
+    "ast_hash": "b154f0e06876bf67b62bf4c234fe1045",
+    "semantic_hash": "b154f0e06876bf67b62bf4c234fe1045"
+  },
+  "src-tauri/src/categories/household.rs": {
+    "mtime": 1786392945.202097,
+    "seen": 1788727453.0917249,
+    "ast_hash": "90e52c8898b901a23cce30ec92d12eff",
+    "semantic_hash": "90e52c8898b901a23cce30ec92d12eff"
+  },
+  "src-tauri/src/categories/insects.rs": {
+    "mtime": 1786392945.2022364,
+    "seen": 1788727453.0917263,
+    "ast_hash": "67a92fb5ada777645d48c720b251e880",
+    "semantic_hash": "67a92fb5ada777645d48c720b251e880"
+  },
+  "src-tauri/src/categories/kitchen_items.rs": {
+    "mtime": 1786392945.2023427,
+    "seen": 1788727453.091727,
+    "ast_hash": "20eaafbedd07a53b3ed9d3c95a8d1eef",
+    "semantic_hash": "20eaafbedd07a53b3ed9d3c95a8d1eef"
+  },
+  "src-tauri/src/categories/legal_terms.rs": {
+    "mtime": 1786392945.2058215,
+    "seen": 1788727453.091728,
+    "ast_hash": "8d4673e77f03e3b6a39ae294ca5760ac",
+    "semantic_hash": "8d4673e77f03e3b6a39ae294ca5760ac"
+  },
+  "src-tauri/src/categories/medical_terminology.rs": {
+    "mtime": 1786392945.205938,
+    "seen": 1788727453.091729,
+    "ast_hash": "48f36429d971c02be810f2b2e823653d",
+    "semantic_hash": "48f36429d971c02be810f2b2e823653d"
+  },
+  "src-tauri/src/categories/mod.rs": {
+    "mtime": 1786392945.2067852,
+    "seen": 1788727453.0917294,
+    "ast_hash": "998e2705c509969a7fe96072c1e56852",
+    "semantic_hash": "998e2705c509969a7fe96072c1e56852"
+  },
+  "src-tauri/src/categories/movies_tv.rs": {
+    "mtime": 1786392945.2024517,
+    "seen": 1788727453.09173,
+    "ast_hash": "23579654654d771c60771fa6d503dff9",
+    "semantic_hash": "23579654654d771c60771fa6d503dff9"
+  },
+  "src-tauri/src/categories/musical_genres.rs": {
+    "mtime": 1786392945.2025602,
+    "seen": 1788727453.091739,
+    "ast_hash": "015dd5a1e75667fe0fbc9fcc57768a7e",
+    "semantic_hash": "015dd5a1e75667fe0fbc9fcc57768a7e"
+  },
+  "src-tauri/src/categories/musical_instruments.rs": {
+    "mtime": 1786392945.202666,
+    "seen": 1788727453.0917394,
+    "ast_hash": "33d6068a86780454428638f7df5461bb",
+    "semantic_hash": "33d6068a86780454428638f7df5461bb"
+  },
+  "src-tauri/src/categories/mycology.rs": {
+    "mtime": 1786392945.2060444,
+    "seen": 1788727453.0917404,
+    "ast_hash": "d564fb99bab9395c93b5871a973ef80b",
+    "semantic_hash": "d564fb99bab9395c93b5871a973ef80b"
+  },
+  "src-tauri/src/categories/mythical_creatures.rs": {
+    "mtime": 1786392945.2027717,
+    "seen": 1788727453.091741,
+    "ast_hash": "6bacd80f2dea1125df26284cd5dc4c6c",
+    "semantic_hash": "6bacd80f2dea1125df26284cd5dc4c6c"
+  },
+  "src-tauri/src/categories/nature.rs": {
+    "mtime": 1786392945.2029264,
+    "seen": 1788727453.091742,
+    "ast_hash": "9e3efddce3de6d7ea0fadac7787db184",
+    "semantic_hash": "9e3efddce3de6d7ea0fadac7787db184"
+  },
+  "src-tauri/src/categories/nautical_terms.rs": {
+    "mtime": 1786392945.2062843,
+    "seen": 1788727453.0917428,
+    "ast_hash": "e3126330897f8ae5ffb667db3ca1ab4e",
+    "semantic_hash": "e3126330897f8ae5ffb667db3ca1ab4e"
+  },
+  "src-tauri/src/categories/occupations.rs": {
+    "mtime": 1786392945.2030644,
+    "seen": 1788727453.0917435,
+    "ast_hash": "8f08f4fe555a7e181b75a5f4ea184a9b",
+    "semantic_hash": "8f08f4fe555a7e181b75a5f4ea184a9b"
+  },
+  "src-tauri/src/categories/ocean_life.rs": {
+    "mtime": 1786392945.2032106,
+    "seen": 1788727453.0917444,
+    "ast_hash": "d254022f82d43fc3cc062f5e7b5ed31b",
+    "semantic_hash": "d254022f82d43fc3cc062f5e7b5ed31b"
+  },
+  "src-tauri/src/categories/philosophy.rs": {
+    "mtime": 1786392945.20648,
+    "seen": 1788727453.0917454,
+    "ast_hash": "c5b612a7e8fdeb971c4f7195f852d4c3",
+    "semantic_hash": "c5b612a7e8fdeb971c4f7195f852d4c3"
+  },
+  "src-tauri/src/categories/school_subjects.rs": {
+    "mtime": 1786392945.2033434,
+    "seen": 1788727453.0917463,
+    "ast_hash": "537baf4367c42c0cbf0fc5443a904477",
+    "semantic_hash": "537baf4367c42c0cbf0fc5443a904477"
+  },
+  "src-tauri/src/categories/space_astronomy.rs": {
+    "mtime": 1786392945.2034583,
+    "seen": 1788727453.0917468,
+    "ast_hash": "642200162086eb8af1ab75e38320922e",
+    "semantic_hash": "642200162086eb8af1ab75e38320922e"
+  },
+  "src-tauri/src/categories/sports.rs": {
+    "mtime": 1786392945.2035842,
+    "seen": 1788727453.0917482,
+    "ast_hash": "e7bbe1717f5ff44a7ea35cc5a042d972",
+    "semantic_hash": "e7bbe1717f5ff44a7ea35cc5a042d972"
+  },
+  "src-tauri/src/categories/tools.rs": {
+    "mtime": 1786392945.203694,
+    "seen": 1788727453.0917492,
+    "ast_hash": "f9d0dec07bb575d6e30b1cfea85bbfeb",
+    "semantic_hash": "f9d0dec07bb575d6e30b1cfea85bbfeb"
+  },
+  "src-tauri/src/categories/types_of_government.rs": {
+    "mtime": 1786392945.2065873,
+    "seen": 1788727453.09175,
+    "ast_hash": "b534726a79471a4740eadac7539c1b96",
+    "semantic_hash": "b534726a79471a4740eadac7539c1b96"
+  },
+  "src-tauri/src/categories/vehicles.rs": {
+    "mtime": 1786392945.2038045,
+    "seen": 1788727453.0917506,
+    "ast_hash": "afde9802a27524c9479eccd97edee815",
+    "semantic_hash": "afde9802a27524c9479eccd97edee815"
+  },
+  "src-tauri/src/categories/weather.rs": {
+    "mtime": 1786392945.2039206,
+    "seen": 1788727453.0917513,
+    "ast_hash": "4c5f57b4a4534dafd6670e61c7152035",
+    "semantic_hash": "4c5f57b4a4534dafd6670e61c7152035"
+  },
+  "src-tauri/src/categories/weaving_textiles.rs": {
+    "mtime": 1786392945.2066972,
+    "seen": 1788727453.0917523,
+    "ast_hash": "392078895e26b7e8e35808aa86540f76",
+    "semantic_hash": "392078895e26b7e8e35808aa86540f76"
+  },
+  "src-tauri/src/dictionary.rs": {
+    "mtime": 1786385813.423556,
+    "seen": 1788727453.091753,
+    "ast_hash": "aca9e333e2f2db3fc0ba744fdb08767e",
+    "semantic_hash": "aca9e333e2f2db3fc0ba744fdb08767e"
+  },
+  "src-tauri/src/lib.rs": {
+    "mtime": 1786393192.0457282,
+    "seen": 1788727453.0917537,
+    "ast_hash": "e842adf9ec50caaa57dbe21d5efd7b43",
+    "semantic_hash": "e842adf9ec50caaa57dbe21d5efd7b43"
+  },
+  "src-tauri/src/main.rs": {
+    "mtime": 1785605808.1912813,
+    "seen": 1788727453.0917544,
+    "ast_hash": "e62519ab35125067c0baaa456a606e82",
+    "semantic_hash": "e62519ab35125067c0baaa456a606e82"
+  },
+  "src-tauri/tauri.conf.json": {
+    "mtime": 1788720636.0748858,
+    "seen": 1788727453.0917552,
+    "ast_hash": "ea9daf625aa9d4b7d3e607a098c38bf1",
+    "semantic_hash": "ea9daf625aa9d4b7d3e607a098c38bf1"
+  },
+  "src/App.icons.test.tsx": {
+    "mtime": 1786385813.4295907,
+    "seen": 1788727453.091756,
+    "ast_hash": "45ea8a5e25c67b6ec9fe3c3b3d55a953",
+    "semantic_hash": "45ea8a5e25c67b6ec9fe3c3b3d55a953"
+  },
+  "src/App.tsx": {
+    "mtime": 1786406081.8987784,
+    "seen": 1788727453.0917664,
+    "ast_hash": "ce5ba16e9a677a7950b28d08e38194b1",
+    "semantic_hash": "ce5ba16e9a677a7950b28d08e38194b1"
+  },
+  "src/achievements.ts": {
+    "mtime": 1786391816.864313,
+    "seen": 1788727453.0917675,
+    "ast_hash": "dd33e92d3fd6253b9a260831d14a61b9",
+    "semantic_hash": "dd33e92d3fd6253b9a260831d14a61b9"
+  },
+  "src/backend.test.ts": {
+    "mtime": 1786393010.261606,
+    "seen": 1788727453.0917685,
+    "ast_hash": "c4f30c5e0b7a429cff1b35b252afde96",
+    "semantic_hash": "c4f30c5e0b7a429cff1b35b252afde96"
+  },
+  "src/backend.ts": {
+    "mtime": 1786385813.4315946,
+    "seen": 1788727453.0917695,
+    "ast_hash": "f6988a089f77bb5e4f649af0818dc738",
+    "semantic_hash": "f6988a089f77bb5e4f649af0818dc738"
+  },
+  "src/categories/animals.json": {
+    "mtime": 1786392945.2005248,
+    "seen": 1788727453.0917702,
+    "ast_hash": "28ec904269d7c0f9a37a0a8ec6c2edf7",
+    "semantic_hash": "28ec904269d7c0f9a37a0a8ec6c2edf7"
+  },
+  "src/categories/architecture.json": {
+    "mtime": 1786392945.2040894,
+    "seen": 1788727453.091771,
+    "ast_hash": "0c75de49b13a0fef183d42c7fccea247",
+    "semantic_hash": "0c75de49b13a0fef183d42c7fccea247"
+  },
+  "src/categories/astrology_zodiac.json": {
+    "mtime": 1786392945.2041912,
+    "seen": 1788727453.0917714,
+    "ast_hash": "7fff40d604daaec4c6449256a94f1eff",
+    "semantic_hash": "7fff40d604daaec4c6449256a94f1eff"
+  },
+  "src/categories/card_games.json": {
+    "mtime": 1786392945.200655,
+    "seen": 1788727453.0917723,
+    "ast_hash": "f184439a0ee2762b7ce94b4e3ea0ec22",
+    "semantic_hash": "f184439a0ee2762b7ce94b4e3ea0ec22"
+  },
+  "src/categories/chemistry.json": {
+    "mtime": 1786392945.2043297,
+    "seen": 1788727453.0917733,
+    "ast_hash": "c04412ef446728dd21c2959453e3ff05",
+    "semantic_hash": "c04412ef446728dd21c2959453e3ff05"
+  },
+  "src/categories/colors.json": {
+    "mtime": 1786392945.2007895,
+    "seen": 1788727453.0917742,
+    "ast_hash": "e889f83ec7d5889b144a5207df91f775",
+    "semantic_hash": "e889f83ec7d5889b144a5207df91f775"
+  },
+  "src/categories/cooking_techniques.json": {
+    "mtime": 1786392945.2044437,
+    "seen": 1788727453.091775,
+    "ast_hash": "6aa772096036b22be196d7c3287414c8",
+    "semantic_hash": "6aa772096036b22be196d7c3287414c8"
+  },
+  "src/categories/countries.json": {
+    "mtime": 1786392945.2009413,
+    "seen": 1788727453.0917757,
+    "ast_hash": "9775ca6bf6f5c9494c80913c396866e5",
+    "semantic_hash": "9775ca6bf6f5c9494c80913c396866e5"
+  },
+  "src/categories/cryptic_adjectives.json": {
+    "mtime": 1786392945.2045703,
+    "seen": 1788727453.0917766,
+    "ast_hash": "3e989512c417a5f2369853e8460b436c",
+    "semantic_hash": "3e989512c417a5f2369853e8460b436c"
+  },
+  "src/categories/dance_styles.json": {
+    "mtime": 1786392945.2010758,
+    "seen": 1788727453.0917773,
+    "ast_hash": "93dc81c2a6225c816f7e367d076fa300",
+    "semantic_hash": "93dc81c2a6225c816f7e367d076fa300"
+  },
+  "src/categories/desserts.json": {
+    "mtime": 1786392945.201224,
+    "seen": 1788727453.0917778,
+    "ast_hash": "2740246f2ad5a443cc726d4b423d23f0",
+    "semantic_hash": "2740246f2ad5a443cc726d4b423d23f0"
+  },
+  "src/categories/emotions.json": {
+    "mtime": 1786392945.2013526,
+    "seen": 1788727453.0917795,
+    "ast_hash": "a3bcc50ae76920d771887206a7d43296",
+    "semantic_hash": "a3bcc50ae76920d771887206a7d43296"
+  },
+  "src/categories/etymology_word_roots.json": {
+    "mtime": 1786392945.2053587,
+    "seen": 1788727453.0917807,
+    "ast_hash": "29d12402572020c7832f867fe7c70305",
+    "semantic_hash": "29d12402572020c7832f867fe7c70305"
+  },
+  "src/categories/food.json": {
+    "mtime": 1786392945.2015376,
+    "seen": 1788727453.0917811,
+    "ast_hash": "d8d0c02d1011a53c61c096af5a59507b",
+    "semantic_hash": "d8d0c02d1011a53c61c096af5a59507b"
+  },
+  "src/categories/forensics.json": {
+    "mtime": 1786392945.2055333,
+    "seen": 1788727453.0917819,
+    "ast_hash": "997e843a0408bbede7ef505b2cbfcd02",
+    "semantic_hash": "997e843a0408bbede7ef505b2cbfcd02"
+  },
+  "src/categories/fruits.json": {
+    "mtime": 1786392945.2016554,
+    "seen": 1788727453.0917828,
+    "ast_hash": "e62cac56c771911279104d5548151552",
+    "semantic_hash": "e62cac56c771911279104d5548151552"
+  },
+  "src/categories/gardening.json": {
+    "mtime": 1786392945.2017784,
+    "seen": 1788727453.0917838,
+    "ast_hash": "7b9756abc721f0834a4c85db3d82b395",
+    "semantic_hash": "7b9756abc721f0834a4c85db3d82b395"
+  },
+  "src/categories/geology_minerals.json": {
+    "mtime": 1786392945.2056422,
+    "seen": 1788727453.0917845,
+    "ast_hash": "5809d79178adc8dc1e15186fdac28311",
+    "semantic_hash": "5809d79178adc8dc1e15186fdac28311"
+  },
+  "src/categories/grammar_linguistics.json": {
+    "mtime": 1786392945.2057483,
+    "seen": 1788727453.0917852,
+    "ast_hash": "2bc942975451553fcc35fa978b6005d7",
+    "semantic_hash": "2bc942975451553fcc35fa978b6005d7"
+  },
+  "src/categories/holidays.json": {
+    "mtime": 1786392945.201891,
+    "seen": 1788727453.091786,
+    "ast_hash": "8fdba8971b989c71a051dbc237d42451",
+    "semantic_hash": "8fdba8971b989c71a051dbc237d42451"
+  },
+  "src/categories/horror_themes.json": {
+    "mtime": 1786392945.2020042,
+    "seen": 1788727453.0917864,
+    "ast_hash": "045adff8cd1ca7ec1f9b0df86e9f6319",
+    "semantic_hash": "045adff8cd1ca7ec1f9b0df86e9f6319"
+  },
+  "src/categories/household.json": {
+    "mtime": 1786392945.2021575,
+    "seen": 1788727453.0917873,
+    "ast_hash": "166bfde90c290b8b5ea07a13b84cb663",
+    "semantic_hash": "166bfde90c290b8b5ea07a13b84cb663"
+  },
+  "src/categories/insects.json": {
+    "mtime": 1786392945.202274,
+    "seen": 1788727453.091788,
+    "ast_hash": "68b03f5b17b094b28b683bea2fee7b28",
+    "semantic_hash": "68b03f5b17b094b28b683bea2fee7b28"
+  },
+  "src/categories/kitchen_items.json": {
+    "mtime": 1786392945.2023804,
+    "seen": 1788727453.0917888,
+    "ast_hash": "d3c8913da4f163e8316dddb705c12035",
+    "semantic_hash": "d3c8913da4f163e8316dddb705c12035"
+  },
+  "src/categories/legal_terms.json": {
+    "mtime": 1786392945.2058623,
+    "seen": 1788727453.091791,
+    "ast_hash": "e942d09c6d3ffaa5e24ae8d0ff716da4",
+    "semantic_hash": "e942d09c6d3ffaa5e24ae8d0ff716da4"
+  },
+  "src/categories/medical_terminology.json": {
+    "mtime": 1786392945.2059796,
+    "seen": 1788727453.0917916,
+    "ast_hash": "28bc6385ba5480af9c2f79bb42f6d67e",
+    "semantic_hash": "28bc6385ba5480af9c2f79bb42f6d67e"
+  },
+  "src/categories/movies_tv.json": {
+    "mtime": 1786392945.2024899,
+    "seen": 1788727453.0917923,
+    "ast_hash": "ea593e75019ee73395083432346fc17a",
+    "semantic_hash": "ea593e75019ee73395083432346fc17a"
+  },
+  "src/categories/musical_genres.json": {
+    "mtime": 1786392945.2026002,
+    "seen": 1788727453.0918102,
+    "ast_hash": "5a73044a45b7eafaa490a5627bf2ffff",
+    "semantic_hash": "5a73044a45b7eafaa490a5627bf2ffff"
+  },
+  "src/categories/musical_instruments.json": {
+    "mtime": 1786392945.2027028,
+    "seen": 1788727453.0918114,
+    "ast_hash": "6114a10e5beedc6e8ee5f5d5acc407ae",
+    "semantic_hash": "6114a10e5beedc6e8ee5f5d5acc407ae"
+  },
+  "src/categories/mycology.json": {
+    "mtime": 1786392945.20608,
+    "seen": 1788727453.0918121,
+    "ast_hash": "2fbee41a1951297fd3472b3ea18e719c",
+    "semantic_hash": "2fbee41a1951297fd3472b3ea18e719c"
+  },
+  "src/categories/mythical_creatures.json": {
+    "mtime": 1786392945.20281,
+    "seen": 1788727453.0918128,
+    "ast_hash": "07bef41d591370292d617d5bdd380f79",
+    "semantic_hash": "07bef41d591370292d617d5bdd380f79"
+  },
+  "src/categories/nature.json": {
+    "mtime": 1786392945.202979,
+    "seen": 1788727453.0918133,
+    "ast_hash": "de1cf172144456c83739112b8dc00111",
+    "semantic_hash": "de1cf172144456c83739112b8dc00111"
+  },
+  "src/categories/nautical_terms.json": {
+    "mtime": 1786392945.2063887,
+    "seen": 1788727453.0918148,
+    "ast_hash": "dffc96ba509d4c9c7827f0d664d1d0fc",
+    "semantic_hash": "dffc96ba509d4c9c7827f0d664d1d0fc"
+  },
+  "src/categories/occupations.json": {
+    "mtime": 1786392945.20311,
+    "seen": 1788727453.0918157,
+    "ast_hash": "bebdcb030b4bb2e6d54792fa884e6107",
+    "semantic_hash": "bebdcb030b4bb2e6d54792fa884e6107"
+  },
+  "src/categories/ocean_life.json": {
+    "mtime": 1786392945.2032619,
+    "seen": 1788727453.0918167,
+    "ast_hash": "36b4568e5a0496a60932e76f7e82c0e9",
+    "semantic_hash": "36b4568e5a0496a60932e76f7e82c0e9"
+  },
+  "src/categories/philosophy.json": {
+    "mtime": 1786392945.2065227,
+    "seen": 1788727453.0918174,
+    "ast_hash": "b9dd2767117965f5250592246e3b9ec6",
+    "semantic_hash": "b9dd2767117965f5250592246e3b9ec6"
+  },
+  "src/categories/school_subjects.json": {
+    "mtime": 1786392945.2033873,
+    "seen": 1788727453.091818,
+    "ast_hash": "81b2ee0dbd6242926b39d0c9d68189f0",
+    "semantic_hash": "81b2ee0dbd6242926b39d0c9d68189f0"
+  },
+  "src/categories/space_astronomy.json": {
+    "mtime": 1786392945.2034972,
+    "seen": 1788727453.091819,
+    "ast_hash": "0f9a3352738690ce06786b4ad756a7a2",
+    "semantic_hash": "0f9a3352738690ce06786b4ad756a7a2"
+  },
+  "src/categories/sports.json": {
+    "mtime": 1786392945.2036285,
+    "seen": 1788727453.0918198,
+    "ast_hash": "b7c590a50434772960ca572542662428",
+    "semantic_hash": "b7c590a50434772960ca572542662428"
+  },
+  "src/categories/tools.json": {
+    "mtime": 1786392945.2037306,
+    "seen": 1788727453.0918207,
+    "ast_hash": "c500abd2935245bf21bcd1a43bd22d38",
+    "semantic_hash": "c500abd2935245bf21bcd1a43bd22d38"
+  },
+  "src/categories/types_of_government.json": {
+    "mtime": 1786392945.2066264,
+    "seen": 1788727453.0918217,
+    "ast_hash": "8837120e321767a2c43f527f659150c6",
+    "semantic_hash": "8837120e321767a2c43f527f659150c6"
+  },
+  "src/categories/vehicles.json": {
+    "mtime": 1786392945.2038448,
+    "seen": 1788727453.0918226,
+    "ast_hash": "e447351efdbb18b3f356634641b21412",
+    "semantic_hash": "e447351efdbb18b3f356634641b21412"
+  },
+  "src/categories/weather.json": {
+    "mtime": 1786392945.2039769,
+    "seen": 1788727453.0918236,
+    "ast_hash": "99d294a7cb0a8cfd1776806eba11c4a8",
+    "semantic_hash": "99d294a7cb0a8cfd1776806eba11c4a8"
+  },
+  "src/categories/weaving_textiles.json": {
+    "mtime": 1786392945.2067368,
+    "seen": 1788727453.091826,
+    "ast_hash": "2b73cdf92b4bae7df1bc9b2025e347e8",
+    "semantic_hash": "2b73cdf92b4bae7df1bc9b2025e347e8"
+  },
+  "src/categoryThemes.ts": {
+    "mtime": 1786391886.7925577,
+    "seen": 1788727453.0918267,
+    "ast_hash": "c468caf697e42c871ff9cd3352fdef48",
+    "semantic_hash": "c468caf697e42c871ff9cd3352fdef48"
+  },
+  "src/components/AboutDialog.tsx": {
+    "mtime": 1786386074.6321626,
+    "seen": 1788727453.0918274,
+    "ast_hash": "214a108c7156813dcb721c5e1dd32247",
+    "semantic_hash": "214a108c7156813dcb721c5e1dd32247"
+  },
+  "src/components/AchievementBanner.tsx": {
+    "mtime": 1786385813.4317756,
+    "seen": 1788727453.0918474,
+    "ast_hash": "43e058ac09339e5ac11e6f31da72d871",
+    "semantic_hash": "43e058ac09339e5ac11e6f31da72d871"
+  },
+  "src/components/AchievementsView.tsx": {
+    "mtime": 1786385813.4317756,
+    "seen": 1788727453.0918481,
+    "ast_hash": "b38ec05d986fafba90d96f5f8c3e9c54",
+    "semantic_hash": "b38ec05d986fafba90d96f5f8c3e9c54"
+  },
+  "src/components/GameCanvas.tsx": {
+    "mtime": 1786390969.5483978,
+    "seen": 1788727453.0918489,
+    "ast_hash": "ded455beeb37cbc6e7655a568f87c649",
+    "semantic_hash": "ded455beeb37cbc6e7655a568f87c649"
+  },
+  "src/components/GardenView.tsx": {
+    "mtime": 1786406287.271406,
+    "seen": 1788727453.09185,
+    "ast_hash": "f09e21f3d21ee0d2aa695aa14beaed3e",
+    "semantic_hash": "f09e21f3d21ee0d2aa695aa14beaed3e"
+  },
+  "src/components/GreenhouseFloorplanPanel.tsx": {
+    "mtime": 1786392202.8342972,
+    "seen": 1788727453.091851,
+    "ast_hash": "b5849c8b678bf5b25b11b4684e721cec",
+    "semantic_hash": "b5849c8b678bf5b25b11b4684e721cec"
+  },
+  "src/components/LevelsView.tsx": {
+    "mtime": 1786392153.4434485,
+    "seen": 1788727453.0918517,
+    "ast_hash": "dcb37710319a63ae0f8af6348aa72408",
+    "semantic_hash": "dcb37710319a63ae0f8af6348aa72408"
+  },
+  "src/components/SeedStoreDialog.tsx": {
+    "mtime": 1786406551.7686749,
+    "seen": 1788727453.0918524,
+    "ast_hash": "381ba25ef086f5797baf6c04ee4158c5",
+    "semantic_hash": "381ba25ef086f5797baf6c04ee4158c5"
+  },
+  "src/components/SettingsDialog.tsx": {
+    "mtime": 1786391446.801803,
+    "seen": 1788727453.0918534,
+    "ast_hash": "23d6038cfb80baa58043772b4e52e1d1",
+    "semantic_hash": "23d6038cfb80baa58043772b4e52e1d1"
+  },
+  "src/components/SuccessScreen.tsx": {
+    "mtime": 1786406236.7080553,
+    "seen": 1788727453.091854,
+    "ast_hash": "a2d2df782ec7400c9da1e50d8bb8fced",
+    "semantic_hash": "a2d2df782ec7400c9da1e50d8bb8fced"
+  },
+  "src/components/icons/EcoLeaf.tsx": {
+    "mtime": 1786385813.4318936,
+    "seen": 1788727453.091855,
+    "ast_hash": "82ec69ae8dc8f3db7954ff51bf50ca86",
+    "semantic_hash": "82ec69ae8dc8f3db7954ff51bf50ca86"
+  },
+  "src/constants.ts": {
+    "mtime": 1786385813.4318936,
+    "seen": 1788727453.0918558,
+    "ast_hash": "9d0434b2b5ce44b093f7386454b9feae",
+    "semantic_hash": "9d0434b2b5ce44b093f7386454b9feae"
+  },
+  "src/gameMechanics.ts": {
+    "mtime": 1786390664.3583658,
+    "seen": 1788727453.0918565,
+    "ast_hash": "fdec3295f150128a4a28ebf2a807022e",
+    "semantic_hash": "fdec3295f150128a4a28ebf2a807022e"
+  },
+  "src/hooks/useAudio.ts": {
+    "mtime": 1785680104.8272576,
+    "seen": 1788727453.0918574,
+    "ast_hash": "632ef0c1d05b9de88944c1ade57e9115",
+    "semantic_hash": "632ef0c1d05b9de88944c1ade57e9115"
+  },
+  "src/hooks/useWordSearchGame.test.ts": {
+    "mtime": 1786393117.476363,
+    "seen": 1788727453.0918581,
+    "ast_hash": "4b19ad562b0da07fc17949d8b4144d58",
+    "semantic_hash": "4b19ad562b0da07fc17949d8b4144d58"
+  },
+  "src/hooks/useWordSearchGame.ts": {
+    "mtime": 1786391839.7053638,
+    "seen": 1788727453.0918589,
+    "ast_hash": "3df63eda223ddadc59f499330d6e85e1",
+    "semantic_hash": "3df63eda223ddadc59f499330d6e85e1"
+  },
+  "src/main.tsx": {
+    "mtime": 1786385813.4325805,
+    "seen": 1788727453.0918598,
+    "ast_hash": "ce99c0de91ec2632548ea9ef80f252f8",
+    "semantic_hash": "ce99c0de91ec2632548ea9ef80f252f8"
+  },
+  "src/persistence.test.ts": {
+    "mtime": 1786393318.0364034,
+    "seen": 1788727453.0918605,
+    "ast_hash": "c5e6056973a5e58ff17034ecfbbaa490",
+    "semantic_hash": "c5e6056973a5e58ff17034ecfbbaa490"
+  },
+  "src/persistence.ts": {
+    "mtime": 1786390647.7260783,
+    "seen": 1788727453.0918612,
+    "ast_hash": "98381f1e43f140d8de693ec2b559572f",
+    "semantic_hash": "98381f1e43f140d8de693ec2b559572f"
+  },
+  "src/plantsCatalog.ts": {
+    "mtime": 1786385813.4325805,
+    "seen": 1788727453.091862,
+    "ast_hash": "11df5489c88454b31debb921734afb7a",
+    "semantic_hash": "11df5489c88454b31debb921734afb7a"
+  },
+  "src/test/setup.ts": {
+    "mtime": 1786385813.4325805,
+    "seen": 1788727453.0918627,
+    "ast_hash": "50ac3d93ef3a504ef80dc9ad85499952",
+    "semantic_hash": "50ac3d93ef3a504ef80dc9ad85499952"
+  },
+  "src/theme.ts": {
+    "mtime": 1786391321.276544,
+    "seen": 1788727453.0918639,
+    "ast_hash": "bd0de58aed64aa79eecbc59eea0dcab2",
+    "semantic_hash": "bd0de58aed64aa79eecbc59eea0dcab2"
+  },
+  "src/theme/tokens.sync.test.ts": {
+    "mtime": 1786391289.2120783,
+    "seen": 1788727453.0918646,
+    "ast_hash": "63958d8db860755debea0af5e7462b94",
+    "semantic_hash": "63958d8db860755debea0af5e7462b94"
+  },
+  "src/theme/tokens.ts": {
+    "mtime": 1786391249.1793773,
+    "seen": 1788727453.0918653,
+    "ast_hash": "f36d2b292307934c88d7b73ebf3c261e",
+    "semantic_hash": "f36d2b292307934c88d7b73ebf3c261e"
+  },
+  "src/vite-env.d.ts": {
+    "mtime": 1786385813.4330015,
+    "seen": 1788727453.091866,
+    "ast_hash": "62f9f6bc4c280b79695ad10ef416425f",
+    "semantic_hash": "62f9f6bc4c280b79695ad10ef416425f"
+  },
+  "tsconfig.json": {
+    "mtime": 1785605808.191498,
+    "seen": 1788727453.0918672,
+    "ast_hash": "468c4a26d22e95a911cbe5ff0ed9ca27",
+    "semantic_hash": "468c4a26d22e95a911cbe5ff0ed9ca27"
+  },
+  "tsconfig.node.json": {
+    "mtime": 1785626370.4907496,
+    "seen": 1788727453.0918682,
+    "ast_hash": "ad2f10fc3af5966afad6db120e03e851",
+    "semantic_hash": "ad2f10fc3af5966afad6db120e03e851"
+  },
+  "vite.config.ts": {
+    "mtime": 1786385813.4330015,
+    "seen": 1788727453.0918686,
+    "ast_hash": "cff99eb2146400f22396698374a59d20",
+    "semantic_hash": "cff99eb2146400f22396698374a59d20"
+  },
+  "vite.web.config.ts": {
+    "mtime": 1786386057.0984044,
+    "seen": 1788727453.0918696,
+    "ast_hash": "c0d2c0e6323cd41fd31a0a8f9921a6ec",
+    "semantic_hash": "c0d2c0e6323cd41fd31a0a8f9921a6ec"
+  },
+  "public/sounds/background-music/lotus-meditation.mp3": {
+    "mtime": 1785661856.0540926,
+    "seen": 1788727453.0918705,
+    "ast_hash": "34f573349a570a53111b1bb082a7fecd",
+    "semantic_hash": "34f573349a570a53111b1bb082a7fecd"
+  },
+  "public/sounds/background-music/quiet-quest.mp3": {
+    "mtime": 1785661656.6772451,
+    "seen": 1788727453.0918713,
+    "ast_hash": "5a261394e5b198900dafdf887ab6b4ea",
+    "semantic_hash": "5a261394e5b198900dafdf887ab6b4ea"
+  },
+  "public/sounds/background-music/word-search-zen.mp3": {
+    "mtime": 1785661497.3338,
+    "seen": 1788727453.091872,
+    "ast_hash": "860c89493623ed8a5c8dd8e7f42a48dc",
+    "semantic_hash": "860c89493623ed8a5c8dd8e7f42a48dc"
+  },
+  "public/sounds/sound-effects/acheivement.mp3": {
+    "mtime": 1785663240.7965467,
+    "seen": 1788727453.091873,
+    "ast_hash": "4da7725f0c2a459d594986c8f42c8f01",
+    "semantic_hash": "4da7725f0c2a459d594986c8f42c8f01"
+  },
+  "public/sounds/sound-effects/award.mp3": {
+    "mtime": 1785663181.457882,
+    "seen": 1788727453.091874,
+    "ast_hash": "7c6cda79baf6802a21576fcdcfd13dc9",
+    "semantic_hash": "7c6cda79baf6802a21576fcdcfd13dc9"
+  },
+  "public/sounds/sound-effects/cheering.mp3": {
+    "mtime": 1785662890.9838555,
+    "seen": 1788727453.0918746,
+    "ast_hash": "19cf50e4df70958fe16b138131c86ffc",
+    "semantic_hash": "19cf50e4df70958fe16b138131c86ffc"
+  },
+  "public/sounds/sound-effects/click.mp3": {
+    "mtime": 1785663059.4831748,
+    "seen": 1788727453.0918756,
+    "ast_hash": "4fe41973f28bcc9616b54e0af1038561",
+    "semantic_hash": "4fe41973f28bcc9616b54e0af1038561"
+  },
+  "public/sounds/sound-effects/swipe.mp3": {
+    "mtime": 1785662812.7176375,
+    "seen": 1788727453.0918763,
+    "ast_hash": "7228dab1ad0de04c3992a86108c2d995",
+    "semantic_hash": "7228dab1ad0de04c3992a86108c2d995"
+  }
+}

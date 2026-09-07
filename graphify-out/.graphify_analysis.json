@@ -1,0 +1,739 @@
+{
+  "communities": {
+    "0": [
+      "ref_mui_material",
+      "ref_react",
+      "src_app",
+      "src_app_activetab",
+      "src_app_thememode",
+      "src_components_aboutdialog",
+      "src_components_aboutdialog_aboutdialog",
+      "src_components_aboutdialog_props",
+      "src_components_aboutdialog_step",
+      "src_components_gardenview",
+      "src_components_gardenview_filtertab",
+      "src_components_gardenview_formatcooldown",
+      "src_components_gardenview_gardenview",
+      "src_components_gardenview_props",
+      "src_components_gardenview_waterbutton",
+      "src_components_greenhousefloorplanpanel",
+      "src_components_greenhousefloorplanpanel_greenhousefloorplanpanel",
+      "src_components_greenhousefloorplanpanel_props",
+      "src_components_icons_ecoleaf",
+      "src_components_icons_ecoleaf_ecoleaf",
+      "src_components_levelsview",
+      "src_components_levelsview_levelsview",
+      "src_components_levelsview_props",
+      "src_components_seedstoredialog",
+      "src_components_seedstoredialog_props",
+      "src_components_seedstoredialog_seedstoredialog",
+      "src_gamemechanics_rewards",
+      "src_main",
+      "src_plantscatalog",
+      "src_plantscatalog_getstageimage",
+      "src_plantscatalog_getstagename",
+      "src_plantscatalog_plantdef",
+      "src_plantscatalog_plants_catalog",
+      "src_plantscatalog_stage_assets",
+      "src_theme",
+      "src_theme_sproutautumntheme",
+      "src_theme_sproutdarktheme",
+      "src_theme_sproutlighttheme",
+      "src_theme_sproutoceantheme",
+      "src_theme_tokens",
+      "src_theme_tokens_sync_test",
+      "src_theme_tokens_sync_test_extractcssvar",
+      "src_theme_tokens_themetokenkey",
+      "src_theme_tokens_tokens"
+    ],
+    "1": [
+      "ref_emotion_react",
+      "ref_mui_icons_material",
+      "src_achievements",
+      "src_achievements_achievement",
+      "src_achievements_achievements",
+      "src_achievements_achievementstats",
+      "src_categorythemes",
+      "src_categorythemes_asseturl",
+      "src_categorythemes_category_themes",
+      "src_categorythemes_default_theme",
+      "src_categorythemes_mystical",
+      "src_categorythemes_mysticalbackground",
+      "src_categorythemes_nature",
+      "src_categorythemes_naturebackground",
+      "src_categorythemes_theme",
+      "src_categorythemes_unifiedbackground",
+      "src_components_achievementbanner",
+      "src_components_achievementbanner_achievementbanner",
+      "src_components_achievementbanner_lifecycle",
+      "src_components_achievementbanner_medallionpulse",
+      "src_components_achievementbanner_props",
+      "src_components_achievementbanner_shine",
+      "src_components_achievementsview",
+      "src_components_achievementsview_achievementsview",
+      "src_components_achievementsview_filtertype",
+      "src_components_achievementsview_props",
+      "src_components_successscreen",
+      "src_components_successscreen_props",
+      "src_components_successscreen_seed",
+      "src_components_successscreen_successscreen",
+      "src_hooks_useaudio",
+      "src_hooks_useaudio_bloburlcache",
+      "src_hooks_useaudio_loadvolume",
+      "src_hooks_useaudio_music_tracks",
+      "src_hooks_useaudio_sfx_files",
+      "src_hooks_useaudio_sfxname",
+      "src_hooks_useaudio_shuffle",
+      "src_hooks_useaudio_tobloburl",
+      "src_hooks_useaudio_useaudio"
+    ],
+    "2": [
+      "core",
+      "ref_testing_library_react",
+      "ref_vitest",
+      "src_achievements_evaluateachievements",
+      "src_app_app",
+      "src_app_icons_test",
+      "src_constants_directions",
+      "src_gamemechanics",
+      "src_gamemechanics_calculategridsize",
+      "src_gamemechanics_english_letter_pool",
+      "src_gamemechanics_findwordplacement",
+      "src_gamemechanics_garden_watering_cooldown_ms",
+      "src_gamemechanics_getrandomfillletter",
+      "src_gamemechanics_wordplacement",
+      "src_hooks_usewordsearchgame",
+      "src_hooks_usewordsearchgame_canplaceword",
+      "src_hooks_usewordsearchgame_placeword",
+      "src_hooks_usewordsearchgame_shuffle",
+      "src_hooks_usewordsearchgame_test",
+      "src_hooks_usewordsearchgame_test_findaword",
+      "src_hooks_usewordsearchgame_usewordsearchgame",
+      "src_persistence",
+      "src_persistence_backfillcategoriesseen",
+      "src_persistence_current_schema_version",
+      "src_persistence_default_save_data",
+      "src_persistence_haslocalsave",
+      "src_persistence_istauri",
+      "src_persistence_legacy_keys",
+      "src_persistence_loadsavedata",
+      "src_persistence_loadsavedatasync",
+      "src_persistence_parsejson",
+      "src_persistence_savedata",
+      "src_persistence_test",
+      "src_persistence_writesavedata"
+    ],
+    "3": [
+      "package",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_build_web",
+      "package_scripts_dev",
+      "package_scripts_preview",
+      "package_scripts_preview_web",
+      "package_scripts_tauri",
+      "package_scripts_test",
+      "package_type",
+      "package_version",
+      "ref_emotion_styled",
+      "ref_fontsource_quicksand",
+      "ref_fontsource_space_grotesk",
+      "ref_fontsource_work_sans",
+      "ref_jsdom",
+      "ref_react_dom",
+      "ref_tauri_apps_api",
+      "ref_tauri_apps_cli",
+      "ref_tauri_apps_plugin_opener",
+      "ref_types_node",
+      "ref_types_react",
+      "ref_types_react_dom",
+      "ref_typescript",
+      "ref_vite",
+      "ref_vite_plugin_pwa",
+      "ref_vitejs_plugin_react",
+      "vite_config",
+      "vite_config_pkg",
+      "vite_web_config",
+      "vite_web_config_pkg"
+    ],
+    "4": [
+      "src_backend",
+      "src_backend_category_names",
+      "src_backend_category_names_by_tier",
+      "src_backend_categorydata",
+      "src_backend_categorymodules",
+      "src_backend_getpuzzlewords",
+      "src_backend_istauri",
+      "src_backend_loaddictionary",
+      "src_backend_puzzle",
+      "src_backend_shuffle",
+      "src_backend_test",
+      "src_backend_tier",
+      "src_backend_validateword",
+      "src_backend_web_categories",
+      "src_backend_webpool",
+      "src_components_settingsdialog",
+      "src_components_settingsdialog_props",
+      "src_components_settingsdialog_settingscontent",
+      "src_components_settingsdialog_settingsdialog",
+      "src_components_settingsdialog_soundrow",
+      "src_components_settingsdialog_thememode"
+    ],
+    "5": [
+      "apphandle",
+      "option",
+      "result",
+      "src_tauri_src_dictionary",
+      "src_tauri_src_dictionary_dictionary",
+      "src_tauri_src_lib",
+      "src_tauri_src_lib_get_puzzle_words",
+      "src_tauri_src_lib_load_game_state",
+      "src_tauri_src_lib_puzzlewords",
+      "src_tauri_src_lib_run",
+      "src_tauri_src_lib_save_game_state",
+      "src_tauri_src_lib_test_category_selection_parity",
+      "src_tauri_src_lib_test_get_puzzle_words_never_panics",
+      "src_tauri_src_lib_test_save_data_schema_validity",
+      "src_tauri_src_lib_test_validate_word_edge_cases",
+      "src_tauri_src_lib_test_word_length_filtering",
+      "src_tauri_src_lib_validate_word",
+      "string",
+      "vec"
+    ],
+    "6": [
+      "src_tauri_tauri_conf",
+      "src_tauri_tauri_conf_app",
+      "src_tauri_tauri_conf_app_security",
+      "src_tauri_tauri_conf_app_windows",
+      "src_tauri_tauri_conf_build",
+      "src_tauri_tauri_conf_build_beforebuildcommand",
+      "src_tauri_tauri_conf_build_beforedevcommand",
+      "src_tauri_tauri_conf_build_devurl",
+      "src_tauri_tauri_conf_build_frontenddist",
+      "src_tauri_tauri_conf_bundle",
+      "src_tauri_tauri_conf_bundle_active",
+      "src_tauri_tauri_conf_bundle_category",
+      "src_tauri_tauri_conf_bundle_icon",
+      "src_tauri_tauri_conf_bundle_targets",
+      "src_tauri_tauri_conf_identifier",
+      "src_tauri_tauri_conf_productname",
+      "src_tauri_tauri_conf_schema",
+      "src_tauri_tauri_conf_security_csp",
+      "src_tauri_tauri_conf_version"
+    ],
+    "7": [
+      "tsconfig",
+      "tsconfig_compileroptions",
+      "tsconfig_compileroptions_allowimportingtsextensions",
+      "tsconfig_compileroptions_isolatedmodules",
+      "tsconfig_compileroptions_jsx",
+      "tsconfig_compileroptions_lib",
+      "tsconfig_compileroptions_module",
+      "tsconfig_compileroptions_moduleresolution",
+      "tsconfig_compileroptions_noemit",
+      "tsconfig_compileroptions_nofallthroughcasesinswitch",
+      "tsconfig_compileroptions_nounusedlocals",
+      "tsconfig_compileroptions_nounusedparameters",
+      "tsconfig_compileroptions_resolvejsonmodule",
+      "tsconfig_compileroptions_skiplibcheck",
+      "tsconfig_compileroptions_strict",
+      "tsconfig_compileroptions_target",
+      "tsconfig_compileroptions_usedefineforclassfields",
+      "tsconfig_include",
+      "tsconfig_references"
+    ],
+    "8": [
+      "src_components_gamecanvas",
+      "src_components_gamecanvas_contrastingtextcolor",
+      "src_components_gamecanvas_gamecanvas",
+      "src_components_gamecanvas_props",
+      "src_components_gamecanvas_surfacelettercolor",
+      "src_constants",
+      "src_constants_celebrate_buttons_move_delay_ms",
+      "src_constants_celebrate_buttons_move_duration_ms",
+      "src_constants_celebrate_dots_form_ms",
+      "src_constants_celebrate_fade_delay_ms",
+      "src_constants_celebrate_fade_duration_ms",
+      "src_constants_celebrate_hold_ms",
+      "src_constants_cell",
+      "src_constants_corner_radius_px",
+      "src_constants_foundline",
+      "src_constants_highlight_colors"
+    ],
+    "9": [
+      "package_dependencies",
+      "package_dependencies_emotion_react",
+      "package_dependencies_emotion_styled",
+      "package_dependencies_fontsource_quicksand",
+      "package_dependencies_fontsource_space_grotesk",
+      "package_dependencies_fontsource_work_sans",
+      "package_dependencies_mui_icons_material",
+      "package_dependencies_mui_material",
+      "package_dependencies_react",
+      "package_dependencies_react_dom",
+      "package_dependencies_tauri_apps_api",
+      "package_dependencies_tauri_apps_plugin_opener"
+    ],
+    "10": [
+      "package_devdependencies",
+      "package_devdependencies_jsdom",
+      "package_devdependencies_tauri_apps_cli",
+      "package_devdependencies_testing_library_react",
+      "package_devdependencies_types_node",
+      "package_devdependencies_types_react",
+      "package_devdependencies_types_react_dom",
+      "package_devdependencies_typescript",
+      "package_devdependencies_vite",
+      "package_devdependencies_vite_plugin_pwa",
+      "package_devdependencies_vitejs_plugin_react",
+      "package_devdependencies_vitest"
+    ],
+    "11": [
+      "defaulttask",
+      "plugin",
+      "project",
+      "src_tauri_gen_android_buildsrc_src_main_java_com_chip_wordsprout_kotlin_buildtask",
+      "src_tauri_gen_android_buildsrc_src_main_java_com_chip_wordsprout_kotlin_buildtask_buildtask",
+      "src_tauri_gen_android_buildsrc_src_main_java_com_chip_wordsprout_kotlin_buildtask_buildtask_assemble",
+      "src_tauri_gen_android_buildsrc_src_main_java_com_chip_wordsprout_kotlin_buildtask_buildtask_runtauricli",
+      "src_tauri_gen_android_buildsrc_src_main_java_com_chip_wordsprout_kotlin_rustplugin",
+      "src_tauri_gen_android_buildsrc_src_main_java_com_chip_wordsprout_kotlin_rustplugin_config",
+      "src_tauri_gen_android_buildsrc_src_main_java_com_chip_wordsprout_kotlin_rustplugin_rustplugin",
+      "src_tauri_gen_android_buildsrc_src_main_java_com_chip_wordsprout_kotlin_rustplugin_rustplugin_apply"
+    ],
+    "12": [
+      "tsconfig_node",
+      "tsconfig_node_compileroptions",
+      "tsconfig_node_compileroptions_allowsyntheticdefaultimports",
+      "tsconfig_node_compileroptions_composite",
+      "tsconfig_node_compileroptions_module",
+      "tsconfig_node_compileroptions_moduleresolution",
+      "tsconfig_node_compileroptions_skiplibcheck",
+      "tsconfig_node_include"
+    ],
+    "13": [
+      "bundle",
+      "src_tauri_gen_android_app_src_main_java_com_chip_wordsprout_mainactivity",
+      "src_tauri_gen_android_app_src_main_java_com_chip_wordsprout_mainactivity_mainactivity",
+      "src_tauri_gen_android_app_src_main_java_com_chip_wordsprout_mainactivity_mainactivity_hidesystembars",
+      "src_tauri_gen_android_app_src_main_java_com_chip_wordsprout_mainactivity_mainactivity_oncreate",
+      "src_tauri_gen_android_app_src_main_java_com_chip_wordsprout_mainactivity_mainactivity_onwindowfocuschanged",
+      "tauriactivity"
+    ],
+    "14": [
+      "path",
+      "scripts_gen_categories",
+      "scripts_gen_categories_load_words",
+      "scripts_gen_categories_main",
+      "scripts_gen_categories_rationale_2",
+      "scripts_gen_categories_rust_string_literal"
+    ],
+    "15": [
+      "src_tauri_capabilities_default",
+      "src_tauri_capabilities_default_description",
+      "src_tauri_capabilities_default_identifier",
+      "src_tauri_capabilities_default_permissions",
+      "src_tauri_capabilities_default_schema",
+      "src_tauri_capabilities_default_windows"
+    ],
+    "16": [
+      "src_test_setup",
+      "src_test_setup_disconnect",
+      "src_test_setup_localstoragemock",
+      "src_test_setup_localstoragestore",
+      "src_test_setup_observe",
+      "src_test_setup_unobserve"
+    ],
+    "17": [
+      "src_tauri_gen_android_gradlew",
+      "src_tauri_gen_android_gradlew__entry",
+      "src_tauri_gen_android_gradlew_die",
+      "src_tauri_gen_android_gradlew_save",
+      "src_tauri_gen_android_gradlew_warn"
+    ],
+    "18": [
+      "scripts_gen_dictionary",
+      "scripts_gen_dictionary_main",
+      "scripts_gen_dictionary_rationale_2"
+    ],
+    "19": [
+      "scripts_gen_svg_backgrounds",
+      "scripts_gen_svg_backgrounds_main",
+      "scripts_gen_svg_backgrounds_rationale_2"
+    ],
+    "20": [
+      "scripts_make_transparent",
+      "scripts_make_transparent_process_directory",
+      "scripts_make_transparent_process_image"
+    ],
+    "21": [
+      "scripts_refactor_data",
+      "scripts_refactor_data_refactor_achievements",
+      "scripts_refactor_data_refactor_plants"
+    ],
+    "22": [
+      "src_tauri_src_categories_mod",
+      "src_tauri_src_categories_mod_category",
+      "src_tauri_src_categories_mod_tier"
+    ],
+    "23": [
+      "scripts_refactor_css",
+      "scripts_refactor_css_process_app_css"
+    ],
+    "24": [
+      "src_tauri_build",
+      "src_tauri_build_main"
+    ],
+    "25": [
+      "src_tauri_src_main",
+      "src_tauri_src_main_main"
+    ],
+    "26": [
+      "pkg_tauri_app"
+    ],
+    "27": [
+      "scripts_setup_placeholders"
+    ],
+    "28": [
+      "src_tauri_gen_android_app_build_gradle"
+    ],
+    "29": [
+      "src_tauri_gen_android_build_gradle"
+    ],
+    "30": [
+      "src_tauri_gen_android_buildsrc_build_gradle"
+    ],
+    "31": [
+      "src_tauri_gen_android_settings"
+    ],
+    "32": [
+      "src_tauri_src_categories_animals"
+    ],
+    "33": [
+      "src_tauri_src_categories_architecture"
+    ],
+    "34": [
+      "src_tauri_src_categories_astrology_zodiac"
+    ],
+    "35": [
+      "src_tauri_src_categories_card_games"
+    ],
+    "36": [
+      "src_tauri_src_categories_chemistry"
+    ],
+    "37": [
+      "src_tauri_src_categories_colors"
+    ],
+    "38": [
+      "src_tauri_src_categories_cooking_techniques"
+    ],
+    "39": [
+      "src_tauri_src_categories_countries"
+    ],
+    "40": [
+      "src_tauri_src_categories_cryptic_adjectives"
+    ],
+    "41": [
+      "src_tauri_src_categories_dance_styles"
+    ],
+    "42": [
+      "src_tauri_src_categories_desserts"
+    ],
+    "43": [
+      "src_tauri_src_categories_emotions"
+    ],
+    "44": [
+      "src_tauri_src_categories_etymology_word_roots"
+    ],
+    "45": [
+      "src_tauri_src_categories_food"
+    ],
+    "46": [
+      "src_tauri_src_categories_forensics"
+    ],
+    "47": [
+      "src_tauri_src_categories_fruits"
+    ],
+    "48": [
+      "src_tauri_src_categories_gardening"
+    ],
+    "49": [
+      "src_tauri_src_categories_geology_minerals"
+    ],
+    "50": [
+      "src_tauri_src_categories_grammar_linguistics"
+    ],
+    "51": [
+      "src_tauri_src_categories_holidays"
+    ],
+    "52": [
+      "src_tauri_src_categories_horror_themes"
+    ],
+    "53": [
+      "src_tauri_src_categories_household"
+    ],
+    "54": [
+      "src_tauri_src_categories_insects"
+    ],
+    "55": [
+      "src_tauri_src_categories_kitchen_items"
+    ],
+    "56": [
+      "src_tauri_src_categories_legal_terms"
+    ],
+    "57": [
+      "src_tauri_src_categories_medical_terminology"
+    ],
+    "58": [
+      "src_tauri_src_categories_movies_tv"
+    ],
+    "59": [
+      "src_tauri_src_categories_musical_genres"
+    ],
+    "60": [
+      "src_tauri_src_categories_musical_instruments"
+    ],
+    "61": [
+      "src_tauri_src_categories_mycology"
+    ],
+    "62": [
+      "src_tauri_src_categories_mythical_creatures"
+    ],
+    "63": [
+      "src_tauri_src_categories_nature"
+    ],
+    "64": [
+      "src_tauri_src_categories_nautical_terms"
+    ],
+    "65": [
+      "src_tauri_src_categories_occupations"
+    ],
+    "66": [
+      "src_tauri_src_categories_ocean_life"
+    ],
+    "67": [
+      "src_tauri_src_categories_philosophy"
+    ],
+    "68": [
+      "src_tauri_src_categories_school_subjects"
+    ],
+    "69": [
+      "src_tauri_src_categories_space_astronomy"
+    ],
+    "70": [
+      "src_tauri_src_categories_sports"
+    ],
+    "71": [
+      "src_tauri_src_categories_tools"
+    ],
+    "72": [
+      "src_tauri_src_categories_types_of_government"
+    ],
+    "73": [
+      "src_tauri_src_categories_vehicles"
+    ],
+    "74": [
+      "src_tauri_src_categories_weather"
+    ],
+    "75": [
+      "src_tauri_src_categories_weaving_textiles"
+    ],
+    "76": [
+      "src_vite_env_d"
+    ]
+  },
+  "cohesion": {
+    "0": 0.08139534883720931,
+    "1": 0.07557354925775979,
+    "2": 0.13725490196078433,
+    "3": 0.06628787878787878,
+    "4": 0.13333333333333333,
+    "5": 0.1695906432748538,
+    "6": 0.10526315789473684,
+    "7": 0.10526315789473684,
+    "8": 0.175,
+    "9": 0.16666666666666666,
+    "10": 0.16666666666666666,
+    "11": 0.2909090909090909,
+    "12": 0.25,
+    "13": 0.42857142857142855,
+    "14": 0.4666666666666667,
+    "15": 0.3333333333333333,
+    "16": 0.3333333333333333,
+    "17": 0.7,
+    "18": 0.6666666666666666,
+    "19": 0.6666666666666666,
+    "20": 1.0,
+    "21": 0.6666666666666666,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_categorythemes_asseturl",
+      "label": "assetUrl()",
+      "degree": 18
+    },
+    {
+      "id": "src_hooks_usewordsearchgame_usewordsearchgame",
+      "label": "useWordSearchGame()",
+      "degree": 16
+    },
+    {
+      "id": "tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 16
+    },
+    {
+      "id": "ref_react",
+      "label": "react",
+      "degree": 12
+    },
+    {
+      "id": "ref_mui_material",
+      "label": "@mui/material",
+      "degree": 11
+    },
+    {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 8
+    },
+    {
+      "id": "src_persistence_loadsavedata",
+      "label": "loadSaveData()",
+      "degree": 8
+    },
+    {
+      "id": "ref_vitest",
+      "label": "vitest",
+      "degree": 7
+    },
+    {
+      "id": "src_app_app",
+      "label": "App()",
+      "degree": 7
+    },
+    {
+      "id": "src_backend_getpuzzlewords",
+      "label": "getPuzzleWords()",
+      "degree": 7
+    }
+  ],
+  "surprises": [
+    {
+      "source": "validate_word()",
+      "target": "dictionary()",
+      "source_files": [
+        "src-tauri/src/lib.rs",
+        "src-tauri/src/dictionary.rs"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source"
+    },
+    {
+      "source": "App()",
+      "target": "assetUrl()",
+      "source_files": [
+        "src/App.tsx",
+        "src/categoryThemes.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "App()",
+      "target": "useAudio()",
+      "source_files": [
+        "src/App.tsx",
+        "src/hooks/useAudio.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "useWordSearchGame()",
+      "target": "getPuzzleWords()",
+      "source_files": [
+        "src/hooks/useWordSearchGame.ts",
+        "src/backend.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "useWordSearchGame()",
+      "target": "validateWord()",
+      "source_files": [
+        "src/hooks/useWordSearchGame.ts",
+        "src/backend.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

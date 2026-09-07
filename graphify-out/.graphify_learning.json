@@ -1,0 +1,118 @@
+{
+  "generated_at": "2026-09-07T10:18:38.773665+00:00",
+  "nodes": {
+    "src_achievements": {
+      "code_fingerprint": "fa69de5005693dc296a6905bdf9e545d2c484e2f7a709938070dc1068d992396",
+      "label": "achievements.ts",
+      "last": "2026-09-07T10:14:16.857288+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-07T10:14:16.857288+00:00",
+          "outcome": "useful",
+          "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
+        }
+      ],
+      "score": 0.999929961,
+      "source_file": "src/achievements.ts",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_app": {
+      "code_fingerprint": "6f2c98b2939c40b0029c90c07490fe389a07c02aaffc3d8d53702dd8fd3faee9",
+      "label": "App.tsx",
+      "last": "2026-09-07T10:14:16.857288+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-07T10:14:16.857288+00:00",
+          "outcome": "useful",
+          "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
+        }
+      ],
+      "score": 0.999929961,
+      "source_file": "src/App.tsx",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_components_gamecanvas": {
+      "code_fingerprint": "fea346e05112fbdc07ede60bacf4a2a668244cfe551afbd285f6b2e16cd70633",
+      "label": "GameCanvas.tsx",
+      "last": "2026-09-07T10:14:16.857288+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-07T10:14:16.857288+00:00",
+          "outcome": "useful",
+          "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
+        }
+      ],
+      "score": 0.999929961,
+      "source_file": "src/components/GameCanvas.tsx",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_components_gardenview": {
+      "code_fingerprint": "865d2b356561f22631e8087fa5944f37a2198f18d9d376c82ac4c17bef931da8",
+      "label": "GardenView.tsx",
+      "last": "2026-09-07T10:14:16.857288+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-07T10:14:16.857288+00:00",
+          "outcome": "useful",
+          "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
+        }
+      ],
+      "score": 0.999929961,
+      "source_file": "src/components/GardenView.tsx",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_components_seedstoredialog": {
+      "code_fingerprint": "06d0604056d42cc550791149e610e56cfa54a2b1bcc6d3fc407125f672d42c52",
+      "label": "SeedStoreDialog.tsx",
+      "last": "2026-09-07T10:14:16.857288+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-07T10:14:16.857288+00:00",
+          "outcome": "useful",
+          "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
+        }
+      ],
+      "score": 0.999929961,
+      "source_file": "src/components/SeedStoreDialog.tsx",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_gamemechanics": {
+      "code_fingerprint": "0ba29b296b441967dcb5d2c5aa0ec13fed9ee1c9bb96e5d7791311e74280a4e8",
+      "label": "gameMechanics.ts",
+      "last": "2026-09-07T10:14:16.857288+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-07T10:14:16.857288+00:00",
+          "outcome": "useful",
+          "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
+        }
+      ],
+      "score": 0.999929961,
+      "source_file": "src/gameMechanics.ts",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_hooks_usewordsearchgame": {
+      "code_fingerprint": "f9bea1e8ab0e2b08ded30a411e56179e53e1359f9d8ff83b29778b6cbab6c168",
+      "label": "useWordSearchGame.ts",
+      "last": "2026-09-07T10:14:16.857288+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-07T10:14:16.857288+00:00",
+          "outcome": "useful",
+          "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
+        }
+      ],
+      "score": 0.999929961,
+      "source_file": "src/hooks/useWordSearchGame.ts",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}

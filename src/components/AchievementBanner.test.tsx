@@ -10,7 +10,7 @@ describe("botanical achievement banner", () => {
         const { container } = render(<AchievementBanner achievement={achievement} onDismiss={onDismiss} />);
         expect(screen.getByRole("status")).toBeTruthy();
         expect(screen.getByText(achievement.name)).toBeTruthy();
-        expect(container.querySelector(".ws-achievement-banner__frame")?.getAttribute("src")).toContain("botanical-banner-frame-tall.png");
+        expect(container.querySelector(".ws-achievement-banner__frame")?.getAttribute("src")).toContain("botanical-banner-frame-circle.png");
         fireEvent.click(screen.getByRole("button", { name: /Achievement unlocked: Diagonal Detective/ }));
         expect(onDismiss).toHaveBeenCalledTimes(1);
     });
