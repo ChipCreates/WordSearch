@@ -770,6 +770,33 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   filter: drop-shadow(0 0 10px rgba(var(--color-primary-rgb), 0.55));
 }
 
+.ws-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ws-sr-grid {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.ws-sr-grid button { min-width: 44px; min-height: 44px; }
+
+.ws-planter canvas:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 5px;
+}
+
 .ws-achievement-art { transform: scale(1.08); }
 
 .ws-footer p {

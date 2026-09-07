@@ -43,7 +43,7 @@ type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
 
 export default function App() {
     const {
-        level, seeds, levelComplete, category, levelsCompleted,
+        level, seeds, status, levelComplete, category, levelsCompleted,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
@@ -518,6 +518,7 @@ export default function App() {
                                         gridData={gridData}
                                         foundLines={foundLines}
                                         hintCell={hintCell}
+                                        status={status}
                                         onSelectionEnd={submitSelection}
                                         onSwipe={() => playSfx("swipe")}
                                         celebrate={levelComplete}

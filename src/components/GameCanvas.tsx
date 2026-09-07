@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     type Cell,
     type FoundLine,
@@ -23,6 +23,7 @@ type Props = {
     // grid center toward the nearest unfound word -- rendered as a fixed
     // HUD arrow, not part of the per-frame canvas draw.
     compassDirection?: { dr: number; dc: number } | null;
+    status?: string;
 };
 
 // Pick a contrasting letter color (dark/light) for a given pill background.
@@ -43,9 +44,12 @@ function surfaceLetterColor(canvas: HTMLCanvasElement): string {
         .trim() || "#1d1c12";
 }
 
-export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false, hintCell, spectrometerCells = [], compassDirection = null }: Props) {
+export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false, hintCell, spectrometerCells = [], compassDirection = null, status = "" }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const bubbleRef = useRef<HTMLDivElement>(null);
+    const reducedMotionRef = useRef(false);
+    const [focusedCell, setFocusedCell] = useState<Cell>({ r: 0, c: 0 });
+    const [keyboardSelection, setKeyboardSelection] = useState<{ start: Cell; end: Cell } | null>(null);
 
     const dragRef = useRef({
         isDragging: false,
@@ -56,6 +60,15 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
     const celebrateProgressRef = useRef(0);
     const celebrateElapsedRef = useRef(0);
     const points = useMemo(() => celebrationPoints(foundLines), [foundLines]);
+
+    useEffect(() => {
+        const media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+        if (!media) return;
+        const update = () => { reducedMotionRef.current = media.matches; };
+        update();
+        media.addEventListener?.("change", update);
+        return () => media.removeEventListener?.("change", update);
+    }, []);
 
     const pillColorByCell = useMemo(() => {
         const map = new Map<string, string>();
@@ -203,6 +216,16 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             drawSelectionTrace(startCell.r, startCell.c, currentTarget.r, currentTarget.c);
         }
 
+        if (!celebrate && focusedCell) {
+            ctx.save();
+            ctx.strokeStyle = "var(--color-primary)";
+            ctx.lineWidth = 3;
+            ctx.shadowColor = "#00e479";
+            ctx.shadowBlur = 10;
+            ctx.strokeRect(focusedCell.c * cellSize + 4, focusedCell.r * cellSize + 4, cellSize - 8, cellSize - 8);
+            ctx.restore();
+        }
+
         const letterColor = surfaceLetterColor(canvas);
         ctx.textAlign    = "center";
         ctx.textBaseline = "middle";
@@ -274,12 +297,12 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         };
     }, []);
 
-    useEffect(() => { schedulePaint(); }, [gridData, gridSize, foundLines, hintCell, spectrometerCells]);
+    useEffect(() => { schedulePaint(); }, [gridData, gridSize, foundLines, hintCell, spectrometerCells, focusedCell, keyboardSelection]);
 
     // Celebration rAF loop (pill → dot collapse)
     useEffect(() => {
         let rafId: number | null = null;
-        if (!celebrate) {
+        if (!celebrate || reducedMotionRef.current) {
             celebrateProgressRef.current = 0;
             celebrateElapsedRef.current = 0;
             schedulePaint();
@@ -358,6 +381,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         e.currentTarget.setPointerCapture(e.pointerId);
         const cell = getCellFromEvent(e);
         if (cell) {
+            setFocusedCell(cell);
             dragRef.current.isDragging    = true;
             dragRef.current.startCell     = cell;
             dragRef.current.currentTarget = cell;
@@ -370,6 +394,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         if (!dragRef.current.isDragging || !dragRef.current.startCell) return;
         let cell = getCellFromEvent(e);
         if (cell) {
+            setFocusedCell(cell);
             const dr   = cell.r - dragRef.current.startCell.r;
             const dc   = cell.c - dragRef.current.startCell.c;
             const angle  = Math.atan2(dr, dc) * 180 / Math.PI;
@@ -402,6 +427,61 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         updateBubble(null);
         draw();
     };
+
+    const moveCell = (cell: Cell, key: string): Cell => {
+        const delta: Record<string, Cell> = {
+            ArrowUp: { r: -1, c: 0 }, ArrowDown: { r: 1, c: 0 },
+            ArrowLeft: { r: 0, c: -1 }, ArrowRight: { r: 0, c: 1 },
+        };
+        const direction = delta[key];
+        if (!direction) return cell;
+        return {
+            r: Math.max(0, Math.min(gridSize - 1, cell.r + direction.r)),
+            c: Math.max(0, Math.min(gridSize - 1, cell.c + direction.c)),
+        };
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+        if (celebrate) return;
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+            e.preventDefault();
+            const next = moveCell(focusedCell, e.key);
+            setFocusedCell(next);
+            if (keyboardSelection) {
+                setKeyboardSelection({ ...keyboardSelection, end: next });
+                dragRef.current = { isDragging: true, startCell: keyboardSelection.start, currentTarget: next };
+                updateBubble(computeDragString(keyboardSelection.start, next));
+            }
+            return;
+        }
+        if (e.key === "Escape") {
+            e.preventDefault();
+            setKeyboardSelection(null);
+            dragRef.current = { isDragging: false, startCell: null, currentTarget: null };
+            updateBubble(null);
+            draw();
+            return;
+        }
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            if (!keyboardSelection) {
+                const selection = { start: focusedCell, end: focusedCell };
+                setKeyboardSelection(selection);
+                dragRef.current = { isDragging: true, startCell: focusedCell, currentTarget: focusedCell };
+                updateBubble(computeDragString(focusedCell, focusedCell));
+            } else {
+                const { start, end } = keyboardSelection;
+                setKeyboardSelection(null);
+                dragRef.current = { isDragging: false, startCell: null, currentTarget: null };
+                updateBubble(null);
+                onSwipe?.();
+                onSelectionEnd(start, end);
+            }
+            draw();
+        }
+    };
+
+    const selectionText = keyboardSelection ? computeDragString(keyboardSelection.start, keyboardSelection.end) : null;
 
     return (
         <div className="ws-planter">
@@ -453,10 +533,36 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 ref={canvasRef}
                 width={360}
                 height={360}
+                tabIndex={0}
+                role="application"
+                aria-label={`Word search puzzle, ${gridSize} by ${gridSize} grid`}
+                aria-describedby="word-grid-instructions word-grid-live"
+                onKeyDown={handleKeyDown}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
             />
+            <p id="word-grid-instructions" className="ws-sr-only">
+                Use arrow keys to focus a cell. Press Enter or Space to start a word, use arrow keys to choose its direction and length, then press Enter or Space to submit. Press Escape to cancel.
+            </p>
+            <div id="word-grid-live" className="ws-sr-only" aria-live="polite" aria-atomic="true">
+                {`Focused letter ${gridData[focusedCell.r]?.[focusedCell.c] ?? ""}, row ${focusedCell.r + 1}, column ${focusedCell.c + 1}.`}
+                {selectionText ? ` Current selection: ${selectionText}.` : ""}
+                {status ? ` ${status}` : ""}
+            </div>
+            <div className="ws-sr-grid" role="grid" aria-label="Word search letters">
+                {gridData.map((row, r) => row.map((letter, c) => (
+                    <button
+                        key={`${r}-${c}`}
+                        type="button"
+                        role="gridcell"
+                        tabIndex={-1}
+                        aria-label={`${letter}, row ${r + 1}, column ${c + 1}${pillColorByCell.has(`${r},${c}`) ? ", part of a found word" : ""}`}
+                    >
+                        {letter}
+                    </button>
+                )))}
+            </div>
         </div>
     );
 }
