@@ -46,6 +46,11 @@ describe("useWordSearchGame", () => {
     });
 
     it("goToLevel changes level without resetting seeds", async () => {
+        localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+            ...DEFAULT_SAVE_DATA,
+            highestUnlockedLevel: 5,
+            level: 5,
+        }));
         const { result } = renderHook(() => useWordSearchGame());
 
         await act(async () => {
@@ -160,6 +165,11 @@ describe("useWordSearchGame", () => {
     });
 
     it("restart() resets every persisted field, not just level and seeds", async () => {
+        localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+            ...DEFAULT_SAVE_DATA,
+            highestUnlockedLevel: 9,
+            level: 9,
+        }));
         const { result } = renderHook(() => useWordSearchGame());
 
         act(() => {
@@ -205,4 +215,20 @@ describe("useWordSearchGame", () => {
             delete (window as unknown as { __TAURI_INTERNALS__?: object }).__TAURI_INTERNALS__;
         }
     });
+
+    it("keeps the permanent frontier and rank input above an older replay", async () => {
+        localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+            ...DEFAULT_SAVE_DATA,
+            level: 10,
+            highestUnlockedLevel: 10,
+            completedLevels: Array.from({ length: 9 }, (_, index) => index + 1),
+        }));
+        const { result } = renderHook(() => useWordSearchGame());
+
+        act(() => result.current.goToLevel(1));
+        expect(result.current.playingLevel).toBe(1);
+        expect(result.current.highestUnlockedLevel).toBe(10);
+        expect(result.current.level).toBe(1);
+    });
+
 });

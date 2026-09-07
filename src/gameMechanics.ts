@@ -7,6 +7,7 @@ export const GARDEN_WATERING_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours
 export const REWARDS = {
     BONUS_WORD_SEEDS: 10,
     LEVEL_COMPLETE_SEEDS: 50,
+    REPLAY_COMPLETE_SEEDS: 10,
     GARDEN_HARVEST_SEEDS: 150,
 } as const;
 

@@ -17,6 +17,7 @@ describe("Persistence Module", () => {
     const customData: SaveData = {
       ...DEFAULT_SAVE_DATA,
       level: 12,
+      highestUnlockedLevel: 12,
       seeds: 4500,
       difficultyMode: "challenging",
       unlockedAchievements: ["speed-sprouter", "word-weaver"],
@@ -34,6 +35,7 @@ describe("Persistence Module", () => {
     const legacyData: SaveData = {
       ...DEFAULT_SAVE_DATA,
       level: 12,
+      highestUnlockedLevel: 12,
       difficultyMode: "challenging",
       categoriesSeenBackfilled: false,
     };
@@ -80,7 +82,7 @@ describe("Persistence Module", () => {
 
     const loaded = await loadSaveData();
 
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(3);
     expect(loaded.seeds).toBe(275);
     expect(loaded.powerupInventory["single-letter-sprout"]).toBe(0);
     expect(loaded.powerupInventory["lumina-cyclone"]).toBe(0);
@@ -92,5 +94,27 @@ describe("Persistence Module", () => {
     const loaded = await loadSaveData();
 
     expect(Object.values(loaded.onboardingSeen.dismissed).every(Boolean)).toBe(true);
+  });
+
+  it("migrates a v2 frontier conservatively and is idempotent", async () => {
+    localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      version: 2,
+      level: 10,
+      highestUnlockedLevel: undefined,
+      completedLevels: undefined,
+      totalPuzzleCompletions: undefined,
+      seeds: 123,
+    }));
+
+    const first = await loadSaveData();
+    expect(first.version).toBe(3);
+    expect(first.highestUnlockedLevel).toBe(10);
+    expect(first.completedLevels).toEqual(Array.from({ length: 9 }, (_, index) => index + 1));
+    expect(first.level).toBe(10);
+
+    await writeSaveData(first);
+    const second = await loadSaveData();
+    expect(second).toEqual(first);
   });
 });

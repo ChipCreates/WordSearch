@@ -5,7 +5,11 @@ import { invoke } from "@tauri-apps/api/core";
 
 export type SaveData = {
     version: number;
+    /** @deprecated Use highestUnlockedLevel. Kept as a migration/read compatibility field. */
     level: number;
+    highestUnlockedLevel: number;
+    completedLevels: number[];
+    totalPuzzleCompletions: number;
     seeds: number;
     unlockedAchievements: string[];
     levelsCompleted: number;
@@ -37,11 +41,14 @@ export type SaveData = {
     onboardingSeen: OnboardingSeen;
 };
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 export const DEFAULT_SAVE_DATA: SaveData = {
     version: CURRENT_SCHEMA_VERSION,
     level: 1,
+    highestUnlockedLevel: 1,
+    completedLevels: [],
+    totalPuzzleCompletions: 0,
     seeds: 0,
     unlockedAchievements: [],
     levelsCompleted: 0,
@@ -115,7 +122,7 @@ export function hasLocalSave(): boolean {
 // switched tiers mid-run gets an approximation, not a perfect replay.
 // Guarded by `categoriesSeenBackfilled` so it only ever runs once.
 function backfillCategoriesSeen(data: SaveData): SaveData {
-    if (data.categoriesSeenBackfilled || data.level <= 1) {
+    if (data.categoriesSeenBackfilled || data.highestUnlockedLevel <= 1) {
         return { ...data, categoriesSeenBackfilled: true };
     }
     const pool = CATEGORY_NAMES_BY_TIER[data.difficultyMode];
@@ -123,10 +130,37 @@ function backfillCategoriesSeen(data: SaveData): SaveData {
         return { ...data, categoriesSeenBackfilled: true };
     }
     const seen = new Set(data.categoriesSeen);
-    for (let lvl = 1; lvl < data.level; lvl++) {
+    for (let lvl = 1; lvl < data.highestUnlockedLevel; lvl++) {
         seen.add(pool[(lvl - 1) % pool.length]);
     }
     return { ...data, categoriesSeen: Array.from(seen), categoriesSeenBackfilled: true };
+}
+
+/** Normalize both fresh and pre-v3 saves into one canonical progression shape. */
+export function normalizeSaveData(raw: Partial<SaveData> & { stars?: number }): SaveData {
+    const legacyLevel = Math.max(1, Math.floor(Number(raw.level) || 1));
+    // A v2-shaped object can be spread over DEFAULT_SAVE_DATA, leaving the
+    // newly added field at 1 even when the legacy frontier is higher.
+    const highestUnlockedLevel = Math.max(1, legacyLevel, Math.floor(Number(raw.highestUnlockedLevel) || 1));
+    const hasExplicitCompletionLedger = Array.isArray(raw.completedLevels);
+    const completedLevels = hasExplicitCompletionLedger
+        ? (raw.completedLevels ?? []).filter(value => Number.isInteger(value) && value >= 1).map(Number)
+        : Array.from({ length: Math.max(0, legacyLevel - 1) }, (_, index) => index + 1);
+    const seeds = typeof raw.seeds === "number"
+        ? raw.seeds
+        : typeof raw.stars === "number" ? raw.stars * 100 : DEFAULT_SAVE_DATA.seeds;
+    return {
+        ...DEFAULT_SAVE_DATA,
+        ...raw,
+        level: highestUnlockedLevel,
+        highestUnlockedLevel,
+        completedLevels: Array.from(new Set(completedLevels)).sort((a, b) => a - b),
+        totalPuzzleCompletions: Math.max(0, Math.floor(Number(raw.totalPuzzleCompletions) || Number(raw.levelsCompleted) || 0)),
+        seeds,
+        powerupInventory: normalizePowerupInventory(raw.powerupInventory),
+        onboardingSeen: raw.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN,
+        version: CURRENT_SCHEMA_VERSION,
+    };
 }
 
 function parseJson<T>(raw: string | null, fallback: T): T {
@@ -147,7 +181,7 @@ export async function loadSaveData(): Promise<SaveData> {
             const nativeState = await invoke<string | null>("load_game_state");
             if (nativeState) {
                 const parsed = JSON.parse(nativeState);
-                return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), onboardingSeen: parsed.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN, version: CURRENT_SCHEMA_VERSION });
+                return backfillCategoriesSeen(normalizeSaveData(parsed));
             }
         } catch (e) {
             console.warn("Tauri native load failed, falling back to localStorage", e);
@@ -159,16 +193,13 @@ export async function loadSaveData(): Promise<SaveData> {
     if (primaryRaw) {
         try {
             const parsed = JSON.parse(primaryRaw);
-            if (typeof parsed.stars === "number" && typeof parsed.seeds !== "number") {
-                parsed.seeds = parsed.stars * 100;
-            }
             if (parsed.wateredDate && !parsed.wateredTimestamps) {
                 parsed.wateredTimestamps = {};
             }
             if (!Array.isArray(parsed.ownedPlants) || parsed.ownedPlants.length === 0) {
                 parsed.ownedPlants = ["moss-sprout"];
             }
-            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), onboardingSeen: parsed.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN, version: CURRENT_SCHEMA_VERSION });
+            return backfillCategoriesSeen(normalizeSaveData(parsed));
         } catch {
             // fallback to legacy migration
         }
@@ -181,6 +212,7 @@ export async function loadSaveData(): Promise<SaveData> {
     const legacyLevel = localStorage.getItem(LEGACY_KEYS.level);
     if (legacyLevel !== null) {
         migratedData.level = Number(legacyLevel) || 1;
+        migratedData.highestUnlockedLevel = migratedData.level;
         hasLegacy = true;
     }
 
@@ -251,7 +283,7 @@ export async function loadSaveData(): Promise<SaveData> {
         if (typeof parsedWs.stars === "number" && typeof parsedWs.seeds !== "number") {
             parsedWs.seeds = parsedWs.stars * 100;
         }
-        Object.assign(migratedData, parsedWs);
+        Object.assign(migratedData, normalizeSaveData(parsedWs));
         hasLegacy = true;
     }
 
@@ -263,7 +295,7 @@ export async function loadSaveData(): Promise<SaveData> {
         }
     }
 
-    return backfillCategoriesSeen(migratedData);
+    return backfillCategoriesSeen(normalizeSaveData(migratedData));
 }
 
 export function loadSaveDataSync(): SaveData {
@@ -273,13 +305,10 @@ export function loadSaveDataSync(): SaveData {
     if (primaryRaw) {
         try {
             const parsed = JSON.parse(primaryRaw);
-            if (typeof parsed.stars === "number" && typeof parsed.seeds !== "number") {
-                parsed.seeds = parsed.stars * 100;
-            }
             if (!Array.isArray(parsed.ownedPlants) || parsed.ownedPlants.length === 0) {
                 parsed.ownedPlants = ["moss-sprout"];
             }
-            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), onboardingSeen: parsed.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN, version: CURRENT_SCHEMA_VERSION });
+            return backfillCategoriesSeen(normalizeSaveData(parsed));
         } catch {}
     }
 
@@ -289,7 +318,7 @@ export function loadSaveDataSync(): SaveData {
 export async function writeSaveData(data: Partial<SaveData>): Promise<void> {
     if (typeof window === "undefined") return;
     const existing = loadSaveDataSync();
-    const merged: SaveData = { ...existing, ...data, version: CURRENT_SCHEMA_VERSION };
+    const merged: SaveData = normalizeSaveData({ ...existing, ...data });
     const serialized = JSON.stringify(merged);
     localStorage.setItem(PRIMARY_KEY, serialized);
 

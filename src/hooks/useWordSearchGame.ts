@@ -12,7 +12,8 @@ export function useWordSearchGame() {
     // Single load of initial unified save data
     const [initialSave] = useState(() => loadSaveDataSync());
 
-    const [level, setLevel] = useState(initialSave.level);
+    const [highestUnlockedLevel, setHighestUnlockedLevel] = useState(initialSave.highestUnlockedLevel);
+    const [playingLevel, setPlayingLevel] = useState(initialSave.highestUnlockedLevel);
     const [seeds, setSeeds] = useState(initialSave.seeds);
     const [difficultyMode, setDifficultyMode] = useState<Tier>(initialSave.difficultyMode);
     const [favoriteCategories, setFavoriteCategories] = useState<string[]>(initialSave.favoriteCategories);
@@ -29,6 +30,7 @@ export function useWordSearchGame() {
 
     const [unlockedAchievements, setUnlockedAchievements] = useState<Set<string>>(() => new Set(initialSave.unlockedAchievements));
     const [levelsCompleted, setLevelsCompleted] = useState(initialSave.levelsCompleted);
+    const [completedLevels, setCompletedLevels] = useState<number[]>(initialSave.completedLevels);
     const [categoriesSeen, setCategoriesSeen] = useState<Set<string>>(() => new Set(initialSave.categoriesSeen));
     const [foundDiagonal, setFoundDiagonal] = useState(initialSave.foundDiagonal);
     const [justUnlocked, setJustUnlocked] = useState<Achievement[]>([]);
@@ -64,6 +66,8 @@ export function useWordSearchGame() {
     const [doubleSeedsActive, setDoubleSeedsActive] = useState(false);
     const [powerupInventory, setPowerupInventory] = useState<PowerupInventory>(initialSave.powerupInventory);
     const [freeHintUsesRemaining, setFreeHintUsesRemaining] = useState(1);
+    const puzzleInstanceIdRef = useRef(0);
+    const rewardedBonusWordsRef = useRef<Set<string>>(new Set());
 
     // Mirrors state for use inside submitSelection without stale closures.
     const stateRef = useRef({ gridData, wordsToFind, foundWords });
@@ -89,13 +93,15 @@ export function useWordSearchGame() {
         if (hasLocalSave() || !isTauri()) return;
         loadSaveData().then(native => {
             if (!native) return;
-            setLevel(native.level);
+            setHighestUnlockedLevel(native.highestUnlockedLevel);
+            setPlayingLevel(native.highestUnlockedLevel);
             setSeeds(native.seeds);
             setDifficultyMode(native.difficultyMode);
             setFavoriteCategories(native.favoriteCategories);
             setUseFavorites(native.useFavorites);
             setUnlockedAchievements(new Set(native.unlockedAchievements));
             setLevelsCompleted(native.levelsCompleted);
+            setCompletedLevels(native.completedLevels);
             setCategoriesSeen(new Set(native.categoriesSeen));
             setFoundDiagonal(native.foundDiagonal);
             setOwnedPlants(native.ownedPlants);
@@ -128,7 +134,10 @@ export function useWordSearchGame() {
         saveTimerRef.current = setTimeout(() => {
             writeSaveData({
                 version: CURRENT_SCHEMA_VERSION,
-                level,
+                level: highestUnlockedLevel,
+                highestUnlockedLevel,
+                completedLevels,
+                totalPuzzleCompletions: levelsCompleted,
                 seeds,
                 difficultyMode,
                 favoriteCategories,
@@ -158,7 +167,8 @@ export function useWordSearchGame() {
             if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         };
     }, [
-        level,
+        highestUnlockedLevel,
+        completedLevels,
         seeds,
         difficultyMode,
         favoriteCategories,
@@ -213,6 +223,8 @@ export function useWordSearchGame() {
     const dismissJustUnlocked = useCallback(() => setJustUnlocked(prev => prev.slice(1)), []);
 
     const initGame = async () => {
+        puzzleInstanceIdRef.current += 1;
+        rewardedBonusWordsRef.current = new Set();
         setStatus("Generating puzzle...");
         setLevelComplete(false);
         setDoubleSeedsActive(false);
@@ -221,18 +233,18 @@ export function useWordSearchGame() {
         setBonusSeedsThisLevel(0);
         setBonusDiscovery(null);
         setHintUsedThisLevel(false);
-        const size = calculateGridSize(level, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
+        const size = calculateGridSize(playingLevel, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
         const count = Math.max(3, size - 1);
         const maxWordLength = size <= 4 ? size : size - 1;
 
         const usingFavorites = useFavorites && favoriteCategories.length >= MIN_FAVORITE_CATEGORIES;
-        const categoryName = usingFavorites ? favoriteCategoryForLevel(favoriteCategories, level) : undefined;
+        const categoryName = usingFavorites ? favoriteCategoryForLevel(favoriteCategories, playingLevel) : undefined;
         const excludeWords = categoryName ? recentWordsByCategoryRef.current.get(categoryName) : undefined;
 
         const puzzle = await getPuzzleWords({
             count: count + Math.min(count, 8),
             maxLength: maxWordLength,
-            level,
+            level: playingLevel,
             tier: difficultyMode,
             categoryName,
             excludeWords,
@@ -250,7 +262,7 @@ export function useWordSearchGame() {
             targetWords: mainWords,
             bonusWords,
             category: puzzle.category,
-            level,
+            level: playingLevel,
             mode: difficultyMode,
         });
 
@@ -262,7 +274,7 @@ export function useWordSearchGame() {
         setStatus("Puzzle generated. Find the words!");
     };
 
-    useEffect(() => { initGame(); }, [level, difficultyMode, useFavorites, favoriteCategories]);
+    useEffect(() => { initGame(); }, [playingLevel, difficultyMode, useFavorites, favoriteCategories]);
 
     const submitSelection = async (startCell: Cell, endCell: Cell) => {
         const { gridData, wordsToFind, foundWords } = stateRef.current;
@@ -291,7 +303,7 @@ export function useWordSearchGame() {
             if (reversedWord !== currentWord && await validateWord(reversedWord)) validBonusCandidates.add(reversedWord);
         }
         const selection = classifyWordSelection(currentWord, reversedWord, wordsToFind, foundWords, validBonusCandidates);
-        if (selection.kind === "already-found") {
+        if (selection.kind === "already-found" || (selection.kind === "bonus-found" && rewardedBonusWordsRef.current.has(selection.word))) {
             setStatus(`${selection.word} is already found.`);
             return;
         }
@@ -313,6 +325,7 @@ export function useWordSearchGame() {
 
             const rewardMultiplier = doubleSeedsActive ? 2 : 1;
             if (selection.kind === "bonus-found") {
+                rewardedBonusWordsRef.current.add(matchedWord);
                 const bonusSeeds = REWARDS.BONUS_WORD_SEEDS * rewardMultiplier;
                 setSeeds((s: number) => s + bonusSeeds);
                 setBonusWordsFound((n: number) => n + 1);
@@ -327,10 +340,15 @@ export function useWordSearchGame() {
                     setStatus("Triumph! Level complete.");
                     setLevelComplete(true);
                     setLevelsCompleted((n: number) => n + 1);
+                    setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
+                    setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
                     if (!hintUsedThisLevel) setLevelsCompletedWithoutHint(count => count + 1);
                     setUniqueCategoriesCompleted(count => Math.max(count, categoriesSeen.size + (categoriesSeen.has(category) ? 0 : 1)));
                     setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length));
-                    setSeeds((s: number) => s + REWARDS.LEVEL_COMPLETE_SEEDS * rewardMultiplier);
+                    const completionReward = completedLevels.includes(playingLevel)
+                        ? REWARDS.REPLAY_COMPLETE_SEEDS
+                        : REWARDS.LEVEL_COMPLETE_SEEDS;
+                    setSeeds((s: number) => s + completionReward * rewardMultiplier);
                 }
             }
         }
@@ -362,11 +380,19 @@ export function useWordSearchGame() {
             setStatus("Triumph! Level complete.");
             setLevelComplete(true);
             setLevelsCompleted((n: number) => n + 1);
-            setSeeds((s: number) => s + REWARDS.LEVEL_COMPLETE_SEEDS * (doubleSeedsActive ? 2 : 1));
+            setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
+            setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
+            const completionReward = completedLevels.includes(playingLevel)
+                ? REWARDS.REPLAY_COMPLETE_SEEDS
+                : REWARDS.LEVEL_COMPLETE_SEEDS;
+            setSeeds((s: number) => s + completionReward * (doubleSeedsActive ? 2 : 1));
         }
     };
 
-    const goToLevel = (lvl: number) => setLevel(lvl);
+    const goToLevel = (lvl: number) => {
+        const selectedLevel = Math.max(1, Math.floor(lvl));
+        if (selectedLevel <= highestUnlockedLevel) setPlayingLevel(selectedLevel);
+    };
     const reshuffle = () => {
         const consumed = consumeCharge(powerupInventory, "lumina-cyclone");
         if (!consumed.consumed) {
@@ -412,21 +438,25 @@ export function useWordSearchGame() {
         setFoundWords({});
         setFoundLines([]);
         setLevelComplete(false);
-        setBonusWordsThisLevel([]);
+        // Keep already-paid bonus words associated with this puzzle instance;
+        // retrying the same board must not create another reward opportunity.
+        setBonusWordsThisLevel(prev => prev.filter(word => rewardedBonusWordsRef.current.has(word)));
         setBonusSeedsThisLevel(0);
         setHintUsedThisLevel(false);
         setBonusDiscovery(null);
     };
 
-    const nextLevel = () => setLevel((l: number) => l + 1);
+    const nextLevel = () => setPlayingLevel(highestUnlockedLevel);
     // Full reset -- every persisted field back to its default, not just
     // level/seeds. A partial reset here previously left achievements,
     // categoriesSeen, and the whole garden untouched, landing the player in
     // an inconsistent state (level 1, but a trophy case for level 50).
     const restart = () => {
-        setLevel(DEFAULT_SAVE_DATA.level);
+        setHighestUnlockedLevel(DEFAULT_SAVE_DATA.highestUnlockedLevel);
+        setPlayingLevel(DEFAULT_SAVE_DATA.highestUnlockedLevel);
         setSeeds(DEFAULT_SAVE_DATA.seeds);
         setLevelsCompleted(DEFAULT_SAVE_DATA.levelsCompleted);
+        setCompletedLevels(DEFAULT_SAVE_DATA.completedLevels);
         setUnlockedAchievements(new Set(DEFAULT_SAVE_DATA.unlockedAchievements));
         setCategoriesSeen(new Set(DEFAULT_SAVE_DATA.categoriesSeen));
         setFoundDiagonal(DEFAULT_SAVE_DATA.foundDiagonal);
@@ -547,7 +577,10 @@ export function useWordSearchGame() {
     }, []);
 
     return {
-        level, seeds, status, levelComplete, category, levelsCompleted,
+        // `level` remains a compatibility alias for existing presentation
+        // components; progression decisions use the explicit fields above.
+        level: playingLevel, playingLevel, highestUnlockedLevel, completedLevels,
+        seeds, status, levelComplete, category, levelsCompleted,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
