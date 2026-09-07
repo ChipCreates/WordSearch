@@ -63,7 +63,7 @@ export default function CategoryPickerDialog({ open, onClose, selected, onChange
                 "& .MuiDialog-paper": {
                     borderRadius: isMobile ? 0 : "1.25rem",
                     background: "var(--glass-bg)",
-                    backdropFilter: "blur(16px)",
+                    backdropFilter: "var(--glass-blur, blur(12px))",
                     border: isMobile ? "none" : "1px solid var(--glass-border)",
                     boxShadow: "var(--glass-shadow)",
                     color: "var(--color-on-surface)",

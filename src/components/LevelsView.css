@@ -76,7 +76,7 @@
 .ws-trail__header button { pointer-events: auto; }
 .ws-trail .ws-trail__header h2 { font-size: 18px; margin: 0; text-shadow: 0 2px 6px #061e1c; }
 .ws-trail__header .ws-trail__eyebrow { display: none; }
-.ws-trail .ws-trail__detail { position: absolute; right: 16px; bottom: 22px; z-index: 3; display: grid; grid-template-columns: 1fr auto; gap: 8px 14px; padding: 12px 16px; border: 1px solid #78916b88; border-radius: 18px; background: #102d2ce8; text-align: left; }
+.ws-trail .ws-trail__detail { position: absolute; right: 16px; bottom: 22px; z-index: 3; display: grid; grid-template-columns: 1fr auto; gap: 8px 14px; padding: 12px 16px; border: 1px solid #78916b88; border-radius: 18px; background: rgba(16, 45, 44, 0.76); backdrop-filter: var(--glass-blur, blur(12px)); -webkit-backdrop-filter: var(--glass-blur, blur(12px)); text-align: left; }
 .ws-trail .ws-trail__sprout, .ws-trail .ws-trail__detail p { display: none; }
 .ws-trail .ws-trail__detail h3 { font-size: 24px; margin: 3px 0; }
 .ws-trail .ws-trail__rewards { grid-column: 1 / -1; grid-row: 2; display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 0; margin: 0; border: 0; }

@@ -36,6 +36,7 @@ import {
     MusicNoteOutlined,
     CheckCircleOutlined,
     LockOutlined,
+    CheckRounded,
 } from "@mui/icons-material";
 
 const THEME_STORAGE_KEY = "wordsearch.themeMode";
@@ -474,23 +475,66 @@ export default function App() {
 
                             {/* Level Goal Header Toolbar */}
                             <div className={`glass-panel ws-level-goal-card${levelComplete ? " ws-level-goal-card--complete" : ""}`}>
-                                <div className="ws-level-goal-card__main">
-                                    <div className="ws-level-goal-card__heading-row">
-                                        <h2 className="ws-level-goal-card__level glow-text-emerald">{category || "Botanical"}</h2>
-                                        {levelComplete && <span className="ws-level-goal-card__complete-badge" role="status">✓ Goal complete</span>}
-                                    </div>
-                                    <div className="ws-level-goal-card__goal-row">
-                                        <div className="ws-level-goal-card__goal-copy">
-                                            <span className="ws-level-goal-card__goal-label">Level Goal</span>
-                                            <strong>Find all {wordsToFind.length} target words</strong>
+                                {levelComplete ? (
+                                    <div className="ws-level-goal-card__complete-layout">
+                                        <div className="ws-level-goal-card__complete-left">
+                                            <div className="ws-level-goal-card__cat-title">
+                                                <EcoLeaf className="ws-level-goal-card__leaf-icon" />
+                                                <h2 className="ws-level-goal-card__level glow-text-emerald">{category || "Botanical"}</h2>
+                                            </div>
+                                            <div className="ws-level-goal-card__goal-detail">
+                                                <div className="ws-level-goal-card__goal-badge" aria-hidden="true">
+                                                    <EcoLeaf className="ws-level-goal-card__goal-badge-icon" />
+                                                </div>
+                                                <div className="ws-level-goal-card__goal-copy-block">
+                                                    <span className="ws-level-goal-card__goal-label">Level Goal</span>
+                                                    <div className="ws-level-goal-card__goal-desc">
+                                                        Harvest {wordsToFind.length} words hidden in the {category ? (category.toLowerCase().includes("grove") ? "grove" : category.toLowerCase()) : "grove"}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <span className="ws-level-goal-card__count">{foundCount}/{wordsToFind.length}</span>
-                                    </div>
-                                    <div className="ws-level-goal-card__progress">
-                                        <div className="bioluminescent-line" style={{ width: `${Math.min(100, (foundCount / (wordsToFind.length || 1)) * 100)}%` }} />
-                                    </div>
-                                </div>
 
+                                        <div className="ws-level-goal-card__celebration" role="status">
+                                            <div className="ws-level-goal-card__complete-check" aria-hidden="true">
+                                                <CheckRounded className="ws-level-goal-card__check-icon" />
+                                            </div>
+                                            <div className="ws-level-goal-card__celebration-text">
+                                                <div className="ws-level-goal-card__complete-heading">
+                                                    <span>GOAL COMPLETE!</span>
+                                                    <svg className="ws-level-goal-card__sprig" viewBox="0 0 32 32" width="26" height="26" fill="currentColor" aria-hidden="true">
+                                                        <path d="M6 26 C12 22 18 16 26 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+                                                        <path d="M26 6 C24 3 21 4 21 6 C21 8 24 8 26 6 Z" fill="currentColor" />
+                                                        <path d="M21 11 C18 9 15 10 16 12 C17 14 20 13 21 11 Z" fill="currentColor" />
+                                                        <path d="M23 13 C25 11 27 12 26 14 C25 16 23 15 23 13 Z" fill="currentColor" />
+                                                        <path d="M16 16 C13 15 11 17 12 19 C13 20 16 19 16 16 Z" fill="currentColor" />
+                                                        <path d="M18 18 C20 16 22 18 21 20 C20 21 18 20 18 18 Z" fill="currentColor" />
+                                                        <path d="M12 21 C9 21 8 23 9 24 C11 25 13 23 12 21 Z" fill="currentColor" />
+                                                    </svg>
+                                                </div>
+                                                <div className="ws-level-goal-card__complete-sub">
+                                                    All words found. Well done, Botanist!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="ws-level-goal-card__main">
+                                        <div className="ws-level-goal-card__heading-row">
+                                            <h2 className="ws-level-goal-card__level glow-text-emerald">{category || "Botanical"}</h2>
+                                        </div>
+                                        <div className="ws-level-goal-card__goal-row">
+                                            <div className="ws-level-goal-card__goal-copy">
+                                                <span className="ws-level-goal-card__goal-label">Level Goal</span>
+                                                <strong>Find all {wordsToFind.length} target words</strong>
+                                            </div>
+                                            <span className="ws-level-goal-card__count">{foundCount}/{wordsToFind.length}</span>
+                                        </div>
+                                        <div className="ws-level-goal-card__progress">
+                                            <div className="bioluminescent-line" style={{ width: `${Math.min(100, (foundCount / (wordsToFind.length || 1)) * 100)}%` }} />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Gameplay Grid & Found Words Side Panel */}

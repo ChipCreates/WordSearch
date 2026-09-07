@@ -356,7 +356,7 @@ export default function GardenView({
                                             borderRadius: "9999px",
                                             background: "rgba(0, 228, 121, 0.25)",
                                             border: "1px solid rgba(0, 228, 121, 0.5)",
-                                            backdropFilter: "blur(8px)",
+                                            backdropFilter: "var(--glass-blur, blur(12px))",
                                             color: "var(--color-primary)",
                                             fontSize: "0.75rem",
                                             fontWeight: 800,

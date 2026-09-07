@@ -29,9 +29,10 @@
   --card-border:              1px solid var(--glass-border);
   --card-glow:                0 0 20px rgba(var(--color-primary-rgb), 0.16);
 
-  --glass-bg: rgba(242, 238, 221, 0.75);
+  --glass-bg: rgba(242, 238, 221, 0.76);
   --glass-border: rgba(15, 82, 56, 0.15);
   --glass-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  --glass-blur: blur(12px);
 
   /* Scrim for category background images */
   --scrim: linear-gradient(
@@ -129,7 +130,7 @@
   --color-locked:             #806b57;
   --color-reward:             #e0a840;
 
-  --glass-bg: rgba(245, 227, 204, 0.78);
+  --glass-bg: rgba(245, 227, 204, 0.76);
   --glass-border: rgba(168, 85, 27, 0.18);
   --glass-shadow: 0 4px 20px rgba(60, 30, 10, 0.08);
 
@@ -218,16 +219,21 @@ body {
   background: rgba(8, 29, 20, .76);
   border-color: #91ad6380;
   box-shadow: inset 0 0 32px #03140d55, 0 6px 20px #03140d33;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .glass-panel.ws-level-goal-card {
-  background: color-mix(in srgb, var(--glass-bg) 68%, transparent);
-  backdrop-filter: blur(12px);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: inset 0 0 32px rgba(var(--color-primary-rgb), 0.08), 0 8px 28px rgba(0, 0, 0, 0.18);
 }
 
 .glass-panel {
-  background: color-mix(in srgb, var(--color-surface-container-low) 72%, transparent);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--color-outline-variant);
   box-shadow: none;
 }
@@ -243,7 +249,9 @@ body {
   right: 0;
   height: 80px;
   z-index: 50;
-  background: color-mix(in srgb, var(--color-surface-container-low) 72%, transparent);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--color-outline-variant);
   box-shadow: none;
 }
@@ -365,7 +373,9 @@ body {
   display: none;
   flex-direction: column;
   padding: var(--space-md);
-  background: color-mix(in srgb, var(--color-surface-container-low) 72%, transparent);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--color-outline-variant);
   box-shadow: none;
 }
@@ -507,8 +517,8 @@ body {
 
 .ws-profile-sheet .MuiBackdrop-root {
   background: rgba(3, 16, 11, 0.60);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .ws-profile-sheet__panel {
@@ -524,7 +534,9 @@ body {
   border: 1px solid rgba(164, 247, 146, 0.26);
   border-bottom: 0;
   border-radius: 28px 28px 0 0;
-  background: linear-gradient(155deg, rgba(24, 58, 43, 0.95), rgba(8, 27, 21, 0.94));
+  background: linear-gradient(155deg, rgba(24, 58, 43, 0.82), rgba(8, 27, 21, 0.76));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: 0 -20px 70px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.1);
   animation: profileSheetIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -864,15 +876,187 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  background: color-mix(in srgb, var(--glass-bg) 68%, transparent);
-  backdrop-filter: blur(12px);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: inset 0 0 32px rgba(var(--color-primary-rgb), 0.05), 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
+.glass-panel.ws-level-goal-card--complete,
 .ws-level-goal-card--complete {
-  border-color: rgba(164, 247, 146, 0.62);
-  background: linear-gradient(110deg, rgba(15, 55, 35, 0.66), rgba(17, 42, 35, 0.44));
-  box-shadow: inset 0 0 38px rgba(116, 195, 101, 0.12), 0 0 32px rgba(116, 195, 101, 0.16);
+  border-color: rgba(95, 245, 152, 0.42);
+  background: linear-gradient(115deg, rgba(8, 38, 26, 0.82) 0%, rgba(5, 24, 18, 0.86) 100%);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35), inset 0 0 32px rgba(0, 228, 121, 0.12), 0 0 24px rgba(0, 228, 121, 0.16);
+  padding: 16px 26px;
+}
+
+.ws-level-goal-card__complete-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+}
+
+.ws-level-goal-card__complete-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ws-level-goal-card__cat-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ws-level-goal-card__leaf-icon {
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(95, 245, 152, 0.8));
+}
+
+.ws-level-goal-card--complete .ws-level-goal-card__level {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 700;
+  color: #eaffdb;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.ws-level-goal-card__goal-detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ws-level-goal-card__goal-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(14, 48, 30, 0.7);
+  border: 1px solid rgba(164, 247, 146, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 8px rgba(0, 228, 121, 0.25), 0 0 8px rgba(0, 228, 121, 0.15);
+}
+
+.ws-level-goal-card__goal-badge-icon {
+  width: 16px !important;
+  height: 16px !important;
+  filter: drop-shadow(0 0 4px rgba(95, 245, 152, 0.6));
+}
+
+.ws-level-goal-card__goal-copy-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ws-level-goal-card__goal-sublabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #8daea0;
+  font-family: var(--font-body);
+  letter-spacing: 0.02em;
+}
+
+.ws-level-goal-card__goal-desc {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #cce8d6;
+  font-family: var(--font-body);
+  line-height: 1.25;
+}
+
+/* Right celebratory section */
+.ws-level-goal-card__celebration {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ws-level-goal-card__complete-check {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: radial-gradient(circle, rgba(24, 90, 52, 0.95) 0%, rgba(8, 38, 22, 0.95) 100%);
+  border: 2px solid #5fe894;
+  box-shadow: 0 0 20px rgba(95, 232, 148, 0.65), inset 0 0 10px rgba(95, 232, 148, 0.4);
+  animation: ws-pulse-check 2s ease-in-out infinite;
+}
+
+.ws-level-goal-card__check-icon {
+  color: #5fe894 !important;
+  font-size: 26px !important;
+  filter: drop-shadow(0 0 6px rgba(95, 232, 148, 0.85));
+}
+
+.ws-level-goal-card__celebration-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ws-level-goal-card__complete-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-headline);
+  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+  font-weight: 800;
+  color: #5fe894;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-shadow: 0 0 20px rgba(95, 232, 148, 0.7), 0 2px 4px rgba(0, 20, 10, 0.9);
+}
+
+.ws-level-goal-card__sprig {
+  color: #7ef2ab;
+  filter: drop-shadow(0 0 8px rgba(95, 232, 148, 0.75));
+  flex-shrink: 0;
+}
+
+.ws-level-goal-card__complete-sub {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #c4e4ce;
+  font-family: var(--font-body);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes ws-pulse-check {
+  0%, 100% {
+    box-shadow: 0 0 18px rgba(95, 232, 148, 0.6), inset 0 0 8px rgba(95, 232, 148, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(95, 232, 148, 0.9), inset 0 0 14px rgba(95, 232, 148, 0.55);
+    transform: scale(1.05);
+  }
+}
+
+@media (max-width: 900px) {
+  .ws-level-goal-card__complete-layout {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .ws-level-goal-card__celebration {
+    margin-left: 0;
+  }
 }
 
 .ws-level-goal-card__complete-badge {
@@ -1529,7 +1713,8 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     margin-bottom: 10px;
     border-radius: var(--radius-xl);
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
   }
 
