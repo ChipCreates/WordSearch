@@ -20,16 +20,9 @@ import SeedStoreDialog from "./components/SeedStoreDialog";
 import AchievementsView from "./components/AchievementsView";
 import GardenView from "./components/GardenView";
 import EcoLeaf from "./components/icons/EcoLeaf";
+import NavigationArt from "./components/NavigationArt";
 import {
-    VideogameAssetOutlined,
-    EmojiEventsOutlined,
-    DarkModeOutlined,
-    LightModeOutlined,
-    PlayArrowRounded,
-    LocalFloristRounded,
-    SettingsOutlined,
     SpaOutlined,
-    GridViewOutlined,
     AutoFixHighOutlined,
     ShuffleOutlined,
     RefreshOutlined,
@@ -37,10 +30,8 @@ import {
     VolumeUpOutlined,
     MusicOffOutlined,
     MusicNoteOutlined,
-    HelpOutlineOutlined,
     CheckCircleOutlined,
     LockOutlined,
-    FormatListBulletedOutlined,
 } from "@mui/icons-material";
 
 const THEME_STORAGE_KEY = "wordsearch.themeMode";
@@ -235,6 +226,10 @@ export default function App() {
                     transition: "background-image 0.4s ease",
                 }}
             >
+                {activeTab === "play" && <div className="ws-playing-backdrop" aria-hidden="true"><picture>
+                    <source media="(orientation: landscape)" srcSet={assetUrl("backgrounds/playing-landscape.webp")} />
+                    <img src={assetUrl("backgrounds/playing-portrait.webp")} alt="" />
+                </picture></div>}
                 {/* ── Top Navigation Header (TopNavBar) ────────────────────────── */}
                 <header className="ws-top-nav">
                     <div className="ws-top-nav__inner">
@@ -249,22 +244,29 @@ export default function App() {
                                 className={`ws-top-nav__link ${activeTab === "play" ? "ws-top-nav__link--active" : ""}`}
                                 onClick={() => { playSfx("click"); setActiveTab("play"); }}
                             >
-                                <VideogameAssetOutlined style={{ fontSize: 18, marginRight: 4, verticalAlign: "middle" }} />
+                                <NavigationArt name="play" />
                                 Play
+                            </button>
+                            <button
+                                className={`ws-top-nav__link ${activeTab === "levels" ? "ws-top-nav__link--active" : ""}`}
+                                onClick={() => { playSfx("click"); setActiveTab("levels"); }}
+                            >
+                                <NavigationArt name="levels" />
+                                Levels
                             </button>
                             <button
                                 className={`ws-top-nav__link ${activeTab === "garden" ? "ws-top-nav__link--active" : ""}`}
                                 onClick={() => { playSfx("click"); setActiveTab("garden"); }}
                             >
-                                <LocalFloristRounded style={{ fontSize: 18, marginRight: 4, verticalAlign: "middle" }} />
+                                <NavigationArt name="garden" />
                                 Garden
                             </button>
                             <button
                                 className={`ws-top-nav__link ${activeTab === "achievements" ? "ws-top-nav__link--active" : ""}`}
                                 onClick={() => { playSfx("click"); setActiveTab("achievements"); }}
                             >
-                                <EmojiEventsOutlined style={{ fontSize: 18, marginRight: 4, verticalAlign: "middle" }} />
-                                Achievements
+                                <NavigationArt name="trophies" />
+                                Trophies
                             </button>
                         </nav>
 
@@ -292,7 +294,7 @@ export default function App() {
                                 aria-label="Toggle Theme Mode"
                                 title={`Switch to ${themeMode === "sprout" ? "Midnight Dark" : "Sprout Light"} Theme`}
                             >
-                                {themeMode === "sprout" ? <DarkModeOutlined /> : <LightModeOutlined />}
+                                <NavigationArt name="theme" />
                             </button>
 
                             {/* Settings Quick Toggle */}
@@ -302,7 +304,7 @@ export default function App() {
                                 aria-label="Settings"
                                 title="Settings"
                             >
-                                <SettingsOutlined />
+                                <NavigationArt name="settings" />
                             </button>
 
                             {/* Help & About Quick Toggle */}
@@ -312,7 +314,7 @@ export default function App() {
                                 aria-label="About & How to Play"
                                 title="About & How to Play"
                             >
-                                <HelpOutlineOutlined />
+                                <NavigationArt name="help" />
                             </button>
                         </div>
                     </div>
@@ -350,7 +352,7 @@ export default function App() {
                             onClick={() => { playSfx("click"); setActiveTab("levels"); }}
                             style={{ width: "100%", justifyContent: "center", marginTop: 4, padding: "6px 12px", fontSize: "0.8rem" }}
                         >
-                            <GridViewOutlined style={{ fontSize: 16 }} />
+                            <NavigationArt name="levels" />
                             Level Map & Categories
                         </button>
                     </div>
@@ -439,10 +441,11 @@ export default function App() {
                             </div>
                         </div>
                         <button
+                            className="ws-about-art-btn"
                             onClick={() => setAboutOpen(true)}
                             style={{ background: "none", border: "none", color: "var(--color-on-surface-variant)", fontSize: "0.8rem", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "6px 8px" }}
                         >
-                            <HelpOutlineOutlined style={{ fontSize: 18, verticalAlign: "middle" }} /> About & How to Play
+                            <NavigationArt name="help" /> About & How to Play
                         </button>
                     </div>
                 </aside>
@@ -608,7 +611,7 @@ export default function App() {
                         className={`ws-bottom-nav__item ${activeTab === "play" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("play"); }}
                     >
-                        <PlayArrowRounded />
+                        <NavigationArt name="play" />
                         <span>Play</span>
                     </button>
 
@@ -616,7 +619,7 @@ export default function App() {
                         className={`ws-bottom-nav__item ${activeTab === "levels" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("levels"); }}
                     >
-                        <FormatListBulletedOutlined />
+                        <NavigationArt name="levels" />
                         <span>Levels</span>
                     </button>
 
@@ -624,7 +627,7 @@ export default function App() {
                         className={`ws-bottom-nav__item ${activeTab === "garden" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("garden"); }}
                     >
-                        <LocalFloristRounded />
+                        <NavigationArt name="garden" />
                         <span>Garden</span>
                     </button>
 
@@ -632,7 +635,7 @@ export default function App() {
                         className={`ws-bottom-nav__item ${activeTab === "achievements" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("achievements"); }}
                     >
-                        <EmojiEventsOutlined />
+                        <NavigationArt name="trophies" />
                         <span>Trophies</span>
                     </button>
 
@@ -640,7 +643,7 @@ export default function App() {
                         className="ws-bottom-nav__item"
                         onClick={() => { playSfx("click"); setSettingsOpen(true); }}
                     >
-                        <SettingsOutlined />
+                        <NavigationArt name="settings" />
                         <span>Settings</span>
                     </button>
                 </nav>

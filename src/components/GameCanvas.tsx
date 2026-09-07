@@ -36,9 +36,9 @@ function contrastingTextColor(hex: string): string {
 
 // Resolve the current theme-mode letter color from the CSS custom property.
 // Falls back to dark-on-light for SSR safety.
-function surfaceLetterColor(): string {
+function surfaceLetterColor(canvas: HTMLCanvasElement): string {
     if (typeof window === "undefined") return "#1d1c12";
-    return getComputedStyle(document.documentElement)
+    return getComputedStyle(canvas)
         .getPropertyValue("--color-on-surface")
         .trim() || "#1d1c12";
 }
@@ -203,7 +203,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             drawSelectionTrace(startCell.r, startCell.c, currentTarget.r, currentTarget.c);
         }
 
-        const letterColor = surfaceLetterColor();
+        const letterColor = surfaceLetterColor(canvas);
         ctx.textAlign    = "center";
         ctx.textBaseline = "middle";
         // Use Space Grotesk — gated on document.fonts.ready in the useEffect below.
