@@ -520,6 +520,8 @@ export default function App() {
                                     onCompass={() => { playSfx("click"); activateCompass(); }}
                                     onSpectrometer={() => { playSfx("click"); activateSpectrometer(); }}
                                     onDoubleSeeds={() => { playSfx("click"); activateDoubleSeeds(); }}
+                                    fieldNotes={fieldNotes}
+                                    onCollectFieldNote={claimFieldNote}
                                 />
 
                                 {/* Right: Found Words List Panel */}
