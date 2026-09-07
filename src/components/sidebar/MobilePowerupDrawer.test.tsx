@@ -28,6 +28,7 @@ describe("MobilePowerupDrawer", () => {
         );
 
         expect(screen.getByRole("dialog", { name: "Field Kit" })).toBeTruthy();
+        expect(screen.getByRole("dialog", { name: "Field Kit" }).getAttribute("aria-modal")).toBe("true");
         expect(screen.getByRole("region", { name: "Field Notes" })).toBeTruthy();
     });
 });

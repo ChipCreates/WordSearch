@@ -25,10 +25,28 @@ type Props = {
 
 export default function MobilePowerupDrawer(props: Props) {
     const closeRef = useRef<HTMLButtonElement>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if (!props.open) return;
         closeRef.current?.focus();
-        const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") props.onClose(); };
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                props.onClose();
+                return;
+            }
+            if (event.key !== "Tab" || !panelRef.current) return;
+            const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>("button:not(:disabled), [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])"));
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
     }, [props.open, props.onClose]);
@@ -40,8 +58,8 @@ export default function MobilePowerupDrawer(props: Props) {
     const inventoryLabel = (id: keyof PowerupInventory) => ` · x${props.powerupInventory[id]}`;
 
     return <div className="ws-mobile-toolkit">
-        {props.open && <div id="mobile-field-kit" className="ws-mobile-toolkit__panel" role="dialog" aria-label="Field Kit">
-            <div className="ws-mobile-toolkit__header"><div><strong>Field Kit</strong><span>Choose one action</span></div><button ref={closeRef} className="ws-mobile-toolkit__close" aria-label="Close Field Kit" onClick={close}><CloseRounded /></button></div>
+        {props.open && <div id="mobile-field-kit" ref={panelRef} className="ws-mobile-toolkit__panel" role="dialog" aria-modal="true" aria-labelledby="mobile-field-kit-title">
+            <div className="ws-mobile-toolkit__header"><div><strong id="mobile-field-kit-title">Field Kit</strong><span>Tools, rewards, and Field Notes</span></div><button ref={closeRef} className="ws-mobile-toolkit__close" aria-label="Close Field Kit" onClick={close}><CloseRounded /></button></div>
             <div className="ws-mobile-toolkit__grid">
                 <button disabled={!props.hintAvailable} onClick={() => run(props.onRevealHint)}><AutoFixHighOutlined /><span>Hint</span><small>{props.freeHintUsesRemaining ? "Free" : inventoryLabel("single-letter-sprout")}</small></button>
                 <button disabled={!props.powerupInventory["lumina-cyclone"]} onClick={() => run(props.onShuffle)}><ShuffleOutlined /><span>Shuffle</span><small>{inventoryLabel("lumina-cyclone")}</small></button>
