@@ -48,8 +48,9 @@ export default function App() {
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
+        levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         ownedPlants, wateredTimestamps, growthByPlant,
-        buyPlantSeed, updateWateredTimestamp, updatePlantGrowth,
+        buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom,
         doubleSeedsActive,
         unlockedThemes, unlockTheme,
         hasGoldenCrest, unlockGoldenCrest,
@@ -431,6 +432,13 @@ export default function App() {
                                 foundDiagonal,
                                 totalCategories: CATEGORY_NAMES.length,
                                 bonusWordsFound,
+                                levelsCompletedWithoutHint,
+                                maxBonusWordsInLevel,
+                                reverseWordsFound,
+                                plantsBloomed,
+                                bloomedRarityTiers,
+                                uniqueCategoriesCompleted,
+                                powerupsUsed,
                             }}
                         />
                     ) : activeTab === "garden" ? (
@@ -444,6 +452,7 @@ export default function App() {
                             spendSeeds={spendSeeds}
                             updateWateredTimestamp={updateWateredTimestamp}
                             updatePlantGrowth={updatePlantGrowth}
+                            recordPlantBloom={recordPlantBloom}
                             showToast={showToast}
                         />
                     ) : (

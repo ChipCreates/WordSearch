@@ -42,6 +42,14 @@ export function useWordSearchGame() {
     const [bonusWordsThisLevel, setBonusWordsThisLevel] = useState<string[]>([]);
     const [bonusSeedsThisLevel, setBonusSeedsThisLevel] = useState(0);
     const [bonusDiscovery, setBonusDiscovery] = useState<{ word: string; seeds: number } | null>(null);
+    const [levelsCompletedWithoutHint, setLevelsCompletedWithoutHint] = useState(initialSave.levelsCompletedWithoutHint);
+    const [maxBonusWordsInLevel, setMaxBonusWordsInLevel] = useState(initialSave.maxBonusWordsInLevel);
+    const [reverseWordsFound, setReverseWordsFound] = useState(initialSave.reverseWordsFound);
+    const [plantsBloomed, setPlantsBloomed] = useState(initialSave.plantsBloomed);
+    const [bloomedRarityTiers, setBloomedRarityTiers] = useState(initialSave.bloomedRarityTiers);
+    const [uniqueCategoriesCompleted, setUniqueCategoriesCompleted] = useState(initialSave.uniqueCategoriesCompleted);
+    const [powerupsUsed, setPowerupsUsed] = useState(initialSave.powerupsUsed);
+    const [hintUsedThisLevel, setHintUsedThisLevel] = useState(false);
     useEffect(() => {
         if (!bonusDiscovery) return;
         const timer = setTimeout(() => setBonusDiscovery(null), 2200);
@@ -95,6 +103,13 @@ export function useWordSearchGame() {
             setUnlockedThemes(native.unlockedThemes);
             setHasGoldenCrest(native.hasGoldenCrest);
             setPowerupInventory(native.powerupInventory);
+            setLevelsCompletedWithoutHint(native.levelsCompletedWithoutHint);
+            setMaxBonusWordsInLevel(native.maxBonusWordsInLevel);
+            setReverseWordsFound(native.reverseWordsFound);
+            setPlantsBloomed(native.plantsBloomed);
+            setBloomedRarityTiers(native.bloomedRarityTiers);
+            setUniqueCategoriesCompleted(native.uniqueCategoriesCompleted);
+            setPowerupsUsed(native.powerupsUsed);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -126,6 +141,13 @@ export function useWordSearchGame() {
                 unlockedThemes,
                 hasGoldenCrest,
                 powerupInventory,
+                levelsCompletedWithoutHint,
+                maxBonusWordsInLevel,
+                reverseWordsFound,
+                plantsBloomed,
+                bloomedRarityTiers,
+                uniqueCategoriesCompleted,
+                powerupsUsed,
             });
         }, 400);
         return () => {
@@ -148,6 +170,13 @@ export function useWordSearchGame() {
         unlockedThemes,
         hasGoldenCrest,
         powerupInventory,
+        levelsCompletedWithoutHint,
+        maxBonusWordsInLevel,
+        reverseWordsFound,
+        plantsBloomed,
+        bloomedRarityTiers,
+        uniqueCategoriesCompleted,
+        powerupsUsed,
     ]);
 
     // Re-evaluate achievements on stat updates
@@ -161,13 +190,20 @@ export function useWordSearchGame() {
             foundDiagonal,
             totalCategories: CATEGORY_NAMES.length,
             bonusWordsFound,
+            levelsCompletedWithoutHint,
+            maxBonusWordsInLevel,
+            reverseWordsFound,
+            plantsBloomed,
+            bloomedRarityTiers,
+            uniqueCategoriesCompleted,
+            powerupsUsed,
         });
         const newlyUnlockedIds = satisfied.filter(id => !unlockedRef.current.has(id));
         if (newlyUnlockedIds.length > 0) {
             setUnlockedAchievements(prev => new Set([...prev, ...newlyUnlockedIds]));
             setJustUnlocked(prev => [...prev, ...ACHIEVEMENTS.filter(a => newlyUnlockedIds.includes(a.id))]);
         }
-    }, [levelsCompleted, seeds, categoriesSeen, foundDiagonal, bonusWordsFound]);
+    }, [levelsCompleted, seeds, categoriesSeen, foundDiagonal, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed]);
 
     const dismissJustUnlocked = useCallback(() => setJustUnlocked(prev => prev.slice(1)), []);
 
@@ -179,6 +215,7 @@ export function useWordSearchGame() {
         setBonusWordsThisLevel([]);
         setBonusSeedsThisLevel(0);
         setBonusDiscovery(null);
+        setHintUsedThisLevel(false);
         const size = calculateGridSize(level, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
         const count = Math.max(3, size - 1);
         const maxWordLength = size <= 4 ? size : size - 1;
@@ -267,6 +304,7 @@ export function useWordSearchGame() {
             setFoundLines(prev => [...prev, newLine]);
             setFoundWords(nextFoundWords);
             if (dr !== 0 && dc !== 0) setFoundDiagonal(true);
+            if (currentWord !== matchedWord) setReverseWordsFound(count => count + 1);
 
             const rewardMultiplier = doubleSeedsActive ? 2 : 1;
             if (selection.kind === "bonus-found") {
@@ -275,6 +313,7 @@ export function useWordSearchGame() {
                 setBonusWordsFound((n: number) => n + 1);
                 setBonusWordsThisLevel(prev => [...prev, matchedWord]);
                 setBonusSeedsThisLevel(total => total + bonusSeeds);
+                setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length + 1));
                 setBonusDiscovery({ word: matchedWord, seeds: bonusSeeds });
                 setStatus(`Bonus sprout! ${matchedWord} +${bonusSeeds} Seeds`);
             } else {
@@ -283,6 +322,9 @@ export function useWordSearchGame() {
                     setStatus("Triumph! Level complete.");
                     setLevelComplete(true);
                     setLevelsCompleted((n: number) => n + 1);
+                    if (!hintUsedThisLevel) setLevelsCompletedWithoutHint(count => count + 1);
+                    setUniqueCategoriesCompleted(count => Math.max(count, categoriesSeen.size + (categoriesSeen.has(category) ? 0 : 1)));
+                    setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length));
                     setSeeds((s: number) => s + REWARDS.LEVEL_COMPLETE_SEEDS * rewardMultiplier);
                 }
             }
@@ -327,6 +369,7 @@ export function useWordSearchGame() {
             return false;
         }
         setPowerupInventory(consumed.inventory);
+        setPowerupsUsed(count => count + 1);
         if (!wordsToFind || !wordsToFind.length) return;
         const size = gridSize;
         const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
@@ -366,6 +409,7 @@ export function useWordSearchGame() {
         setLevelComplete(false);
         setBonusWordsThisLevel([]);
         setBonusSeedsThisLevel(0);
+        setHintUsedThisLevel(false);
         setBonusDiscovery(null);
     };
 
@@ -391,6 +435,14 @@ export function useWordSearchGame() {
         setDoubleSeedsActive(false);
         setPowerupInventory(DEFAULT_SAVE_DATA.powerupInventory);
         setFreeHintUsesRemaining(1);
+        setLevelsCompletedWithoutHint(DEFAULT_SAVE_DATA.levelsCompletedWithoutHint);
+        setMaxBonusWordsInLevel(DEFAULT_SAVE_DATA.maxBonusWordsInLevel);
+        setReverseWordsFound(DEFAULT_SAVE_DATA.reverseWordsFound);
+        setPlantsBloomed(DEFAULT_SAVE_DATA.plantsBloomed);
+        setBloomedRarityTiers(DEFAULT_SAVE_DATA.bloomedRarityTiers);
+        setUniqueCategoriesCompleted(DEFAULT_SAVE_DATA.uniqueCategoriesCompleted);
+        setPowerupsUsed(DEFAULT_SAVE_DATA.powerupsUsed);
+        setHintUsedThisLevel(false);
     };
 
     const spendSeeds = useCallback((cost: number): boolean => {
@@ -422,12 +474,16 @@ export function useWordSearchGame() {
 
     const claimHintUse = useCallback((): "free" | "paid" | null => {
         if (freeHintUsesRemaining > 0) {
+            setHintUsedThisLevel(true);
+            setPowerupsUsed(count => count + 1);
             setFreeHintUsesRemaining(previous => previous - 1);
             return "free";
         }
         const result = consumeCharge(powerupInventory, "single-letter-sprout");
         if (!result.consumed) return null;
         setPowerupInventory(result.inventory);
+        setHintUsedThisLevel(true);
+        setPowerupsUsed(count => count + 1);
         return "paid";
     }, [freeHintUsesRemaining, powerupInventory]);
 
@@ -450,6 +506,11 @@ export function useWordSearchGame() {
         setGrowthByPlant(prev => ({ ...prev, [plantId]: newGrowth }));
     }, []);
 
+    const recordPlantBloom = useCallback(() => {
+        setPlantsBloomed(count => count + 1);
+        setBloomedRarityTiers(count => Math.min(7, count + 1));
+    }, []);
+
     // Store power-ups: Nitrogen Booster, theme unlocks, the profile crest.
     // Seed cost is deducted by the caller (SeedStoreDialog's handleRedeem)
     // before these run, matching how the hint/reshuffle redeems already work.
@@ -459,6 +520,7 @@ export function useWordSearchGame() {
         if (!result.consumed) return false;
         setPowerupInventory(result.inventory);
         setDoubleSeedsActive(true);
+        setPowerupsUsed(count => count + 1);
         return true;
     }, [doubleSeedsActive, powerupInventory]);
 
@@ -478,9 +540,10 @@ export function useWordSearchGame() {
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
+        levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         // Botanical Sanctuary state & handlers
         ownedPlants, wateredTimestamps, growthByPlant,
-        buyPlantSeed, updateWateredTimestamp, updatePlantGrowth,
+        buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom,
         // Store power-ups
         doubleSeedsActive, activateDoubleSeeds,
         powerupInventory, freeHintUsesRemaining, purchasePowerupCharge, consumePowerupCharge, claimHintUse,

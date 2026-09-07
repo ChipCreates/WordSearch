@@ -16,6 +16,7 @@ type Props = {
     spendSeeds: (cost: number) => boolean;
     updateWateredTimestamp: (plantId: string, timestamp: number) => void;
     updatePlantGrowth: (plantId: string, newGrowth: number) => void;
+    recordPlantBloom: (tier: string) => void;
     showToast: (message: string) => void;
 };
 
@@ -109,6 +110,7 @@ export default function GardenView({
     spendSeeds,
     updateWateredTimestamp,
     updatePlantGrowth,
+    recordPlantBloom,
     showToast,
 }: Props) {
     const [filter, setFilter] = useState<FilterTab>("all");
@@ -138,6 +140,7 @@ export default function GardenView({
 
         if (newGrowth === 100 && currentGrowth < 100) {
             addSeeds(bounty); // Bloom bounty!
+            recordPlantBloom(plantDef?.tier ?? "Common");
             showToast(`🎉 Fantastic! Your ${plantName} has reached full bloom! You've received a bounty of ${bounty} Seeds! 🌸`);
         } else {
             showToast(`💧 ${plantName} grew 25%. Keep nurturing it toward bloom!`);
@@ -169,6 +172,7 @@ export default function GardenView({
 
         if (newGrowth === 100) {
             addSeeds(bounty); // Bloom bounty!
+            recordPlantBloom(plantDef?.tier ?? "Common");
             showToast(`🎉 Botanical magic! Your ${plantName} has bloomed! You've received a bounty of ${bounty} Seeds! 🌸`);
         } else {
             showToast(`🧪 Fertilized! ${plantName} growth boosted by 25%!`);

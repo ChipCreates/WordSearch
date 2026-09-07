@@ -25,6 +25,13 @@ export type SaveData = {
     sfxMuted: boolean;
     sfxVolume: number;
     powerupInventory: PowerupInventory;
+    levelsCompletedWithoutHint: number;
+    maxBonusWordsInLevel: number;
+    reverseWordsFound: number;
+    plantsBloomed: number;
+    bloomedRarityTiers: number;
+    uniqueCategoriesCompleted: number;
+    powerupsUsed: number;
 };
 
 export const CURRENT_SCHEMA_VERSION = 2;
@@ -53,6 +60,13 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     sfxMuted: false,
     sfxVolume: 0.5,
     powerupInventory: { ...DEFAULT_POWERUP_INVENTORY },
+    levelsCompletedWithoutHint: 0,
+    maxBonusWordsInLevel: 0,
+    reverseWordsFound: 0,
+    plantsBloomed: 0,
+    bloomedRarityTiers: 0,
+    uniqueCategoriesCompleted: 0,
+    powerupsUsed: 0,
 };
 
 const PRIMARY_KEY = "word_sprout_save_v1";
