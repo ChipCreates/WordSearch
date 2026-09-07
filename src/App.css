@@ -631,9 +631,11 @@ body {
     padding: 10px 12px;
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    background: rgba(255,255,255,0.06);
+    background: color-mix(in srgb, var(--color-surface-container) 88%, #071c15 12%);
     color: var(--color-on-surface-variant);
     font-size: 0.78rem;
+    box-sizing: border-box;
+    min-width: 0;
   }
   .ws-responsive-context-strip strong { color: var(--color-primary); font-family: var(--font-headline); }
   .ws-responsive-context-strip button {
@@ -1907,10 +1909,11 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     padding: 6px 14px;
     margin-bottom: 10px;
     border-radius: var(--radius-xl);
-    background: var(--glass-bg);
+    background: color-mix(in srgb, var(--color-surface-container) 90%, #071c15 10%);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 32%, var(--glass-border));
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
   }
 
   .ws-mobile-header-bar__left {
@@ -1927,10 +1930,11 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     font-weight: 800;
     font-size: 0.8rem;
     color: var(--color-primary);
-    background: rgba(0, 228, 121, 0.15);
+    background: color-mix(in srgb, var(--color-primary) 24%, var(--color-surface-container-high) 76%);
     padding: 2px 8px;
     border-radius: var(--radius-full);
-    border: 1px solid rgba(0, 228, 121, 0.3);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 56%, var(--glass-border));
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
   }
 
   .ws-mobile-header-bar__cat {
@@ -2104,7 +2108,12 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   border-radius: 16px;
   background: rgba(244, 201, 93, 0.055);
 }
-.ws-field-notes--compact { margin: 10px 12px 0; }
+.ws-field-notes--compact {
+  margin: 10px 12px 0;
+  background: color-mix(in srgb, var(--color-surface-container) 88%, #071c15 12%);
+  border-color: color-mix(in srgb, var(--color-secondary) 42%, var(--glass-border));
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+}
 .ws-field-notes__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--color-primary); font-family: var(--font-headline); }
 .ws-field-notes__heading span { color: var(--color-on-surface-variant); font-family: var(--font-body); font-size: 0.68rem; font-weight: 700; }
 .ws-field-notes__list { display: grid; gap: 7px; }
