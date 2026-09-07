@@ -34,8 +34,10 @@ export type FoundLine = { startR: number; startC: number; endR: number; endC: nu
 // clock), so it covers both the forming time and the hold, not just the
 // hold on its own.
 export const CORNER_RADIUS_PX = 12;
-export const CELEBRATE_DOTS_FORM_MS = 550;
-export const CELEBRATE_HOLD_MS = 900;
+export const CELEBRATE_DOTS_FORM_MS = 120;
+export const CELEBRATE_TRAIL_MS = 350;
+export const CELEBRATE_BURST_MS = 180;
+export const CELEBRATE_HOLD_MS = CELEBRATE_TRAIL_MS + CELEBRATE_BURST_MS;
 export const CELEBRATE_FADE_DELAY_MS = CELEBRATE_DOTS_FORM_MS + CELEBRATE_HOLD_MS;
 export const CELEBRATE_FADE_DURATION_MS = 600;
 // Fourth phase, once the board+word-list fade above has finished: the button

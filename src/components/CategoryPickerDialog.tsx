@@ -5,6 +5,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { ALL_CATEGORIES, type Tier } from "../backend";
 import { MIN_FAVORITE_CATEGORIES } from "../gameMechanics";
 
@@ -121,10 +122,46 @@ export default function CategoryPickerDialog({ open, onClose, selected, onChange
                                                 size="small"
                                                 checked={selectedSet.has(c.name)}
                                                 onChange={() => toggle(c.name)}
+                                                disableRipple
+                                                icon={
+                                                    <CheckRoundedIcon
+                                                        sx={{
+                                                            fontSize: 24,
+                                                            color: "var(--color-outline)",
+                                                            opacity: 0.72,
+                                                        }}
+                                                    />
+                                                }
+                                                checkedIcon={
+                                                    <CheckRoundedIcon
+                                                        sx={{
+                                                            fontSize: 24,
+                                                            color: "#ffd84d",
+                                                            filter: "drop-shadow(0 0 4px rgba(255, 216, 77, 0.58))",
+                                                        }}
+                                                    />
+                                                }
+                                                slotProps={{ input: { "aria-label": c.name } }}
+                                                sx={{
+                                                    p: 0.5,
+                                                    mr: 0.5,
+                                                    borderRadius: "var(--radius-sm)",
+                                                    "&:hover": { backgroundColor: "rgba(var(--color-primary-rgb), 0.08)" },
+                                                    "&.Mui-focusVisible": {
+                                                        outline: "2px solid #ffd84d",
+                                                        outlineOffset: 2,
+                                                    },
+                                                }}
                                             />
                                         }
                                         label={<Typography variant="body2">{c.name}</Typography>}
-                                        sx={{ ml: 0 }}
+                                        sx={{
+                                            m: 0,
+                                            minHeight: 36,
+                                            borderRadius: "var(--radius-md)",
+                                            color: "var(--color-on-surface)",
+                                            "&:hover": { backgroundColor: "rgba(var(--color-primary-rgb), 0.05)" },
+                                        }}
                                     />
                                 ))}
                             </Box>

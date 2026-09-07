@@ -1,0 +1,87 @@
+.ws-trail { color: #eaf4d9; width: 100%; height: 100%; min-height: 480px; display: flex; flex-direction: column; overflow: hidden; border-radius: 24px; background: #102d2c; border: 1px solid #45634c; }
+.ws-trail button { font-family: var(--font-headline); cursor: pointer; }
+.ws-trail button:focus-visible, .ws-trail__scroll:focus-visible { outline: 3px solid #ffe68a; outline-offset: 5px; }
+.ws-trail__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 28px; background: linear-gradient(120deg,#193e35,#102d2c); border-bottom: 1px solid #496649; }
+.ws-trail__eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .16em; color: #b7cf9c; }
+.ws-trail h2 { font: 700 26px var(--font-headline); margin: 5px 0 0; }
+.ws-trail__locate { border: 1px solid #758e59; background: #294b38; color: #f4f8d4; border-radius: 24px; padding: 10px 16px; font-weight: 700; white-space: nowrap; }
+.ws-trail__layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 290px; }
+.ws-trail__map-shell { min-height: 0; display: flex; flex-direction: column; position: relative; }
+.ws-trail__scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-color: #7b9858 #15342f; overscroll-behavior: contain; }
+.ws-trail__map { position: relative; isolation: isolate; background-position: 0 0; background-repeat: repeat-y; }
+.ws-trail__stop { position: absolute; transform: translate(-50%,-50%); z-index: 2; text-align: center; }
+.ws-trail__node { position: relative; width: 70px; height: 70px; border-radius: 50%; border: 3px solid #839287; background: linear-gradient(145deg,#657b72,#344c46); box-shadow: inset 0 3px 2px #ffffff55,inset 0 -5px 0 #0003,0 6px 0 #152823,0 9px 12px #0007; color: #edf2eb; font-size: 25px; font-weight: 800; transition: transform .16s, box-shadow .16s; }
+.ws-trail__node:before { content: ''; position: absolute; width: 16px; height: 7px; border-radius: 50%; top: 8px; left: 12px; transform: rotate(-35deg); background: #ffffff65; }
+.ws-trail__node.is-complete { background: linear-gradient(145deg,#90be57,#3c783c); border-color: #c1dc8a; }
+.ws-trail__node.is-current { width: 82px; height: 82px; background: linear-gradient(145deg,#ffe87e,#e89e19); color: #342607; border-color: #fff6b2; box-shadow: inset 0 3px 2px #fff9,inset 0 -5px 0 #8b510744,0 6px 0 #77572c,0 0 30px #e4ff7288; }
+.ws-trail__node.is-selected { outline: 3px solid #eaffab; outline-offset: 7px; }
+.ws-trail__node:not(:disabled):hover { transform: translateY(-3px) scale(1.04); }
+.ws-trail__node:disabled { cursor: default; }
+.ws-trail__status { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); font-size: 19px !important; padding: 3px; border-radius: 50%; background: #17382d; color: #e9f6c5; }
+.ws-trail__here { display: block; position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); white-space: nowrap; border-radius: 12px; padding: 5px 9px; background: #f5efb8; color: #284331; font-size: 9px; font-weight: 800; letter-spacing: .1em; }
+.ws-trail__next { position: absolute; top: calc(100% + 13px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; color: #ecf7c1; }
+.ws-trail__detail { background: linear-gradient(160deg,#244b3c,#122e2b); border-left: 1px solid #45634c; padding: 26px; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+.ws-trail__sprout { width: 115px; height: 125px; object-fit: contain; align-self: center; filter: drop-shadow(0 0 20px #c5fa6644); }
+.ws-trail h3 { font: 700 34px var(--font-headline); margin: 8px 0; color: #fff4c4; }
+.ws-trail__detail p { color: #ceddc8; font-size: 14px; line-height: 1.6; }
+.ws-trail__rewards { margin: 18px 0; border-block: 1px solid #61795377; padding: 18px 0; }
+.ws-trail__rewards span { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; }
+.ws-trail__rewards img { width: 27px; height: 27px; object-fit: contain; }
+.ws-trail__rewards b { color: #ffdf80; font-size: 20px; }
+.ws-trail__rewards small { display: block; color: #bdceac; margin-top: 8px; }
+.ws-trail__play { display: flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid #e0ee97; border-radius: 18px; padding: 14px 20px; color: #17321c; background: linear-gradient(#dded96,#9dcb59); box-shadow: 0 4px 0 #527e35; font-size: 17px; font-weight: 800; }
+.ws-trail__play:hover { filter: brightness(1.1); }
+.ws-trail__detail .ws-trail__hint { font-size: 11px; margin-top: 20px; }
+@media(max-width: 900px) {
+ .ws-trail { border-radius: 18px; min-height: 420px; }
+ .ws-trail__header { padding: 14px 16px; }
+ .ws-trail h2 { font-size: 21px; }
+ .ws-trail__header .ws-trail__eyebrow { font-size: 8px; }
+ .ws-trail__locate { padding: 8px 11px; font-size: 12px; }
+ .ws-trail__layout { display: flex; flex-direction: column; }
+ .ws-trail__map-shell { flex: 1; }
+ .ws-trail__detail { display: grid; grid-template-columns: 1fr auto; text-align: left; gap: 8px 12px; padding: 14px 18px 18px; border-left: 0; border-top: 1px solid #648052; }
+ .ws-trail__detail h3 { font-size: 25px; margin: 4px 0 0; }
+ .ws-trail__detail .ws-trail__eyebrow { font-size: 8px; }
+ .ws-trail__sprout,.ws-trail__detail p { display: none; }
+ .ws-trail__rewards { grid-column: 1 / -1; grid-row: 2; display: flex; justify-content: space-between; align-items: center; margin: 0; border: 0; padding: 0; gap: 8px; }
+ .ws-trail__rewards span { font-size: 11px; }
+ .ws-trail__rewards small { font-size: 10px; margin: 0; }
+ .ws-trail__rewards b { font-size: 15px; }
+ .ws-trail__play { grid-column: 2; grid-row: 1; padding: 10px 14px; font-size: 14px; }
+}
+@media(prefers-reduced-motion: reduce) { .ws-trail__node { transition: none; } }
+
+/* Orientation controls the trail direction, independently of device width. */
+.ws-trail--landscape .ws-trail__scroll { overflow-x: auto; overflow-y: hidden; }
+.ws-trail--landscape .ws-trail__map { background-repeat: repeat-x; }
+@media (orientation: landscape) and (max-height: 600px) {
+ .ws-trail { min-height: 300px; }
+ .ws-trail__header { padding: 8px 16px; }
+ .ws-trail__header h2 { font-size: 18px; }
+ .ws-trail__layout { display: grid; grid-template-columns: minmax(0,1fr) 200px; }
+ .ws-trail__detail { display: flex; padding: 14px; border-top: 0; border-left: 1px solid #45634c; }
+ .ws-trail__rewards { display: block; padding: 10px 0; }
+ .ws-trail__rewards small { margin-top: 8px; }
+ .ws-trail__node { width: 54px; height: 54px; font-size: 21px; }
+ .ws-trail__node.is-current { width: 62px; height: 62px; }
+ .ws-trail__here { bottom: calc(100% + 10px); }
+}
+
+/* The forest is the entire Levels surface; controls float over the artwork. */
+.ws-trail { position: relative; flex: 1; min-height: 0; border: 0; border-radius: 0; }
+.ws-trail .ws-trail__layout { position: absolute; inset: 0; display: block; }
+.ws-trail .ws-trail__map-shell { width: 100%; height: 100%; }
+.ws-trail .ws-trail__header { position: absolute; inset: 0 0 auto; z-index: 4; padding: 10px 16px; border: 0; background: linear-gradient(#102d2cee, #102d2c00); pointer-events: none; }
+.ws-trail__header button { pointer-events: auto; }
+.ws-trail .ws-trail__header h2 { font-size: 18px; margin: 0; text-shadow: 0 2px 6px #061e1c; }
+.ws-trail__header .ws-trail__eyebrow { display: none; }
+.ws-trail .ws-trail__detail { position: absolute; right: 16px; bottom: 22px; z-index: 3; display: grid; grid-template-columns: 1fr auto; gap: 8px 14px; padding: 12px 16px; border: 1px solid #78916b88; border-radius: 18px; background: #102d2ce8; text-align: left; }
+.ws-trail .ws-trail__sprout, .ws-trail .ws-trail__detail p { display: none; }
+.ws-trail .ws-trail__detail h3 { font-size: 24px; margin: 3px 0; }
+.ws-trail .ws-trail__rewards { grid-column: 1 / -1; grid-row: 2; display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 0; margin: 0; border: 0; }
+.ws-trail .ws-trail__rewards small { margin: 0; font-size: 10px; }
+.ws-trail .ws-trail__play { grid-column: 2; grid-row: 1; padding: 8px 12px; font-size: 14px; }
+@media (orientation: portrait) {
+ .ws-trail .ws-trail__detail { left: 12px; right: 12px; }
+}

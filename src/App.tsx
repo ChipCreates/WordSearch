@@ -6,6 +6,7 @@ import { useWordSearchGame } from "./hooks/useWordSearchGame";
 import { useAudio } from "./hooks/useAudio";
 import { CATEGORY_THEMES, DEFAULT_THEME, assetUrl } from "./categoryThemes";
 import { CATEGORY_NAMES } from "./backend";
+import { CELEBRATE_FADE_DELAY_MS } from "./constants";
 import { findWordPlacement } from "./gameMechanics";
 
 import GameCanvas from "./components/GameCanvas";
@@ -66,7 +67,7 @@ export default function App() {
     const {
         musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
         sfxMuted, toggleSfxMuted, sfxVolume, setSfxVolume,
-        playSfx,
+        playSfx, playCelebration,
     } = useAudio();
 
     // ── Theme mode (Sprout / Midnight, plus store-unlockable Autumn / Ocean) ──
@@ -132,10 +133,10 @@ export default function App() {
 
     useEffect(() => {
         if (levelComplete) {
-            // Allow the pill-to-dot collapse animation to play on the canvas grid first (1450ms)
+            // Wait for collapse, the dot-to-dot light trail, and the final glow.
             const timer = setTimeout(() => {
                 setShowSuccessOverlay(true);
-            }, 1450);
+            }, CELEBRATE_FADE_DELAY_MS);
             return () => clearTimeout(timer);
         } else {
             setShowSuccessOverlay(false);
@@ -194,11 +195,9 @@ export default function App() {
         prevSeedsRef.current = seeds;
     }, [seeds, playSfx]);
 
-    const prevLevelCompleteRef = useRef(levelComplete);
     useEffect(() => {
-        if (levelComplete && !prevLevelCompleteRef.current) playSfx("cheering");
-        prevLevelCompleteRef.current = levelComplete;
-    }, [levelComplete, playSfx]);
+        if (levelComplete) return playCelebration();
+    }, [levelComplete, playCelebration]);
 
     const prevJustUnlockedLengthRef = useRef(justUnlocked.length);
     useEffect(() => {
@@ -449,7 +448,7 @@ export default function App() {
                 </aside>
 
                 {/* ── Main Content Container ───────────────────────────────────── */}
-                <main className="ws-main-layout">
+                <main className={`ws-main-layout${activeTab === "levels" ? " ws-main-layout--levels" : ""}`}>
                     {activeTab === "levels" ? (
                         <LevelsView
                             currentLevel={level}
@@ -580,17 +579,13 @@ export default function App() {
                                             return (
                                                 <div
                                                     key={word}
-                                                    className="ws-found-word-card"
-                                                    style={{
-                                                        opacity: isFound ? 1 : 0.6,
-                                                        borderColor: isFound ? "var(--color-primary)" : "rgba(255, 255, 255, 0.1)",
-                                                    }}
+                                                    className={`ws-found-word-card ${isFound ? "ws-found-word-card--found" : "ws-found-word-card--pending"}`}
                                                 >
-                                                    <span>{word.toUpperCase()}</span>
+                                                    <span className="ws-found-word-card__word">{word.toUpperCase()}</span>
                                                     {isFound ? (
-                                                        <CheckCircleOutlined style={{ fontSize: 20, color: "var(--color-primary)" }} />
+                                                        <CheckCircleOutlined className="ws-found-word-card__icon ws-found-word-card__icon--found" style={{ fontSize: 20 }} />
                                                     ) : (
-                                                        <LockOutlined style={{ fontSize: 20, color: "var(--color-on-surface-variant)" }} />
+                                                        <LockOutlined className="ws-found-word-card__icon ws-found-word-card__icon--pending" style={{ fontSize: 20 }} />
                                                     )}
                                                 </div>
                                             );

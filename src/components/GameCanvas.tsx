@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef } from "react";
 import {
     type Cell,
     type FoundLine,
-    CORNER_RADIUS_PX,
     CELEBRATE_DOTS_FORM_MS,
+    CELEBRATE_TRAIL_MS,
+    CELEBRATE_FADE_DELAY_MS,
 } from "../constants";
+import { celebrationPoints, drawConstellation } from "./celebration";
 
 type Props = {
     gridSize: number;
@@ -52,6 +54,8 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
     });
 
     const celebrateProgressRef = useRef(0);
+    const celebrateElapsedRef = useRef(0);
+    const points = useMemo(() => celebrationPoints(foundLines), [foundLines]);
 
     const pillColorByCell = useMemo(() => {
         const map = new Map<string, string>();
@@ -125,7 +129,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 ctx.beginPath();
                 ctx.moveTo(sx + (mx - sx) * t, sy + (my - sy) * t);
                 ctx.lineTo(ex + (mx - ex) * t, ey + (my - ey) * t);
-                ctx.lineWidth = cellSize * 0.75 + (2 * CORNER_RADIUS_PX - cellSize * 0.75) * t;
+                ctx.lineWidth = cellSize * (0.75 - 0.19 * t);
                 ctx.lineCap   = "round";
                 ctx.strokeStyle = line.color;
                 ctx.stroke();
@@ -164,7 +168,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
         // Draw Reveal Root hint glow (full strength) and Flora Spectrometer
         // glow (dimmer, multiple cells at once) with the same circle style.
-        if (hintCell && hintCell.r >= 0 && hintCell.c >= 0) {
+        if (!celebrate && hintCell && hintCell.r >= 0 && hintCell.c >= 0) {
             const hx = hintCell.c * cellSize + cellSize / 2;
             const hy = hintCell.r * cellSize + cellSize / 2;
             ctx.save();
@@ -179,7 +183,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             ctx.stroke();
             ctx.restore();
         }
-        spectrometerCells.forEach(cell => {
+        (celebrate ? [] : spectrometerCells).forEach(cell => {
             const sx = cell.c * cellSize + cellSize / 2;
             const sy = cell.r * cellSize + cellSize / 2;
             ctx.save();
@@ -204,7 +208,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         ctx.textBaseline = "middle";
         // Use Space Grotesk — gated on document.fonts.ready in the useEffect below.
         ctx.font = `bold ${cellSize * 0.75}px 'Space Grotesk', 'Segoe UI', sans-serif`;
-        ctx.globalAlpha = Math.max(0.4, 1 - t * 0.6);
+        ctx.globalAlpha = Math.max(0, 1 - t / 0.8);
 
         for (let r = 0; r < gridSize; r++) {
             for (let c = 0; c < gridSize; c++) {
@@ -232,6 +236,12 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             }
         }
         ctx.globalAlpha = 1;
+
+        if (celebrate && celebrateElapsedRef.current >= CELEBRATE_DOTS_FORM_MS) {
+            drawConstellation(ctx, points, cellSize,
+                (celebrateElapsedRef.current - CELEBRATE_DOTS_FORM_MS) / CELEBRATE_TRAIL_MS,
+                celebrateElapsedRef.current);
+        }
 
         if (resized) {
             requestAnimationFrame(() => drawRef.current());
@@ -271,14 +281,16 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         let rafId: number | null = null;
         if (!celebrate) {
             celebrateProgressRef.current = 0;
+            celebrateElapsedRef.current = 0;
             schedulePaint();
             return;
         }
         const start = performance.now();
         const tick = (now: number) => {
+            celebrateElapsedRef.current = now - start;
             celebrateProgressRef.current = Math.min(1, (now - start) / CELEBRATE_DOTS_FORM_MS);
             drawRef.current();
-            if (celebrateProgressRef.current < 1) {
+            if (celebrateElapsedRef.current < CELEBRATE_FADE_DELAY_MS) {
                 rafId = requestAnimationFrame(tick);
             }
         };
@@ -393,7 +405,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
     return (
         <div className="ws-planter">
-            {compassDirection && (
+            {compassDirection && !celebrate && (
                 <div
                     className="ws-compass-indicator"
                     style={{

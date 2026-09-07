@@ -396,6 +396,24 @@ body {
 }
 
 /* ── Main Layout Container ─────────────────────────────────────────────────── */
+.ws-main-layout.ws-main-layout--levels {
+  max-width: none;
+  margin: 0;
+  height: 100dvh;
+  padding: 80px 0 64px;
+  overflow: hidden;
+}
+
+@media (min-width: 1280px) {
+  .ws-main-layout.ws-main-layout--levels { padding: 80px 0 0 256px; }
+}
+
+@media (max-width: 767px) {
+  .ws-main-layout.ws-main-layout--levels {
+    padding: 48px 0 calc(54px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .ws-main-layout {
   padding-top: 64px;
   padding-bottom: 72px;
@@ -564,15 +582,47 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-sm);
   padding: 14px 18px;
   border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.05);
-  border-left: 4px solid var(--color-primary);
+  background: var(--color-surface-container-high);
+  border: 1px solid var(--color-outline-variant);
+  border-left: 4px solid var(--color-outline);
   font-family: var(--font-headline);
   font-weight: 700;
   letter-spacing: 0.15em;
-  color: var(--color-primary);
+  color: var(--color-on-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+}
+
+.ws-found-word-card--found {
+  background: rgba(var(--color-primary-rgb), 0.16);
+  border-color: var(--color-primary);
+  color: var(--color-on-surface);
+}
+
+.ws-found-word-card--pending {
+  background: var(--color-surface-container-high);
+  border-color: var(--color-outline);
+  color: var(--color-on-surface);
+}
+
+.ws-found-word-card__word {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ws-found-word-card__icon {
+  flex: 0 0 auto;
+}
+
+.ws-found-word-card__icon--found {
+  color: var(--color-primary);
+}
+
+.ws-found-word-card__icon--pending {
+  color: var(--color-on-surface);
 }
 
 .ws-context-tag {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { assetUrl } from "../categoryThemes";
+import { playCelebrationAudio } from "./celebrationAudio";
 
 const MUSIC_MUTED_STORAGE_KEY = "wordsearch.musicMuted";
 const MUSIC_VOLUME_STORAGE_KEY = "wordsearch.musicVolume";
@@ -70,6 +71,50 @@ export function useAudio() {
     const musicVolumeRef = useRef(musicVolume);
     const sfxMutedRef = useRef(sfxMuted);
     const sfxVolumeRef = useRef(sfxVolume);
+    const celebrationContextRef = useRef<AudioContext | null>(null);
+    const celebrationOutputRef = useRef<GainNode | null>(null);
+    const stopCelebrationRef = useRef<(() => void) | null>(null);
+
+    useEffect(() => {
+        const unlock = () => {
+            if (!window.AudioContext) return;
+            if (!celebrationContextRef.current) {
+                const ctx = new AudioContext();
+                const output = ctx.createGain();
+                output.gain.value = sfxMutedRef.current ? 0 : sfxVolumeRef.current;
+                output.connect(ctx.destination);
+                celebrationContextRef.current = ctx;
+                celebrationOutputRef.current = output;
+            }
+            void celebrationContextRef.current.resume().catch(() => {});
+        };
+        window.addEventListener("pointerdown", unlock);
+        window.addEventListener("keydown", unlock);
+        return () => {
+            window.removeEventListener("pointerdown", unlock);
+            window.removeEventListener("keydown", unlock);
+            stopCelebrationRef.current?.();
+            void celebrationContextRef.current?.close().catch(() => {});
+            celebrationContextRef.current = null;
+            celebrationOutputRef.current = null;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (celebrationOutputRef.current) {
+            celebrationOutputRef.current.gain.value = sfxMuted ? 0 : sfxVolume;
+        }
+    }, [sfxMuted, sfxVolume]);
+
+    const playCelebration = useCallback(() => {
+        stopCelebrationRef.current?.();
+        const ctx = celebrationContextRef.current;
+        const output = celebrationOutputRef.current;
+        if (!ctx || !output || ctx.state !== "running" || sfxMutedRef.current) return;
+        const stop = playCelebrationAudio(ctx, output);
+        stopCelebrationRef.current = stop;
+        return stop;
+    }, []);
 
     const musicRef = useRef<HTMLAudioElement | null>(null);
     const sfxPoolsRef = useRef<Map<SfxName, HTMLAudioElement[]>>(new Map());
@@ -179,6 +224,6 @@ export function useAudio() {
     return {
         musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
         sfxMuted, toggleSfxMuted, sfxVolume, setSfxVolume,
-        playSfx,
+        playSfx, playCelebration,
     };
 }
