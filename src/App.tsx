@@ -14,6 +14,7 @@ import SuccessScreen from "./components/SuccessScreen";
 import AchievementBanner from "./components/AchievementBanner";
 import PlayerProfileSheet from "./components/PlayerProfileSheet";
 import ContextSidebar from "./components/sidebar/ContextSidebar";
+import ResponsiveContextStrip from "./components/sidebar/ResponsiveContextStrip";
 const SettingsDialog = lazy(() => import("./components/SettingsDialog"));
 const AboutDialog = lazy(() => import("./components/AboutDialog"));
 const LevelsView = lazy(() => import("./components/LevelsView"));
@@ -337,6 +338,20 @@ export default function App() {
 
                 {/* ── Main Content Container ───────────────────────────────────── */}
                 <main className={`ws-main-layout${activeTab === "levels" ? " ws-main-layout--levels" : ""}`}>
+                    <ResponsiveContextStrip
+                        activeTab={activeTab}
+                        highestUnlockedLevel={highestUnlockedLevel}
+                        playingLevel={level}
+                        ownedPlants={ownedPlants}
+                        wateredTimestamps={wateredTimestamps}
+                        growthByPlant={growthByPlant}
+                        onWaterAllReady={() => {
+                            const result = waterAllReady();
+                            if (result.watered) showToast(`💧 Watered ${result.watered} plants${result.bloomed ? ` · ${result.bloomed} bloomed · +${result.seeds} Seeds` : ""}.`);
+                        }}
+                        achievementStats={{ levelsCompleted, seeds, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed }}
+                        unlockedAchievements={unlockedAchievements}
+                    />
                     {activeTab === "levels" ? (
                         <LevelsView
                             currentLevel={level}

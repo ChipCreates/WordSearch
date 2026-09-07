@@ -556,6 +556,43 @@ body {
   cursor: pointer;
 }
 
+.ws-responsive-context-strip {
+  display: none;
+}
+
+@media (max-width: 1279px) {
+  .ws-responsive-context-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    width: 100%;
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    color: var(--color-on-surface-variant);
+    font-size: 0.78rem;
+  }
+  .ws-responsive-context-strip strong { color: var(--color-primary); font-family: var(--font-headline); }
+  .ws-responsive-context-strip button {
+    min-height: 36px;
+    padding: 6px 12px;
+    border: 1px solid var(--color-primary);
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .ws-responsive-context-strip button:disabled { opacity: 0.55; cursor: default; }
+}
+
+@media (max-width: 767px) {
+  .ws-responsive-context-strip { margin-bottom: 8px; font-size: 0.74rem; }
+}
+
 .ws-side-nav__nav-item {
   display: flex;
   align-items: center;
