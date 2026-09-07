@@ -205,7 +205,14 @@ export default function App() {
                 <header className="ws-top-nav">
                     <div className="ws-top-nav__inner">
                         <div className="ws-top-nav__brand" onClick={() => setActiveTab("play")}>
-                            <EcoLeaf style={{ fontSize: 58, color: "var(--color-primary)" }} />
+                            <button
+                                className="ws-mobile-brand-avatar ws-botanist-avatar"
+                                style={{ "--avatar-position": avatarBackgroundPosition } as CSSProperties}
+                                onClick={(event) => { event.stopPropagation(); playSfx("click"); setProfileOpen(true); }}
+                                aria-label="Open player information"
+                                title="Player information"
+                            />
+                            <EcoLeaf className="ws-desktop-brand-leaf" style={{ fontSize: 58, color: "var(--color-primary)" }} />
                             <span className="ws-top-nav__logo-text">Word Sprout</span>
                         </div>
 
@@ -254,19 +261,6 @@ export default function App() {
                                     {seeds} <span className="ws-seeds-label">SEEDS</span>
                                 </span>
                             </div>
-
-                            {/* Mobile player profile access, mirroring the desktop sidebar. */}
-                            <button
-                                className="ws-mobile-profile-trigger"
-                                onClick={() => { playSfx("click"); setProfileOpen(true); }}
-                                aria-label="Open player information"
-                                title="Player information"
-                            >
-                                <span
-                                    className="ws-mobile-profile-trigger__avatar ws-botanist-avatar"
-                                    style={{ "--avatar-position": avatarBackgroundPosition } as CSSProperties}
-                                />
-                            </button>
 
                             {/* Theme Switcher Quick Toggle */}
                             <button
