@@ -12,6 +12,7 @@ import { findWordPlacement } from "./gameMechanics";
 import GameCanvas from "./components/GameCanvas";
 import SuccessScreen from "./components/SuccessScreen";
 import AchievementBanner from "./components/AchievementBanner";
+import PlayerProfileSheet from "./components/PlayerProfileSheet";
 const SettingsDialog = lazy(() => import("./components/SettingsDialog"));
 const AboutDialog = lazy(() => import("./components/AboutDialog"));
 const LevelsView = lazy(() => import("./components/LevelsView"));
@@ -24,6 +25,7 @@ import { nextOnboardingStep } from "./onboarding";
 import EcoLeaf from "./components/icons/EcoLeaf";
 import NavigationArt from "./components/NavigationArt";
 import { getBotanistRank } from "./botanistRanks";
+import { ACHIEVEMENTS } from "./achievements";
 import {
     AutoFixHighOutlined,
     ShuffleOutlined,
@@ -103,6 +105,7 @@ export default function App() {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [aboutOpen, setAboutOpen] = useState(false);
     const [seedStoreOpen, setSeedStoreOpen] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
     // Shared toast, replacing alert() across the Garden and Seed Store --
     // one Snackbar mounted here, fed by a callback threaded down the same
     // way spendSeeds/addSeeds already are.
@@ -251,6 +254,19 @@ export default function App() {
                                     {seeds} <span className="ws-seeds-label">SEEDS</span>
                                 </span>
                             </div>
+
+                            {/* Mobile player profile access, mirroring the desktop sidebar. */}
+                            <button
+                                className="ws-mobile-profile-trigger"
+                                onClick={() => { playSfx("click"); setProfileOpen(true); }}
+                                aria-label="Open player information"
+                                title="Player information"
+                            >
+                                <span
+                                    className="ws-mobile-profile-trigger__avatar ws-botanist-avatar"
+                                    style={{ "--avatar-position": avatarBackgroundPosition } as CSSProperties}
+                                />
+                            </button>
 
                             {/* Theme Switcher Quick Toggle */}
                             <button
@@ -558,6 +574,24 @@ export default function App() {
                         <p>© {new Date().getFullYear()} Word Sprout Studio. v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.1.0"}</p>
                     </footer>
                 </main>
+
+                <PlayerProfileSheet
+                    open={profileOpen}
+                    onClose={() => setProfileOpen(false)}
+                    onOpenAchievements={() => { setProfileOpen(false); setActiveTab("achievements"); }}
+                    onOpenSettings={() => { setProfileOpen(false); setSettingsOpen(true); }}
+                    botanistTitle={botanistRank.title}
+                    level={level}
+                    seeds={seeds}
+                    levelsCompleted={levelsCompleted}
+                    categoriesSeen={categoriesSeen.size}
+                    bonusWordsFound={bonusWordsFound}
+                    plantsBloomed={plantsBloomed}
+                    achievementsUnlocked={unlockedAchievements.size}
+                    achievementsTotal={ACHIEVEMENTS.length}
+                    avatarBackgroundPosition={avatarBackgroundPosition}
+                    hasGoldenCrest={hasGoldenCrest}
+                />
 
                 {/* ── Mobile Bottom Navigation Bar (BottomNavBar) ────────────────── */}
                 <nav className="ws-bottom-nav">

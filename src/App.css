@@ -485,6 +485,164 @@ body {
   border: 1px solid var(--color-outline-variant);
 }
 
+/* ── Mobile player information sheet ─────────────────────────────────────── */
+.ws-mobile-profile-trigger {
+  display: none;
+}
+
+.ws-profile-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.ws-profile-sheet__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(3, 16, 11, 0.72);
+  backdrop-filter: blur(7px);
+  cursor: pointer;
+}
+
+.ws-profile-sheet__panel {
+  position: relative;
+  width: min(100%, 560px);
+  max-height: min(780px, calc(100dvh - 18px));
+  overflow-y: auto;
+  padding: 14px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  border: 1px solid rgba(164, 247, 146, 0.26);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  background: linear-gradient(155deg, rgba(24, 58, 43, 0.98), rgba(8, 27, 21, 0.98));
+  box-shadow: 0 -20px 70px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.1);
+  animation: profileSheetIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ws-profile-sheet__handle {
+  width: 42px;
+  height: 4px;
+  margin: 0 auto 18px;
+  border-radius: var(--radius-full);
+  background: rgba(218, 242, 210, 0.36);
+}
+
+.ws-profile-sheet__header,
+.ws-profile-sheet__title-row,
+.ws-profile-sheet__progress-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ws-profile-sheet__eyebrow,
+.ws-profile-sheet__section-heading {
+  color: var(--color-on-surface-variant);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ws-profile-sheet__header h2 {
+  margin: 3px 0 0;
+  color: var(--color-on-surface);
+  font-family: var(--font-headline);
+  font-size: 1.42rem;
+}
+
+.ws-profile-sheet__close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  color: var(--color-on-surface);
+  background: rgba(255,255,255,0.07);
+  font-size: 1.65rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ws-profile-sheet__identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 22px 0 20px;
+  padding: 16px;
+  border: 1px solid rgba(164, 247, 146, 0.24);
+  border-radius: 22px;
+  background: linear-gradient(120deg, rgba(116,195,101,0.16), rgba(155,93,229,0.1));
+}
+
+.ws-profile-sheet__avatar {
+  width: 86px;
+  height: 112px;
+  flex: 0 0 auto;
+  border-radius: 18px;
+  box-shadow: 0 0 0 1px rgba(164,247,146,0.3), 0 0 28px rgba(116,195,101,0.22);
+}
+
+.ws-profile-sheet__identity-copy { min-width: 0; }
+.ws-profile-sheet__title-row { justify-content: flex-start; }
+.ws-profile-sheet__identity h3 { margin: 0; color: var(--color-primary); font: 800 1.34rem/1.1 var(--font-headline); }
+.ws-profile-sheet__identity p { margin: 6px 0 12px; color: var(--color-on-surface-variant); font-size: 0.84rem; }
+.ws-profile-sheet__crest { font-size: 0.9rem; filter: drop-shadow(0 0 7px rgba(244,201,93,0.8)); }
+.ws-profile-sheet__seed-total { display: flex; align-items: center; gap: 6px; color: var(--color-secondary); }
+.ws-profile-sheet__seed-total img { width: 24px; height: 24px; object-fit: contain; }
+.ws-profile-sheet__seed-total strong { color: var(--color-on-surface); font: 800 1.12rem var(--font-headline); }
+.ws-profile-sheet__seed-total span { font-size: 0.76rem; font-weight: 700; }
+.ws-profile-sheet__section-heading { margin: 18px 0 9px; }
+
+.ws-profile-sheet__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ws-profile-sheet__stats div {
+  display: flex;
+  min-height: 70px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 11px 13px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 15px;
+  background: rgba(0,0,0,0.2);
+}
+
+.ws-profile-sheet__stats strong { color: var(--color-primary); font: 800 1.35rem var(--font-headline); }
+.ws-profile-sheet__stats span { color: var(--color-on-surface-variant); font-size: 0.7rem; font-weight: 700; line-height: 1.2; }
+
+.ws-profile-sheet__progress {
+  margin-top: 17px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(0,0,0,0.18);
+}
+
+.ws-profile-sheet__progress .ws-profile-sheet__section-heading { margin: 0 0 11px; }
+.ws-profile-sheet__progress-heading span { color: var(--color-on-surface); font-weight: 700; }
+.ws-profile-sheet__progress-heading strong { color: var(--color-primary); font-size: 0.76rem; }
+.ws-profile-sheet__progress-track { height: 9px; margin-top: 10px; overflow: hidden; border-radius: var(--radius-full); background: rgba(255,255,255,0.1); }
+.ws-profile-sheet__progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #74c365, #c49dff); box-shadow: 0 0 12px rgba(164,247,146,0.5); }
+
+.ws-profile-sheet__actions { display: grid; gap: 8px; margin-top: 18px; }
+.ws-profile-sheet__actions button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 1px solid var(--glass-border); border-radius: 14px; color: var(--color-on-surface); background: rgba(255,255,255,0.05); font: 700 0.92rem var(--font-body); text-align: left; cursor: pointer; }
+.ws-profile-sheet__actions button:hover { border-color: rgba(164,247,146,0.5); background: rgba(116,195,101,0.12); }
+.ws-profile-sheet__actions span { flex: 1; }
+.ws-profile-sheet__actions b { color: var(--color-primary); font-size: 1.35rem; line-height: 1; }
+
+@keyframes profileSheetIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Main Layout Container ─────────────────────────────────────────────────── */
 .ws-main-layout.ws-main-layout--levels {
   max-width: none;
@@ -1103,6 +1261,29 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   }
 
   .ws-top-nav__icon-btn .ws-navigation-art { width: 36px; height: 36px; }
+
+  .ws-mobile-profile-trigger {
+    display: flex;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid rgba(164,247,146,0.62);
+    border-radius: 50%;
+    background: rgba(116,195,101,0.15);
+    box-shadow: 0 0 12px rgba(116,195,101,0.2);
+    cursor: pointer;
+  }
+
+  .ws-mobile-profile-trigger__avatar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: scale(1.5);
+  }
 
   .ws-top-nav__stat-pill {
     padding: 3px 8px !important;
