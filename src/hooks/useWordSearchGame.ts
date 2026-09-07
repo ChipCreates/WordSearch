@@ -7,6 +7,9 @@ import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS, MIN
 import { consumePowerupCharge as consumeCharge, purchasePowerupCharge as purchaseCharge, type PowerupId, type PowerupInventory } from "../powerups";
 import { generatePuzzle, placeWordOnGrid } from "../puzzleGenerator";
 import { DEFAULT_ONBOARDING_SEEN, type OnboardingSeen, type OnboardingStepId } from "../onboarding";
+import { PLANTS_CATALOG } from "../plantsCatalog";
+import { GARDEN_WATERING_COOLDOWN_MS } from "../gameMechanics";
+import { getPlantEconomy } from "../economy";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -567,6 +570,40 @@ export function useWordSearchGame() {
         setBloomedRarityTiers(count => Math.min(7, count + 1));
     }, []);
 
+    const waterAllReady = useCallback((now = Date.now()) => {
+        const readyPlants = PLANTS_CATALOG.filter(plant => {
+            if (!ownedPlants.includes(plant.id) || (growthByPlant[plant.id] ?? 0) >= 100) return false;
+            return now - (wateredTimestamps[plant.id] ?? 0) >= GARDEN_WATERING_COOLDOWN_MS;
+        });
+        if (!readyPlants.length) {
+            setStatus("No plants are ready for watering yet.");
+            return { watered: 0, bloomed: 0, seeds: 0 };
+        }
+        const nextTimestamps: Record<string, number> = {};
+        const nextGrowth: Record<string, number> = {};
+        let bloomCount = 0;
+        let bounty = 0;
+        readyPlants.forEach(plant => {
+            const currentGrowth = growthByPlant[plant.id] ?? 0;
+            const next = Math.min(100, currentGrowth + 25);
+            nextTimestamps[plant.id] = now;
+            nextGrowth[plant.id] = next;
+            if (next === 100 && currentGrowth < 100) {
+                bloomCount += 1;
+                bounty += getPlantEconomy(plant).bloomBounty;
+            }
+        });
+        setWateredTimestamps(previous => ({ ...previous, ...nextTimestamps }));
+        setGrowthByPlant(previous => ({ ...previous, ...nextGrowth }));
+        if (bloomCount) {
+            setSeeds(previous => previous + bounty);
+            setPlantsBloomed(previous => previous + bloomCount);
+            setBloomedRarityTiers(previous => Math.min(7, previous + bloomCount));
+        }
+        setStatus(`Watered ${readyPlants.length} plant${readyPlants.length === 1 ? "" : "s"}${bloomCount ? ` and bloomed ${bloomCount}` : ""}.`);
+        return { watered: readyPlants.length, bloomed: bloomCount, seeds: bounty };
+    }, [ownedPlants, growthByPlant, wateredTimestamps]);
+
     // Store power-ups: Nitrogen Booster, theme unlocks, the profile crest.
     // Seed cost is deducted by the caller (SeedStoreDialog's handleRedeem)
     // before these run, matching how the hint/reshuffle redeems already work.
@@ -674,7 +711,7 @@ export function useWordSearchGame() {
         levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         // Botanical Sanctuary state & handlers
         ownedPlants, wateredTimestamps, growthByPlant,
-        buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom,
+        buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom, waterAllReady,
         // Store power-ups
         doubleSeedsActive, activateDoubleSeeds, activateSuperRoot, activateCompass, activateSpectrometer,
         spectrometerCells, compassDirection,

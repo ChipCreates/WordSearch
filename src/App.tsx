@@ -52,7 +52,7 @@ export default function App() {
         levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         onboardingSeen, dismissOnboardingStep, replayOnboarding,
         ownedPlants, wateredTimestamps, growthByPlant,
-        buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom,
+        buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom, waterAllReady,
         doubleSeedsActive,
         unlockedThemes, unlockTheme,
         hasGoldenCrest, unlockGoldenCrest,
@@ -324,6 +324,15 @@ export default function App() {
                     onToggleSfx={toggleSfxMuted}
                     onToggleMusic={toggleMusicMuted}
                     onHelp={() => setAboutOpen(true)}
+                    ownedPlants={ownedPlants}
+                    wateredTimestamps={wateredTimestamps}
+                    growthByPlant={growthByPlant}
+                    onWaterAllReady={() => {
+                        const result = waterAllReady();
+                        if (result.watered) showToast(`💧 Watered ${result.watered} plants${result.bloomed ? ` · ${result.bloomed} bloomed · +${result.seeds} Seeds` : ""}.`);
+                    }}
+                    achievementStats={{ levelsCompleted, seeds, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed }}
+                    unlockedAchievements={unlockedAchievements}
                 />
 
                 {/* ── Main Content Container ───────────────────────────────────── */}
