@@ -2032,6 +2032,24 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   .ws-mobile-toolkit__grid button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
 }
 
+@media (max-width: 420px) {
+  .ws-bottom-nav__item {
+    padding: 2px 0;
+    font-size: 0.6rem;
+    line-height: 1;
+  }
+
+  .ws-bottom-nav__item .ws-navigation-art {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ws-bottom-nav__emoji {
+    height: 40px;
+    font-size: 1.4rem;
+  }
+}
+
 @keyframes bubblePop {
   0% {
     opacity: 0;
@@ -2105,6 +2123,10 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 
 @media (prefers-reduced-motion: reduce) {
   .ws-promotion-ceremony { animation: none; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .ws-field-notes {
