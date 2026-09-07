@@ -7,6 +7,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { PLANTS_CATALOG } from "../plantsCatalog";
 import { assetUrl } from "../categoryThemes";
 import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../powerups";
+import { getPlantEconomy } from "../economy";
 
 type Props = {
     open: boolean;
@@ -252,7 +253,8 @@ export default function SeedStoreDialog({
                     <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
                         {PLANTS_CATALOG.map(plant => {
                             const isOwned = ownedPlants.includes(plant.id);
-                            const canAfford = seeds >= plant.seedCost;
+                            const plantEconomy = getPlantEconomy(plant);
+                            const canAfford = seeds >= plantEconomy.purchaseCost;
                             const imagePath = assetUrl(plant.bloomImage.startsWith("/") ? plant.bloomImage.slice(1) : plant.bloomImage);
 
                             return (
@@ -327,10 +329,10 @@ export default function SeedStoreDialog({
                                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 2 }}>
                                                 <Box>
                                                     <Typography variant="body2" sx={{ fontWeight: 800, color: "var(--color-primary)" }}>
-                                                        🌱 {plant.seedCost} Seeds
+                                                        🌱 {plantEconomy.purchaseCost} Seeds
                                                     </Typography>
                                                     <Typography variant="caption" sx={{ color: "var(--color-on-surface-variant)", fontSize: "0.7rem" }}>
-                                                        Bloom Bounty: +{plant.bloomBounty} Seeds
+                                                        Bloom Bounty: +{plantEconomy.bloomBounty} Seeds
                                                     </Typography>
                                                 </Box>
 
@@ -352,7 +354,7 @@ export default function SeedStoreDialog({
                                                         size="small"
                                                         disabled={!canAfford}
                                                         onClick={() => {
-                                                            const success = onBuyPlantSeed(plant.id, plant.seedCost);
+                                                            const success = onBuyPlantSeed(plant.id, plantEconomy.purchaseCost);
                                                             if (success) {
                                                                 showToast(`🎉 Plant Seed Acquired! ${plant.name} is now planted in your Conservatory!`);
                                                             } else {

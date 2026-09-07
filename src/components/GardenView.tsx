@@ -4,6 +4,7 @@ import { assetUrl } from "../categoryThemes";
 import EcoLeaf from "./icons/EcoLeaf";
 import { PLANTS_CATALOG, getStageImage, getStageName } from "../plantsCatalog";
 import { GARDEN_WATERING_COOLDOWN_MS } from "../gameMechanics";
+import { getPlantEconomy } from "../economy";
 
 type Props = {
     seeds: number;
@@ -91,7 +92,7 @@ function WaterButton({
             ) : (
                 <>
                     <ShowerOutlined style={{ fontSize: 20 }} />
-                    <span>Water Vessel (+20 Seeds)</span>
+                    <span>Water Vessel</span>
                 </>
             )}
         </button>
@@ -120,7 +121,7 @@ export default function GardenView({
         const lastWatered = wateredTimestamps[plantId] || 0;
         const now = Date.now();
         if (now - lastWatered < COOLDOWN_MS) {
-            showToast("This plant is already hydrated today!");
+            showToast("This plant is already hydrated. Come back in 2 hours!");
             return;
         }
 
@@ -133,14 +134,13 @@ export default function GardenView({
 
         // Find plant def for bounty amount
         const plantDef = PLANTS_CATALOG.find(p => p.id === plantId);
-        const bounty = plantDef ? plantDef.bloomBounty : 250;
+        const bounty = plantDef ? getPlantEconomy(plantDef).bloomBounty : 50;
 
         if (newGrowth === 100 && currentGrowth < 100) {
             addSeeds(bounty); // Bloom bounty!
             showToast(`🎉 Fantastic! Your ${plantName} has reached full bloom! You've received a bounty of ${bounty} Seeds! 🌸`);
         } else {
-            addSeeds(20); // Daily watering nurture
-            showToast(`💧 Watered! You earned +20 Seeds for daily nurture of ${plantName}.`);
+            showToast(`💧 ${plantName} grew 25%. Keep nurturing it toward bloom!`);
         }
     };
 
@@ -151,9 +151,11 @@ export default function GardenView({
             return;
         }
 
-        const success = spendSeeds(50);
+        const plantDef = PLANTS_CATALOG.find(p => p.id === plantId);
+        const fertilizerCost = plantDef ? getPlantEconomy(plantDef).fertilizerCost : 25;
+        const success = spendSeeds(fertilizerCost);
         if (!success) {
-            showToast("Not enough seeds to purchase Botanical Fertilizer! (Costs 50 Seeds) 🌱");
+            showToast(`Not enough Seeds for Botanical Fertilizer! (Costs ${fertilizerCost} Seeds) 🌱`);
             return;
         }
 
@@ -163,8 +165,7 @@ export default function GardenView({
         updatePlantGrowth(plantId, newGrowth);
 
         // Find plant def for bounty amount
-        const plantDef = PLANTS_CATALOG.find(p => p.id === plantId);
-        const bounty = plantDef ? plantDef.bloomBounty : 250;
+        const bounty = plantDef ? getPlantEconomy(plantDef).bloomBounty : 50;
 
         if (newGrowth === 100) {
             addSeeds(bounty); // Bloom bounty!
@@ -200,7 +201,7 @@ export default function GardenView({
                             </h2>
                         </div>
                         <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--color-on-surface-variant)", maxWidth: 680, lineHeight: 1.5 }}>
-                            Acquire rare plant seeds from the store and nurture them inside terrarium vessels. Nurture daily to unlock massive bloom bounties!
+                            Acquire rare plant seeds from the store and nurture them inside terrarium vessels. Water every 2 hours and bloom plants to grow your collection!
                         </p>
                     </div>
 
@@ -384,7 +385,7 @@ export default function GardenView({
                                     <div>
                                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--color-on-surface-variant)", marginBottom: 6, fontWeight: 600 }}>
                                             <span>Vessel Growth Stage</span>
-                                            <span>{growth}% (Bounty: +{plant.bloomBounty} Seeds)</span>
+                                            <span>{growth}% (Bounty: +{getPlantEconomy(plant).bloomBounty} Seeds)</span>
                                         </div>
                                         <div style={{ height: 6, width: "100%", background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden", marginBottom: 14 }}>
                                             <div
@@ -427,7 +428,7 @@ export default function GardenView({
                                                         transition: "all 0.2s ease",
                                                     }}
                                                 >
-                                                    <span>🧪 Apply Fertilizer (Costs 50 Seeds)</span>
+                                                    <span>🧪 Apply Fertilizer (Costs {getPlantEconomy(plant).fertilizerCost} Seeds)</span>
                                                 </button>
                                             )}
                                         </div>
