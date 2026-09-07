@@ -19,6 +19,8 @@ import GreenhouseFloorplanPanel from "./components/GreenhouseFloorplanPanel";
 import SeedStoreDialog from "./components/SeedStoreDialog";
 import AchievementsView from "./components/AchievementsView";
 import GardenView from "./components/GardenView";
+import OnboardingCoachmark from "./components/OnboardingCoachmark";
+import { nextOnboardingStep } from "./onboarding";
 import EcoLeaf from "./components/icons/EcoLeaf";
 import NavigationArt from "./components/NavigationArt";
 import {
@@ -41,7 +43,7 @@ type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
 
 export default function App() {
     const {
-        level, seeds, levelComplete, category,
+        level, seeds, levelComplete, category, levelsCompleted,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
@@ -49,6 +51,7 @@ export default function App() {
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
         levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
+        onboardingSeen, dismissOnboardingStep, replayOnboarding,
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom,
         doubleSeedsActive,
@@ -70,6 +73,7 @@ export default function App() {
     });
 
     const [activeTab, setActiveTab] = useState<ActiveTab>("play");
+    const onboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
 
     const handleThemeModeChange = (mode: ThemeMode) => {
         setThemeMode(mode);
@@ -661,7 +665,7 @@ export default function App() {
                 unlockedThemes={unlockedThemes}
             />
 
-            <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+                <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} onReplayOnboarding={replayOnboarding} />
 
             <SeedStoreDialog
                 open={seedStoreOpen}
@@ -681,6 +685,8 @@ export default function App() {
             />
 
             <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />
+
+            <OnboardingCoachmark step={onboardingStep} onDismiss={() => onboardingStep && dismissOnboardingStep(onboardingStep.id)} />
 
             <Snackbar
                 open={!!toast}

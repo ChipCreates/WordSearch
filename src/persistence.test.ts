@@ -85,4 +85,12 @@ describe("Persistence Module", () => {
     expect(loaded.powerupInventory["single-letter-sprout"]).toBe(0);
     expect(loaded.powerupInventory["lumina-cyclone"]).toBe(0);
   });
+
+  it("marks pre-onboarding saves as returning players", async () => {
+    localStorage.setItem("word_sprout_save_v1", JSON.stringify({ ...DEFAULT_SAVE_DATA, onboardingSeen: undefined, level: 8 }));
+
+    const loaded = await loadSaveData();
+
+    expect(Object.values(loaded.onboardingSeen.dismissed).every(Boolean)).toBe(true);
+  });
 });

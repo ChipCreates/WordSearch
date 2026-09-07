@@ -1,9 +1,10 @@
-import { Dialog, DialogTitle, DialogContent, IconButton, Box, Typography, Divider, Link, useMediaQuery } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, IconButton, Box, Typography, Divider, Link, useMediaQuery, Button } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 type Props = {
     open: boolean;
     onClose: () => void;
+    onReplayOnboarding?: () => void;
 };
 
 function Step({ icon, children }: { icon: string; children: React.ReactNode }) {
@@ -15,7 +16,7 @@ function Step({ icon, children }: { icon: string; children: React.ReactNode }) {
     );
 }
 
-export default function AboutDialog({ open, onClose }: Props) {
+export default function AboutDialog({ open, onClose, onReplayOnboarding }: Props) {
     const isMobile = useMediaQuery("(max-width: 767px)");
 
     return (
@@ -68,6 +69,12 @@ export default function AboutDialog({ open, onClose }: Props) {
                 </Step>
 
                 <Divider sx={{ my: 2.5 }} />
+
+                {onReplayOnboarding && (
+                    <Button variant="outlined" size="small" onClick={onReplayOnboarding} sx={{ mb: 2, textTransform: "none" }}>
+                        Replay welcome tips
+                    </Button>
+                )}
 
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                     Built with Tauri, React, and Rust.{" "}

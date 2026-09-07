@@ -1,5 +1,6 @@
 import { CATEGORY_NAMES_BY_TIER } from "./backend";
 import { DEFAULT_POWERUP_INVENTORY, normalizePowerupInventory, type PowerupInventory } from "./powerups";
+import { COMPLETED_ONBOARDING_SEEN, DEFAULT_ONBOARDING_SEEN, type OnboardingSeen } from "./onboarding";
 
 export type SaveData = {
     version: number;
@@ -32,6 +33,7 @@ export type SaveData = {
     bloomedRarityTiers: number;
     uniqueCategoriesCompleted: number;
     powerupsUsed: number;
+    onboardingSeen: OnboardingSeen;
 };
 
 export const CURRENT_SCHEMA_VERSION = 2;
@@ -67,6 +69,7 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     bloomedRarityTiers: 0,
     uniqueCategoriesCompleted: 0,
     powerupsUsed: 0,
+    onboardingSeen: DEFAULT_ONBOARDING_SEEN,
 };
 
 const PRIMARY_KEY = "word_sprout_save_v1";
@@ -144,7 +147,7 @@ export async function loadSaveData(): Promise<SaveData> {
             const nativeState = await invoke<string | null>("load_game_state");
             if (nativeState) {
                 const parsed = JSON.parse(nativeState);
-                return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), version: CURRENT_SCHEMA_VERSION });
+                return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), onboardingSeen: parsed.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN, version: CURRENT_SCHEMA_VERSION });
             }
         } catch (e) {
             console.warn("Tauri native load failed, falling back to localStorage", e);
@@ -165,7 +168,7 @@ export async function loadSaveData(): Promise<SaveData> {
             if (!Array.isArray(parsed.ownedPlants) || parsed.ownedPlants.length === 0) {
                 parsed.ownedPlants = ["moss-sprout"];
             }
-            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), version: CURRENT_SCHEMA_VERSION });
+            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), onboardingSeen: parsed.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN, version: CURRENT_SCHEMA_VERSION });
         } catch {
             // fallback to legacy migration
         }
@@ -253,6 +256,7 @@ export async function loadSaveData(): Promise<SaveData> {
     }
 
     if (hasLegacy) {
+        migratedData.onboardingSeen = COMPLETED_ONBOARDING_SEEN;
         await writeSaveData(migratedData);
         for (const key of Object.values(LEGACY_KEYS)) {
             localStorage.removeItem(key);
@@ -275,7 +279,7 @@ export function loadSaveDataSync(): SaveData {
             if (!Array.isArray(parsed.ownedPlants) || parsed.ownedPlants.length === 0) {
                 parsed.ownedPlants = ["moss-sprout"];
             }
-            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), version: CURRENT_SCHEMA_VERSION });
+            return backfillCategoriesSeen({ ...DEFAULT_SAVE_DATA, ...parsed, powerupInventory: normalizePowerupInventory(parsed.powerupInventory), onboardingSeen: parsed.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN, version: CURRENT_SCHEMA_VERSION });
         } catch {}
     }
 

@@ -6,6 +6,7 @@ import { loadSaveDataSync, loadSaveData, writeSaveData, hasLocalSave, isTauri, C
 import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel, classifyWordSelection } from "../gameMechanics";
 import { consumePowerupCharge as consumeCharge, purchasePowerupCharge as purchaseCharge, type PowerupId, type PowerupInventory } from "../powerups";
 import { generatePuzzle, placeWordOnGrid } from "../puzzleGenerator";
+import { DEFAULT_ONBOARDING_SEEN, type OnboardingSeen, type OnboardingStepId } from "../onboarding";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -50,6 +51,7 @@ export function useWordSearchGame() {
     const [uniqueCategoriesCompleted, setUniqueCategoriesCompleted] = useState(initialSave.uniqueCategoriesCompleted);
     const [powerupsUsed, setPowerupsUsed] = useState(initialSave.powerupsUsed);
     const [hintUsedThisLevel, setHintUsedThisLevel] = useState(false);
+    const [onboardingSeen, setOnboardingSeen] = useState<OnboardingSeen>(initialSave.onboardingSeen);
     useEffect(() => {
         if (!bonusDiscovery) return;
         const timer = setTimeout(() => setBonusDiscovery(null), 2200);
@@ -110,6 +112,7 @@ export function useWordSearchGame() {
             setBloomedRarityTiers(native.bloomedRarityTiers);
             setUniqueCategoriesCompleted(native.uniqueCategoriesCompleted);
             setPowerupsUsed(native.powerupsUsed);
+            setOnboardingSeen(native.onboardingSeen);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -148,6 +151,7 @@ export function useWordSearchGame() {
                 bloomedRarityTiers,
                 uniqueCategoriesCompleted,
                 powerupsUsed,
+                onboardingSeen,
             });
         }, 400);
         return () => {
@@ -177,6 +181,7 @@ export function useWordSearchGame() {
         bloomedRarityTiers,
         uniqueCategoriesCompleted,
         powerupsUsed,
+        onboardingSeen,
     ]);
 
     // Re-evaluate achievements on stat updates
@@ -443,6 +448,7 @@ export function useWordSearchGame() {
         setUniqueCategoriesCompleted(DEFAULT_SAVE_DATA.uniqueCategoriesCompleted);
         setPowerupsUsed(DEFAULT_SAVE_DATA.powerupsUsed);
         setHintUsedThisLevel(false);
+        setOnboardingSeen(DEFAULT_ONBOARDING_SEEN);
     };
 
     const spendSeeds = useCallback((cost: number): boolean => {
@@ -455,6 +461,14 @@ export function useWordSearchGame() {
 
     const addSeeds = useCallback((amount: number) => {
         setSeeds((s: number) => s + amount);
+    }, []);
+
+    const dismissOnboardingStep = useCallback((id: OnboardingStepId) => {
+        setOnboardingSeen(previous => ({ ...previous, dismissed: { ...previous.dismissed, [id]: true } }));
+    }, []);
+
+    const replayOnboarding = useCallback(() => {
+        setOnboardingSeen(DEFAULT_ONBOARDING_SEEN);
     }, []);
 
     const purchasePowerupCharge = useCallback((id: PowerupId): boolean => {
@@ -533,7 +547,7 @@ export function useWordSearchGame() {
     }, []);
 
     return {
-        level, seeds, status, levelComplete, category,
+        level, seeds, status, levelComplete, category, levelsCompleted,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked,
@@ -547,6 +561,7 @@ export function useWordSearchGame() {
         // Store power-ups
         doubleSeedsActive, activateDoubleSeeds,
         powerupInventory, freeHintUsesRemaining, purchasePowerupCharge, consumePowerupCharge, claimHintUse,
+        onboardingSeen, dismissOnboardingStep, replayOnboarding,
         unlockedThemes, unlockTheme,
         hasGoldenCrest, unlockGoldenCrest,
     };
