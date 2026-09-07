@@ -111,15 +111,15 @@ const ENGLISH_LETTER_POOL = [
 /**
  * Returns a random letter weighted by English frequency or target words.
  */
-export function getRandomFillLetter(placedWords?: string[]): string {
-    if (placedWords && placedWords.length > 0 && Math.random() < 0.4) {
+export function getRandomFillLetter(placedWords?: string[], rng: () => number = Math.random): string {
+    if (placedWords && placedWords.length > 0 && rng() < 0.4) {
         // 40% chance to sample from letters in target words
         const allLetters = placedWords.join("").toUpperCase();
         if (allLetters.length > 0) {
-            return allLetters[Math.floor(Math.random() * allLetters.length)];
+            return allLetters[Math.floor(rng() * allLetters.length)];
         }
     }
-    return ENGLISH_LETTER_POOL[Math.floor(Math.random() * ENGLISH_LETTER_POOL.length)];
+    return ENGLISH_LETTER_POOL[Math.floor(rng() * ENGLISH_LETTER_POOL.length)];
 }
 
 /**

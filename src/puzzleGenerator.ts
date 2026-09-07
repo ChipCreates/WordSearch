@@ -30,6 +30,7 @@ export type PuzzleGenerationResult = {
     grid: string[][];
     targetWords: string[];
     bonusWords: string[];
+    placements: Record<string, { row: number; col: number; dc: number; dr: number }>;
     category: string;
     gridSize: number;
     attemptCount: number;
@@ -73,13 +74,41 @@ function overlapScore(grid: string[][], word: string, row: number, col: number, 
     return score;
 }
 
+type PlacementPreferences = Pick<PuzzleDifficulty, "reverseWordProbability" | "diagonalProbability" | "overlapPressure">;
+
+type GeneratedPlacement = { row: number; col: number; dc: number; dr: number };
+
+function isDiagonal(direction: readonly number[]): boolean {
+    return direction[0] !== 0 && direction[1] !== 0;
+}
+
+function isReverse(direction: readonly number[]): boolean {
+    const [dc, dr] = direction;
+    return dc < 0 || (dc === 0 && dr < 0);
+}
+
+function placementPreferenceScore(
+    candidate: { score: number; direction: readonly number[] },
+    wordLength: number,
+    preferences: PlacementPreferences,
+): number {
+    const diagonalFit = isDiagonal(candidate.direction)
+        ? preferences.diagonalProbability
+        : 1 - preferences.diagonalProbability;
+    const reverseFit = isReverse(candidate.direction)
+        ? preferences.reverseWordProbability
+        : 1 - preferences.reverseWordProbability;
+    const overlapRatio = candidate.score / wordLength;
+    return (diagonalFit * 3) + (reverseFit * 2) + (overlapRatio * (0.25 + preferences.overlapPressure * 3.5));
+}
+
 function placeWord(
     grid: string[][],
     word: string,
     directions: readonly (readonly number[])[],
     rng: () => number,
-    overlapPressure: number,
-): boolean {
+    preferences: PlacementPreferences,
+): GeneratedPlacement | null {
     const candidates: { row: number; col: number; direction: readonly number[]; score: number }[] = [];
     for (const direction of directions) {
         for (let row = 0; row < grid.length; row++) {
@@ -90,32 +119,35 @@ function placeWord(
             }
         }
     }
-    if (candidates.length === 0) return false;
+    if (candidates.length === 0) return null;
 
-    candidates.sort((a, b) => b.score - a.score);
-    const topScore = candidates[0].score;
-    const preferred = candidates.filter(candidate => candidate.score >= topScore * overlapPressure);
+    const scoredCandidates = candidates
+        .map(candidate => ({ ...candidate, preferenceScore: placementPreferenceScore(candidate, word.length, preferences) }))
+        .sort((a, b) => b.preferenceScore - a.preferenceScore);
+    const topScore = scoredCandidates[0].preferenceScore;
+    const preferred = scoredCandidates.filter(candidate => candidate.preferenceScore >= topScore - 0.75);
     const selected = preferred[Math.floor(rng() * preferred.length) % preferred.length];
     const [dc, dr] = selected.direction;
     for (let index = 0; index < word.length; index++) {
         grid[selected.row + index * dr][selected.col + index * dc] = word[index];
     }
-    return true;
+    return { row: selected.row, col: selected.col, dc, dr };
 }
 
 export function placeWordOnGrid(grid: string[][], word: string, rng: () => number = Math.random): boolean {
-    return placeWord(grid, word.toUpperCase(), DIRECTIONS, rng, 0.5);
+    return placeWord(grid, word.toUpperCase(), DIRECTIONS, rng, {
+        reverseWordProbability: 0.35,
+        diagonalProbability: 0.4,
+        overlapPressure: 0.5,
+    }) !== null;
 }
 
 function fillGrid(grid: string[][], words: string[], rng: () => number): void {
     for (let row = 0; row < grid.length; row++) {
         for (let col = 0; col < grid.length; col++) {
-            if (grid[row][col] === "") grid[row][col] = getRandomFillLetter(words.length ? words : undefined);
+            if (grid[row][col] === "") grid[row][col] = getRandomFillLetter(words.length ? words : undefined, rng);
         }
     }
-    // Keep the generator's deterministic test seam meaningful without making
-    // the production letter pool part of the public API.
-    void rng;
 }
 
 export function generatePuzzle(request: PuzzleGenerationRequest): PuzzleGenerationResult {
@@ -126,18 +158,24 @@ export function generatePuzzle(request: PuzzleGenerationRequest): PuzzleGenerati
 
     for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
         const grid = emptyGrid(difficulty.gridSize);
+        const placements: Record<string, GeneratedPlacement> = {};
         const placedTargets = requestedTargets
             .slice()
             .sort((a, b) => b.length - a.length)
-            .every(word => placeWord(grid, word, difficulty.allowedDirections, rng, difficulty.overlapPressure));
+            .every(word => {
+                const placement = placeWord(grid, word, difficulty.allowedDirections, rng, difficulty);
+                if (placement) placements[word] = placement;
+                return placement !== null;
+            });
         if (!placedTargets) continue;
 
-        const placedBonusWords = bonusWords.filter(word => placeWord(grid, word, difficulty.allowedDirections, rng, difficulty.overlapPressure));
+        const placedBonusWords = bonusWords.filter(word => placeWord(grid, word, difficulty.allowedDirections, rng, difficulty) !== null);
         fillGrid(grid, requestedTargets, rng);
         return {
             grid,
             targetWords: requestedTargets,
             bonusWords: placedBonusWords,
+            placements,
             category: request.category,
             gridSize: difficulty.gridSize,
             attemptCount: attempt,
@@ -148,16 +186,20 @@ export function generatePuzzle(request: PuzzleGenerationRequest): PuzzleGenerati
     // deterministic and still refuses to return a puzzle missing a target.
     const fallbackGridSize = Math.max(difficulty.gridSize, ...requestedTargets.map(word => word.length));
     const grid = emptyGrid(fallbackGridSize);
+    const placements: Record<string, GeneratedPlacement> = {};
     for (const word of requestedTargets) {
-        if (!placeWord(grid, word, [[1, 0]], rng, 0)) {
+        const placement = placeWord(grid, word, [[1, 0]], rng, { ...difficulty, overlapPressure: 0 });
+        if (!placement) {
             throw new Error(`Unable to place required target word "${word}" on the fallback board`);
         }
+        placements[word] = placement;
     }
     fillGrid(grid, requestedTargets, rng);
     return {
         grid,
         targetWords: requestedTargets,
         bonusWords: [],
+        placements,
         category: request.category,
         gridSize: fallbackGridSize,
         attemptCount: MAX_GENERATION_ATTEMPTS,
