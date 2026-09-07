@@ -127,7 +127,10 @@ describe("useWordSearchGame", () => {
 
     it("revealAndSolveWord actually solves the word (unlike the free hint, which only points at it)", async () => {
         const { result } = renderHook(() => useWordSearchGame());
-        await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+        await waitFor(() => {
+            expect(result.current.wordsToFind.length).toBeGreaterThan(0);
+            expect(result.current.gridData.length).toBeGreaterThan(0);
+        });
         const word = result.current.wordsToFind[0];
 
         expect(result.current.foundWords[word]).toBeFalsy();
@@ -229,6 +232,36 @@ describe("useWordSearchGame", () => {
         expect(result.current.playingLevel).toBe(1);
         expect(result.current.highestUnlockedLevel).toBe(10);
         expect(result.current.level).toBe(1);
+    });
+
+    it("activates the new power-ups only when a target exists and consumes one charge", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+        await waitFor(() => {
+            expect(result.current.wordsToFind.length).toBeGreaterThan(0);
+            expect(result.current.gridData.length).toBeGreaterThan(0);
+        });
+
+        act(() => result.current.addSeeds(5000));
+        act(() => expect(result.current.purchasePowerupCharge("bioluminescent-compass")).toBe(true));
+        act(() => expect(result.current.purchasePowerupCharge("flora-spectrometer")).toBe(true));
+        act(() => expect(result.current.purchasePowerupCharge("super-root")).toBe(true));
+        act(() => expect(result.current.purchasePowerupCharge("nitrogen-booster")).toBe(true));
+
+        act(() => expect(result.current.activateCompass()).toBe(true));
+        expect(result.current.powerupInventory["bioluminescent-compass"]).toBe(0);
+        expect(result.current.compassDirection).not.toBeNull();
+
+        act(() => expect(result.current.activateSpectrometer()).toBe(true));
+        expect(result.current.powerupInventory["flora-spectrometer"]).toBe(0);
+        expect(result.current.spectrometerCells.length).toBeGreaterThan(0);
+
+        act(() => expect(result.current.activateDoubleSeeds()).toBe(true));
+        expect(result.current.doubleSeedsActive).toBe(true);
+        expect(result.current.activateDoubleSeeds()).toBe(false);
+
+        act(() => expect(result.current.activateSuperRoot()).toBe(true));
+        expect(result.current.powerupInventory["super-root"]).toBe(0);
+        expect(result.current.powerupsUsed).toBe(4);
     });
 
 });

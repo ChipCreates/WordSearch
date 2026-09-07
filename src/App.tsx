@@ -61,6 +61,8 @@ export default function App() {
         unlockedThemes, unlockTheme,
         hasGoldenCrest, unlockGoldenCrest,
         powerupInventory, freeHintUsesRemaining, purchasePowerupCharge, claimHintUse,
+        activateSuperRoot, activateCompass, activateSpectrometer, activateDoubleSeeds,
+        spectrometerCells, compassDirection,
     } = useWordSearchGame();
 
     const {
@@ -349,7 +351,7 @@ export default function App() {
                                     <span>Hint · {freeHintUsesRemaining > 0 ? "Free" : `x${powerupInventory["single-letter-sprout"]}`}</span>
                                 </button>
                             )}
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                                 <button className="ws-control-btn" disabled={powerupInventory["lumina-cyclone"] === 0} title={powerupInventory["lumina-cyclone"] === 0 ? "Buy a Shuffle charge in the Seed Store" : "Shuffle the unfound words"} onClick={() => { playSfx("click"); reshuffle(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
                                     <ShuffleOutlined style={{ fontSize: 16 }} />
                                     <span>Shuffle · x{powerupInventory["lumina-cyclone"]}</span>
@@ -357,8 +359,23 @@ export default function App() {
                                 <button className="ws-control-btn" onClick={() => { playSfx("click"); retryLevel(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
                                     <RefreshOutlined style={{ fontSize: 16 }} />
                                     <span>Restart</span>
-                                </button>
-                            </div>
+                                        </button>
+                                    </div>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                                        <button className="ws-control-btn" disabled={!powerupInventory["super-root"]} title={!powerupInventory["super-root"] ? "Buy a Super Root charge in the Seed Store" : "Solve one unfound target word"} onClick={() => { playSfx("click"); activateSuperRoot(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                                            <span aria-hidden="true">🌱</span><span>Root · x{powerupInventory["super-root"]}</span>
+                                        </button>
+                                        <button className="ws-control-btn" disabled={!powerupInventory["bioluminescent-compass"]} title={!powerupInventory["bioluminescent-compass"] ? "Buy a Compass charge in the Seed Store" : "Point toward an unfound word"} onClick={() => { playSfx("click"); activateCompass(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                                            <span aria-hidden="true">🧭</span><span>Compass · x{powerupInventory["bioluminescent-compass"]}</span>
+                                        </button>
+                                        <button className="ws-control-btn" disabled={!powerupInventory["flora-spectrometer"]} title={!powerupInventory["flora-spectrometer"] ? "Buy a Spectrometer charge in the Seed Store" : "Highlight all unfound word starts"} onClick={() => { playSfx("click"); activateSpectrometer(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                                            <span aria-hidden="true">🔬</span><span>Spectro · x{powerupInventory["flora-spectrometer"]}</span>
+                                        </button>
+                                        <button className="ws-control-btn" disabled={!powerupInventory["nitrogen-booster"] || doubleSeedsActive} title={doubleSeedsActive ? "2× Seeds active for this puzzle" : !powerupInventory["nitrogen-booster"] ? "Buy a Nitrogen Booster charge in the Seed Store" : "Double completion and bonus rewards"} onClick={() => { playSfx("click"); activateDoubleSeeds(); }} style={{ justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" }}>
+                                            <span aria-hidden="true">⚡</span><span>{doubleSeedsActive ? "2× Active" : `2× Seeds · x${powerupInventory["nitrogen-booster"]}`}</span>
+                                        </button>
+                                    </div>
+                                    {doubleSeedsActive && <div role="status" style={{ padding: "7px 9px", borderRadius: 8, background: "rgba(244, 201, 93, 0.16)", border: "1px solid rgba(244, 201, 93, 0.45)", color: "var(--color-on-surface)", fontSize: "0.78rem", fontWeight: 800 }}>⚡ 2× Seeds active for this puzzle</div>}
                         </div>
                     ) : activeTab === "levels" ? (
                         <GreenhouseFloorplanPanel level={level} ownedPlants={ownedPlants} growthByPlant={growthByPlant} />
@@ -546,6 +563,8 @@ export default function App() {
                                         gridData={gridData}
                                         foundLines={foundLines}
                                         hintCell={hintCell}
+                                        spectrometerCells={spectrometerCells}
+                                        compassDirection={compassDirection}
                                         status={status}
                                         onSelectionEnd={submitSelection}
                                         onSwipe={() => playSfx("swipe")}
@@ -568,6 +587,18 @@ export default function App() {
                                     </button>
                                     <button className="ws-mobile-tool-btn" onClick={() => { playSfx("click"); retryLevel(); }}>
                                         <RefreshOutlined style={{ fontSize: 16 }} /> Restart
+                                    </button>
+                                    <button className="ws-mobile-tool-btn" disabled={!powerupInventory["super-root"]} title="Solve one unfound target" onClick={() => { playSfx("click"); activateSuperRoot(); }}>
+                                        🌱 Root · x{powerupInventory["super-root"]}
+                                    </button>
+                                    <button className="ws-mobile-tool-btn" disabled={!powerupInventory["bioluminescent-compass"]} title="Point toward an unfound word" onClick={() => { playSfx("click"); activateCompass(); }}>
+                                        🧭 Compass · x{powerupInventory["bioluminescent-compass"]}
+                                    </button>
+                                    <button className="ws-mobile-tool-btn" disabled={!powerupInventory["flora-spectrometer"]} title="Highlight unfound word starts" onClick={() => { playSfx("click"); activateSpectrometer(); }}>
+                                        🔬 Spectro · x{powerupInventory["flora-spectrometer"]}
+                                    </button>
+                                    <button className="ws-mobile-tool-btn" disabled={!powerupInventory["nitrogen-booster"] || doubleSeedsActive} title="Double rewards for this puzzle" onClick={() => { playSfx("click"); activateDoubleSeeds(); }}>
+                                        ⚡ {doubleSeedsActive ? "2× Active" : `2× Seeds · x${powerupInventory["nitrogen-booster"]}`}
                                     </button>
                                 </div>
 

@@ -64,6 +64,8 @@ export function useWordSearchGame() {
     const [hasGoldenCrest, setHasGoldenCrest] = useState(initialSave.hasGoldenCrest);
     // Nitrogen Booster buff -- ephemeral, scoped to the current puzzle, not persisted
     const [doubleSeedsActive, setDoubleSeedsActive] = useState(false);
+    const [spectrometerCells, setSpectrometerCells] = useState<Cell[]>([]);
+    const [compassDirection, setCompassDirection] = useState<{ dr: number; dc: number } | null>(null);
     const [powerupInventory, setPowerupInventory] = useState<PowerupInventory>(initialSave.powerupInventory);
     const [freeHintUsesRemaining, setFreeHintUsesRemaining] = useState(1);
     const puzzleInstanceIdRef = useRef(0);
@@ -228,6 +230,8 @@ export function useWordSearchGame() {
         setStatus("Generating puzzle...");
         setLevelComplete(false);
         setDoubleSeedsActive(false);
+        setSpectrometerCells([]);
+        setCompassDirection(null);
         setFreeHintUsesRemaining(1);
         setBonusWordsThisLevel([]);
         setBonusSeedsThisLevel(0);
@@ -359,11 +363,11 @@ export function useWordSearchGame() {
     // found-word bookkeeping in submitSelection for a non-bonus match, but
     // doesn't award BONUS_WORD_SEEDS (it's a main word, not a bonus find)
     // and doesn't count toward bonusWordsFound.
-    const revealAndSolveWord = (word: string) => {
+    const revealAndSolveWord = (word: string): boolean => {
         const { gridData, wordsToFind, foundWords } = stateRef.current;
-        if (!word || foundWords[word] || !gridData.length) return;
+        if (!word || foundWords[word] || !gridData.length || levelComplete) return false;
         const placement = findWordPlacement(gridData, gridData.length, word);
-        if (!placement) return;
+        if (!placement) return false;
         const { r, c, dr, dc } = placement;
         const endR = r + (word.length - 1) * dr;
         const endC = c + (word.length - 1) * dc;
@@ -387,6 +391,7 @@ export function useWordSearchGame() {
                 : REWARDS.LEVEL_COMPLETE_SEEDS;
             setSeeds((s: number) => s + completionReward * (doubleSeedsActive ? 2 : 1));
         }
+        return true;
     };
 
     const goToLevel = (lvl: number) => {
@@ -394,6 +399,10 @@ export function useWordSearchGame() {
         if (selectedLevel <= highestUnlockedLevel) setPlayingLevel(selectedLevel);
     };
     const reshuffle = () => {
+        if (!wordsToFind.length || levelComplete) {
+            setStatus("There are no unfound words to reshuffle.");
+            return false;
+        }
         const consumed = consumeCharge(powerupInventory, "lumina-cyclone");
         if (!consumed.consumed) {
             setStatus("Buy a Shuffle charge in the Seed Store first.");
@@ -401,7 +410,6 @@ export function useWordSearchGame() {
         }
         setPowerupInventory(consumed.inventory);
         setPowerupsUsed(count => count + 1);
-        if (!wordsToFind || !wordsToFind.length) return;
         const size = gridSize;
         const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
 
@@ -431,6 +439,8 @@ export function useWordSearchGame() {
             }
         }
         setGridData(grid);
+        setSpectrometerCells([]);
+        setCompassDirection(null);
         setStatus("Board reshuffled!");
         return true;
     };
@@ -468,6 +478,8 @@ export function useWordSearchGame() {
         setUnlockedThemes(DEFAULT_SAVE_DATA.unlockedThemes);
         setHasGoldenCrest(DEFAULT_SAVE_DATA.hasGoldenCrest);
         setDoubleSeedsActive(false);
+        setSpectrometerCells([]);
+        setCompassDirection(null);
         setPowerupInventory(DEFAULT_SAVE_DATA.powerupInventory);
         setFreeHintUsesRemaining(1);
         setLevelsCompletedWithoutHint(DEFAULT_SAVE_DATA.levelsCompletedWithoutHint);
@@ -559,14 +571,86 @@ export function useWordSearchGame() {
     // Seed cost is deducted by the caller (SeedStoreDialog's handleRedeem)
     // before these run, matching how the hint/reshuffle redeems already work.
     const activateDoubleSeeds = useCallback(() => {
-        if (doubleSeedsActive) return false;
+        if (doubleSeedsActive || levelComplete || !wordsToFind.length) {
+            setStatus(doubleSeedsActive ? "2× Seeds is already active for this puzzle." : "Start a puzzle before activating Nitrogen Booster.");
+            return false;
+        }
         const result = consumeCharge(powerupInventory, "nitrogen-booster");
         if (!result.consumed) return false;
         setPowerupInventory(result.inventory);
         setDoubleSeedsActive(true);
         setPowerupsUsed(count => count + 1);
+        setStatus("Nitrogen Booster active: 2× Seeds for this puzzle.");
         return true;
-    }, [doubleSeedsActive, powerupInventory]);
+    }, [doubleSeedsActive, levelComplete, wordsToFind.length, powerupInventory]);
+
+    const activateSuperRoot = useCallback(() => {
+        const target = wordsToFind.find(word => !foundWords[word]);
+        if (!target || levelComplete) {
+            setStatus("No unfound target is available for Super Root.");
+            return false;
+        }
+        const result = consumeCharge(powerupInventory, "super-root");
+        if (!result.consumed) {
+            setStatus("Buy a Super Root charge in the Seed Store first.");
+            return false;
+        }
+        setPowerupInventory(result.inventory);
+        setPowerupsUsed(count => count + 1);
+        setHintUsedThisLevel(true);
+        const solved = revealAndSolveWord(target);
+        if (!solved) {
+            setPowerupInventory(powerupInventory);
+            setPowerupsUsed(count => Math.max(0, count - 1));
+            setStatus("Super Root could not find a valid target.");
+            return false;
+        }
+        setStatus(`Super Root solved ${target}.`);
+        return true;
+    }, [wordsToFind, foundWords, levelComplete, powerupInventory, revealAndSolveWord]);
+
+    const activateCompass = useCallback(() => {
+        const target = wordsToFind.find(word => !foundWords[word]);
+        const placement = target ? findWordPlacement(gridData, gridSize, target) : null;
+        if (!placement || levelComplete) {
+            setStatus("No unfound target is available for the Compass.");
+            return false;
+        }
+        const result = consumeCharge(powerupInventory, "bioluminescent-compass");
+        if (!result.consumed) {
+            setStatus("Buy a Compass charge in the Seed Store first.");
+            return false;
+        }
+        setPowerupInventory(result.inventory);
+        setPowerupsUsed(count => count + 1);
+        setCompassDirection({ dr: placement.dr, dc: placement.dc });
+        setStatus("Compass active for 4 seconds.");
+        window.setTimeout(() => setCompassDirection(null), 4000);
+        return true;
+    }, [wordsToFind, foundWords, gridData, gridSize, levelComplete, powerupInventory]);
+
+    const activateSpectrometer = useCallback(() => {
+        const cells = wordsToFind
+            .filter(word => !foundWords[word])
+            .map(word => findWordPlacement(gridData, gridSize, word))
+            .filter((placement): placement is NonNullable<ReturnType<typeof findWordPlacement>> => Boolean(placement))
+            .map(placement => ({ r: placement.r, c: placement.c }));
+        if (!cells.length || levelComplete) {
+            setStatus("No unfound targets are available for the Spectrometer.");
+            return false;
+        }
+        const result = consumeCharge(powerupInventory, "flora-spectrometer");
+        if (!result.consumed) {
+            setStatus("Buy a Spectrometer charge in the Seed Store first.");
+            return false;
+        }
+        setPowerupInventory(result.inventory);
+        setPowerupsUsed(count => count + 1);
+        setSpectrometerCells(cells);
+        setStatus(`${cells.length} unfound word starts highlighted for 5 seconds.`);
+        window.setTimeout(() => setSpectrometerCells([]), 5000);
+        return true;
+    }, [wordsToFind, foundWords, gridData, gridSize, levelComplete, powerupInventory]);
 
     const unlockTheme = useCallback((themeId: string) => {
         setUnlockedThemes(prev => prev.includes(themeId) ? prev : [...prev, themeId]);
@@ -592,7 +676,8 @@ export function useWordSearchGame() {
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom,
         // Store power-ups
-        doubleSeedsActive, activateDoubleSeeds,
+        doubleSeedsActive, activateDoubleSeeds, activateSuperRoot, activateCompass, activateSpectrometer,
+        spectrometerCells, compassDirection,
         powerupInventory, freeHintUsesRemaining, purchasePowerupCharge, consumePowerupCharge, claimHintUse,
         onboardingSeen, dismissOnboardingStep, replayOnboarding,
         unlockedThemes, unlockTheme,
