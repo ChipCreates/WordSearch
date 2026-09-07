@@ -15,6 +15,7 @@ import AchievementBanner from "./components/AchievementBanner";
 import PlayerProfileSheet from "./components/PlayerProfileSheet";
 import ContextSidebar from "./components/sidebar/ContextSidebar";
 import ResponsiveContextStrip from "./components/sidebar/ResponsiveContextStrip";
+import MobilePowerupDrawer from "./components/sidebar/MobilePowerupDrawer";
 const SettingsDialog = lazy(() => import("./components/SettingsDialog"));
 const AboutDialog = lazy(() => import("./components/AboutDialog"));
 const LevelsView = lazy(() => import("./components/LevelsView"));
@@ -28,9 +29,6 @@ import NavigationArt from "./components/NavigationArt";
 import { getBotanistRank } from "./botanistRanks";
 import { ACHIEVEMENTS } from "./achievements";
 import {
-    AutoFixHighOutlined,
-    ShuffleOutlined,
-    RefreshOutlined,
     CheckCircleOutlined,
     LockOutlined,
     CheckRounded,
@@ -493,30 +491,19 @@ export default function App() {
                                     )}
                                 </div>
 
-                                {/* Mobile Tactical Toolbar */}
-                                <div className="ws-mobile-tactical-bar">
-                                    <button className="ws-mobile-tool-btn" disabled={!hintAvailable} title={!hintAvailable ? "Buy a hint charge in the Seed Store" : undefined} onClick={() => { playSfx("click"); handleRevealHint(); }}>
-                                        <AutoFixHighOutlined style={{ fontSize: 16 }} /> Hint · {freeHintUsesRemaining > 0 ? "Free" : `x${powerupInventory["single-letter-sprout"]}`}
-                                    </button>
-                                    <button className="ws-mobile-tool-btn" disabled={powerupInventory["lumina-cyclone"] === 0} title={powerupInventory["lumina-cyclone"] === 0 ? "Buy a Shuffle charge in the Seed Store" : undefined} onClick={() => { playSfx("click"); reshuffle(); }}>
-                                        <ShuffleOutlined style={{ fontSize: 16 }} /> Shuffle · x{powerupInventory["lumina-cyclone"]}
-                                    </button>
-                                    <button className="ws-mobile-tool-btn" onClick={() => { playSfx("click"); retryLevel(); }}>
-                                        <RefreshOutlined style={{ fontSize: 16 }} /> Restart
-                                    </button>
-                                    <button className="ws-mobile-tool-btn" disabled={!powerupInventory["super-root"]} title="Solve one unfound target" onClick={() => { playSfx("click"); activateSuperRoot(); }}>
-                                        🌱 Root · x{powerupInventory["super-root"]}
-                                    </button>
-                                    <button className="ws-mobile-tool-btn" disabled={!powerupInventory["bioluminescent-compass"]} title="Point toward an unfound word" onClick={() => { playSfx("click"); activateCompass(); }}>
-                                        🧭 Compass · x{powerupInventory["bioluminescent-compass"]}
-                                    </button>
-                                    <button className="ws-mobile-tool-btn" disabled={!powerupInventory["flora-spectrometer"]} title="Highlight unfound word starts" onClick={() => { playSfx("click"); activateSpectrometer(); }}>
-                                        🔬 Spectro · x{powerupInventory["flora-spectrometer"]}
-                                    </button>
-                                    <button className="ws-mobile-tool-btn" disabled={!powerupInventory["nitrogen-booster"] || doubleSeedsActive} title="Double rewards for this puzzle" onClick={() => { playSfx("click"); activateDoubleSeeds(); }}>
-                                        ⚡ {doubleSeedsActive ? "2× Active" : `2× Seeds · x${powerupInventory["nitrogen-booster"]}`}
-                                    </button>
-                                </div>
+                                <MobilePowerupDrawer
+                                    hintAvailable={hintAvailable}
+                                    freeHintUsesRemaining={freeHintUsesRemaining}
+                                    powerupInventory={powerupInventory}
+                                    doubleSeedsActive={doubleSeedsActive}
+                                    onRevealHint={() => { playSfx("click"); handleRevealHint(); }}
+                                    onShuffle={() => { playSfx("click"); reshuffle(); }}
+                                    onRetry={() => { playSfx("click"); retryLevel(); }}
+                                    onSuperRoot={() => { playSfx("click"); activateSuperRoot(); }}
+                                    onCompass={() => { playSfx("click"); activateCompass(); }}
+                                    onSpectrometer={() => { playSfx("click"); activateSpectrometer(); }}
+                                    onDoubleSeeds={() => { playSfx("click"); activateDoubleSeeds(); }}
+                                />
 
                                 {/* Right: Found Words List Panel */}
                                 <div className="glass-panel ws-found-words-panel">
