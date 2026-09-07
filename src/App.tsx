@@ -578,16 +578,6 @@ export default function App() {
                 {/* ── Mobile Bottom Navigation Bar (BottomNavBar) ────────────────── */}
                 <nav className="ws-bottom-nav">
                     <button
-                        ref={fieldKitButtonRef}
-                        className={`ws-bottom-nav__item ${fieldKitOpen ? "ws-bottom-nav__item--active" : ""}`}
-                        aria-expanded={fieldKitOpen}
-                        aria-controls="mobile-field-kit"
-                        onClick={() => { playSfx("click"); setFieldKitOpen(open => !open); }}
-                    >
-                        <span className="ws-bottom-nav__emoji" aria-hidden="true">🧰</span>
-                        <span>Field Kit</span>
-                    </button>
-                    <button
                         className={`ws-bottom-nav__item ${activeTab === "play" ? "ws-bottom-nav__item--active" : ""}`}
                         onClick={() => { playSfx("click"); setActiveTab("play"); }}
                     >
@@ -617,6 +607,16 @@ export default function App() {
                     >
                         <NavigationArt name="trophies" />
                         <span>Trophies</span>
+                    </button>
+                    <button
+                        ref={fieldKitButtonRef}
+                        className={`ws-bottom-nav__item ${fieldKitOpen ? "ws-bottom-nav__item--active" : ""}`}
+                        aria-expanded={fieldKitOpen}
+                        aria-controls="mobile-field-kit"
+                        onClick={() => { playSfx("click"); setFieldKitOpen(open => !open); }}
+                    >
+                        <NavigationArt name="field-kit" />
+                        <span>Field Kit</span>
                     </button>
 
                     <button
