@@ -517,6 +517,7 @@ body {
 }
 
 .ws-sidebar-context {
+  flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
   display: flex;
@@ -570,8 +571,10 @@ body {
 }
 
 .ws-sidebar-summary strong { color: var(--color-primary); font-family: var(--font-headline); font-size: 1rem; }
+.ws-sidebar-summary > * { min-width: 0; overflow-wrap: anywhere; }
 
 .ws-sidebar-utilities {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -597,6 +600,10 @@ body {
 .ws-sidebar-audio-row button:hover { background: rgba(0, 228, 121, 0.28); }
 .ws-sidebar-audio-row button:focus-visible,
 .ws-about-art-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.ws-control-btn:focus-visible,
+.ws-primary-action-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.ws-control-btn:disabled,
+.ws-primary-action-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
 .ws-sidebar-utilities .ws-about-art-btn {
   display: flex;
@@ -638,6 +645,7 @@ body {
     min-width: 0;
   }
   .ws-responsive-context-strip strong { color: var(--color-primary); font-family: var(--font-headline); }
+  .ws-responsive-context-strip > * { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
   .ws-responsive-context-strip button {
     min-height: 36px;
     padding: 6px 12px;
