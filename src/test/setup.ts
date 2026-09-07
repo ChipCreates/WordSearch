@@ -18,8 +18,13 @@ if (typeof window !== "undefined") {
             disconnect() {}
         };
     }
-    if (typeof HTMLCanvasElement !== "undefined" && !HTMLCanvasElement.prototype.getContext) {
-        HTMLCanvasElement.prototype.getContext = (() => ({
+    if (typeof HTMLCanvasElement !== "undefined") {
+        // jsdom defines getContext(), but its implementation intentionally
+        // logs a warning and returns null unless the optional native canvas
+        // package is installed. GameCanvas only needs this small 2D surface
+        // for deterministic interaction tests, so replace the warning path
+        // rather than hiding console output in individual tests.
+        HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
             clearRect: () => {},
             fillRect: () => {},
             fillText: () => {},
@@ -35,6 +40,7 @@ if (typeof window !== "undefined") {
             translate: () => {},
             rotate: () => {},
             arc: () => {},
+            setTransform: () => {},
             measureText: () => ({ width: 10 } as TextMetrics),
         })) as unknown as typeof HTMLCanvasElement.prototype.getContext;
     }
