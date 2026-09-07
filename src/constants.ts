@@ -37,8 +37,8 @@ export const CORNER_RADIUS_PX = 12;
 // Give the constellation enough time to read on both desktop and mobile.
 // The original sub-second sweep was easy to miss, especially on touch devices.
 export const CELEBRATE_DOTS_FORM_MS = 180;
-export const CELEBRATE_TRAIL_MS = 650;
-export const CELEBRATE_BURST_MS = 280;
+export const CELEBRATE_TRAIL_MS = 1500;
+export const CELEBRATE_BURST_MS = 750;
 export const CELEBRATE_HOLD_MS = CELEBRATE_TRAIL_MS + CELEBRATE_BURST_MS;
 export const CELEBRATE_FADE_DELAY_MS = CELEBRATE_DOTS_FORM_MS + CELEBRATE_HOLD_MS;
 export const CELEBRATE_FADE_DURATION_MS = 700;

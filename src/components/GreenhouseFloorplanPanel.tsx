@@ -37,12 +37,12 @@ export default function GreenhouseFloorplanPanel({ level, ownedPlants, growthByP
             </Box>
 
             <Box sx={{ display: "flex", gap: 2 }}>
-                <Box sx={{ flex: 1, background: "var(--color-surface-container)", borderRadius: "0.75rem", p: 1.5, display: "flex", flexDirection: "column", alignItems: "center", border: "1px solid var(--glass-border)" }}>
+                <Box sx={{ flex: 1, background: "var(--glass-bg)", borderRadius: "0.75rem", p: 1.5, display: "flex", flexDirection: "column", alignItems: "center", border: "1px solid var(--glass-border)" }}>
                     <StarRateRoundedIcon sx={{ color: "var(--color-tertiary)", mb: 0.5 }} />
                     <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--color-on-surface)" }}>{ownedPlants.length}/{PLANTS_CATALOG.length}</Typography>
                     <Typography sx={{ fontSize: "0.65rem", color: "var(--color-on-surface-variant)" }}>Collected</Typography>
                 </Box>
-                <Box sx={{ flex: 1, background: "var(--color-surface-container)", borderRadius: "0.75rem", p: 1.5, display: "flex", flexDirection: "column", alignItems: "center", border: "1px solid var(--glass-border)" }}>
+                <Box sx={{ flex: 1, background: "var(--glass-bg)", borderRadius: "0.75rem", p: 1.5, display: "flex", flexDirection: "column", alignItems: "center", border: "1px solid var(--glass-border)" }}>
                     <LocalFloristRoundedIcon sx={{ color: "var(--color-primary)", mb: 0.5 }} />
                     <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--color-on-surface)" }}>{bloomedCount}/{ownedPlants.length}</Typography>
                     <Typography sx={{ fontSize: "0.65rem", color: "var(--color-on-surface-variant)" }}>Bloomed</Typography>

@@ -147,7 +147,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(mx, my, cellSize * 0.28, 0, 2 * Math.PI);
-                ctx.fillStyle = line.color;
+                ctx.fillStyle = "transparent";
                 ctx.shadowColor = line.color;
                 ctx.shadowBlur = 18;
                 ctx.fill();
@@ -273,7 +273,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             ctx.restore();
         }
 
-        ctx.globalAlpha = Math.max(0, 1 - t / 0.8);
+        ctx.globalAlpha = 1 - t * 0.30;
 
         for (let r = 0; r < gridSize; r++) {
             for (let c = 0; c < gridSize; c++) {
@@ -281,7 +281,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 const isHintCell = hintCell && hintCell.r === r && hintCell.c === c;
                 ctx.fillStyle = isHintCell
                     ? "#ffffff"
-                    : (pillColor ? contrastingTextColor(pillColor) : letterColor);
+                    : (pillColor && !celebrate ? contrastingTextColor(pillColor) : letterColor);
 
                 if (isHintCell) {
                     ctx.save();

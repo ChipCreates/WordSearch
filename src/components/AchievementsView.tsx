@@ -117,61 +117,36 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                 transition: "transform 0.2s ease, box-shadow 0.2s ease",
                             }}
                         >
-                            <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-                                <div
-                                    className={`ws-achievement-icon-frame ${isUnlocked ? "ws-achievement-icon-frame--unlocked" : "ws-achievement-icon-frame--locked"}`}
-                                    style={{
-                                        width: 64,
-                                        height: 64,
-                                        borderRadius: "1.1rem",
-                                        background: isUnlocked
-                                            ? "radial-gradient(circle, rgba(0, 228, 121, 0.25) 0%, rgba(0, 228, 121, 0.08) 100%)"
-                                            : "rgba(255, 255, 255, 0.04)",
-                                        border: `1px solid ${isUnlocked ? "rgba(0, 228, 121, 0.45)" : "rgba(255, 255, 255, 0.08)"}`,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        boxShadow: isUnlocked ? "0 0 24px rgba(0, 228, 121, 0.35)" : "none",
-                                        filter: isUnlocked ? "none" : "grayscale(100%) opacity(50%)",
-                                        flexShrink: 0,
-                                        overflow: "hidden",
-                                        padding: 6,
-                                    }}
-                                >
-                                    {ach.image ? (
-                                        <img
-                                            className="ws-achievement-art"
-                                            src={ach.image.startsWith("http") ? ach.image : assetUrl(ach.image.startsWith("/") ? ach.image.slice(1) : ach.image)}
-                                            alt={ach.name}
-                                            style={{
-                                                width: "100%",
-                                                height: "100%",
-                                                objectFit: "contain",
-                                                filter: isUnlocked ? "drop-shadow(0 0 10px rgba(0, 228, 121, 0.75))" : "none",
-                                            }}
-                                        />
-                                    ) : (
-                                        <span style={{ fontSize: "2rem", textShadow: isUnlocked ? "0 0 14px rgba(0, 228, 121, 0.8)" : "none" }}>
-                                            {ach.icon}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <h3 style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.1rem", fontWeight: 700, color: isUnlocked ? "var(--color-primary)" : "var(--color-on-surface)" }}>
+                            <div>
+                                <div className={`ws-achievement-card__banner ${isUnlocked ? "" : "ws-achievement-card__banner--locked"}`}>
+                                    <img className="ws-achievement-card__frame" src={assetUrl("achievements/botanical-banner-frame-circle.png")} alt="" />
+                                    <span className="ws-achievement-card__badge">
+                                        {ach.image ? (
+                                            <img
+                                                className="ws-achievement-art"
+                                                src={ach.image.startsWith("http") ? ach.image : assetUrl(ach.image.startsWith("/") ? ach.image.slice(1) : ach.image)}
+                                                alt={ach.name}
+                                                style={{ filter: isUnlocked ? "drop-shadow(0 0 10px rgba(0, 228, 121, 0.75))" : "none" }}
+                                            />
+                                        ) : (
+                                            <span style={{ fontSize: "1.8rem" }}>{ach.icon}</span>
+                                        )}
+                                    </span>
+                                    <span className="ws-achievement-card__title-row">
+                                        <h3 className="ws-achievement-card__title" style={{ color: isUnlocked ? "var(--color-primary)" : "var(--color-on-surface)" }}>
                                             {ach.name}
                                         </h3>
                                         {isUnlocked ? (
-                                            <CheckCircleOutlined style={{ fontSize: 20, color: "var(--color-primary)" }} />
+                                            <CheckCircleOutlined style={{ fontSize: 20, color: "var(--color-primary)", flexShrink: 0 }} />
                                         ) : (
-                                            <LockOutlined style={{ fontSize: 18, color: "var(--color-on-surface-variant)" }} />
+                                            <LockOutlined style={{ fontSize: 18, color: "var(--color-on-surface-variant)", flexShrink: 0 }} />
                                         )}
-                                    </div>
-                                    <p style={{ margin: "6px 0 0 0", fontSize: "0.85rem", color: "var(--color-on-surface-variant)", lineHeight: 1.4 }}>
-                                        {ach.description}
-                                    </p>
+                                    </span>
                                 </div>
+
+                                <p style={{ margin: "10px 0 0 0", fontSize: "0.85rem", color: "var(--color-on-surface-variant)", lineHeight: 1.4 }}>
+                                    {ach.description}
+                                </p>
                             </div>
 
                             {/* Progress bar footer */}

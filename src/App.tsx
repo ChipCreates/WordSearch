@@ -302,13 +302,14 @@ export default function App() {
                 <aside className="ws-side-nav">
                     {/* User profile section */}
                     <div className="ws-side-nav__profile">
-                        <div
+                        <button
                             className="ws-side-nav__avatar-box ws-botanist-avatar"
                             style={{ "--avatar-position": avatarBackgroundPosition } as CSSProperties}
-                            role="img"
-                            aria-label={`${botanistRank.title} avatar`}
+                            onClick={() => { playSfx("click"); setProfileOpen(true); }}
+                            aria-label={`Open player information: ${botanistRank.title}`}
+                            title="Player information"
                         >
-                        </div>
+                        </button>
                         <div className="ws-side-nav__profile-copy">
                             <div className="ws-side-nav__rank-title">
                                 {botanistRank.title}
@@ -429,7 +430,7 @@ export default function App() {
                         <AchievementsView
                             unlockedAchievements={unlockedAchievements}
                             stats={{
-                                levelsCompleted: level - 1,
+                                levelsCompleted,
                                 seeds,
                                 categoriesSeen: categoriesSeen.size,
                                 foundDiagonal,
@@ -585,6 +586,10 @@ export default function App() {
                     achievementsTotal={ACHIEVEMENTS.length}
                     avatarBackgroundPosition={avatarBackgroundPosition}
                     hasGoldenCrest={hasGoldenCrest}
+                    levelsCompletedWithoutHint={levelsCompletedWithoutHint}
+                    reverseWordsFound={reverseWordsFound}
+                    maxBonusWordsInLevel={maxBonusWordsInLevel}
+                    powerupsUsed={powerupsUsed}
                 />
 
                 {/* ── Mobile Bottom Navigation Bar (BottomNavBar) ────────────────── */}

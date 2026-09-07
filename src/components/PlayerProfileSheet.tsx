@@ -1,4 +1,5 @@
-import { useEffect, type CSSProperties } from "react";
+import { type CSSProperties } from "react";
+import { Modal } from "@mui/material";
 import { assetUrl } from "../categoryThemes";
 
 type Props = {
@@ -17,6 +18,10 @@ type Props = {
     achievementsTotal: number;
     avatarBackgroundPosition: string;
     hasGoldenCrest: boolean;
+    levelsCompletedWithoutHint: number;
+    reverseWordsFound: number;
+    maxBonusWordsInLevel: number;
+    powerupsUsed: number;
 };
 
 export default function PlayerProfileSheet({
@@ -35,22 +40,11 @@ export default function PlayerProfileSheet({
     achievementsTotal,
     avatarBackgroundPosition,
     hasGoldenCrest,
+    levelsCompletedWithoutHint, reverseWordsFound, maxBonusWordsInLevel, powerupsUsed,
 }: Props) {
-    useEffect(() => {
-        if (!open) return;
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape") onClose();
-        };
-        document.addEventListener("keydown", handleKeyDown);
-        return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [open, onClose]);
-
-    if (!open) return null;
-
     return (
-        <div className="ws-profile-sheet" role="dialog" aria-modal="true" aria-labelledby="ws-profile-sheet-title">
-            <button className="ws-profile-sheet__scrim" onClick={onClose} aria-label="Close player profile" />
-            <section className="ws-profile-sheet__panel">
+        <Modal open={open} onClose={onClose} className="ws-profile-sheet">
+            <section className="ws-profile-sheet__panel" tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="ws-profile-sheet-title">
                 <div className="ws-profile-sheet__handle" aria-hidden="true" />
                 <header className="ws-profile-sheet__header">
                     <div>
@@ -87,6 +81,10 @@ export default function PlayerProfileSheet({
                     <div><strong>{categoriesSeen}</strong><span>Categories explored</span></div>
                     <div><strong>{bonusWordsFound}</strong><span>Bonus words found</span></div>
                     <div><strong>{plantsBloomed}</strong><span>Plants bloomed</span></div>
+                    <div><strong>{levelsCompletedWithoutHint}</strong><span>Levels without hints</span></div>
+                    <div><strong>{reverseWordsFound}</strong><span>Reverse words found</span></div>
+                    <div><strong>{maxBonusWordsInLevel}</strong><span>Best bonus words in one level</span></div>
+                    <div><strong>{powerupsUsed}</strong><span>Power-ups used</span></div>
                 </div>
 
                 <div className="ws-profile-sheet__progress">
@@ -105,6 +103,6 @@ export default function PlayerProfileSheet({
                     <button onClick={onOpenSettings}>⚙️ <span>Settings</span><b>›</b></button>
                 </div>
             </section>
-        </div>
+        </Modal>
     );
 }
