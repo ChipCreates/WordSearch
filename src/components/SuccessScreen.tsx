@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from "@mui/material";
 import { assetUrl } from "../categoryThemes";
+import type { BotanistPromotion } from "../botanistRanks";
+import BotanistPromotionCeremony from "./BotanistPromotionCeremony";
 
 type Props = {
     category: string;
@@ -8,6 +10,9 @@ type Props = {
     seeds: number;
     bonusWords: string[];
     bonusSeeds: number;
+    promotion?: BotanistPromotion;
+    promotionAvatarBackgroundPosition?: string;
+    onDismissPromotion?: () => void;
     onNextLevel: () => void;
     onRestart: () => void;
 };
@@ -35,7 +40,7 @@ function Seed({ delay }: { delay: number }) {
     );
 }
 
-export default function SuccessScreen({ category, level, seeds, bonusWords, bonusSeeds, onNextLevel, onRestart }: Props) {
+export default function SuccessScreen({ category, level, seeds, bonusWords, bonusSeeds, promotion, promotionAvatarBackgroundPosition = "0% 0%", onDismissPromotion = () => {}, onNextLevel, onRestart }: Props) {
     const [confirmRestartOpen, setConfirmRestartOpen] = useState(false);
 
     return (
@@ -46,6 +51,14 @@ export default function SuccessScreen({ category, level, seeds, bonusWords, bonu
             <h2 className="ws-success-overlay__heading">
                 Level {level} Complete!
             </h2>
+
+            {promotion && (
+                <BotanistPromotionCeremony
+                    promotion={promotion}
+                    avatarBackgroundPosition={promotionAvatarBackgroundPosition}
+                    onContinue={onDismissPromotion}
+                />
+            )}
 
             {/* Staggered Seeds */}
             <div style={{ display: "flex", gap: 12, justifyContent: "center", alignItems: "center" }}>
@@ -74,26 +87,28 @@ export default function SuccessScreen({ category, level, seeds, bonusWords, bonu
                 </p>
             )}
 
-            <div className="ws-success-overlay__actions">
-                <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={onNextLevel}
-                    id="success-next-level-btn"
-                >
-                    Next Level 🌱
-                </Button>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    size="large"
-                    onClick={() => setConfirmRestartOpen(true)}
-                    id="success-restart-btn"
-                >
-                    Restart Game
-                </Button>
-            </div>
+            {!promotion && (
+                <div className="ws-success-overlay__actions">
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        onClick={onNextLevel}
+                        id="success-next-level-btn"
+                    >
+                        Next Level 🌱
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        size="large"
+                        onClick={() => setConfirmRestartOpen(true)}
+                        id="success-restart-btn"
+                    >
+                        Restart Game
+                    </Button>
+                </div>
+            )}
 
             <Dialog open={confirmRestartOpen} onClose={() => setConfirmRestartOpen(false)}>
                 <DialogTitle sx={{ fontFamily: "var(--font-headline)", fontWeight: 700 }}>

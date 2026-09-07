@@ -14,6 +14,8 @@ export type AchievementStats = {
     powerupsUsed: number;
 };
 
+export type AchievementTier = "bronze" | "silver" | "gold" | "exceptional";
+
 export type Achievement = {
     id: string;
     name: string;
@@ -22,6 +24,9 @@ export type Achievement = {
     image?: string;
     maxProgress: number;
     getProgress: (stats: AchievementStats) => number;
+    family?: string;
+    tier?: AchievementTier;
+    actionableCopy?: string;
 };
 
 const capped = (value: number, max: number) => Math.min(max, value);
@@ -40,6 +45,21 @@ export const ACHIEVEMENTS: Achievement[] = [
     { id: "verdant-voyager", name: "Verdant Voyager", description: "Bloom plants from 3 rarity tiers", icon: "🌲", image: "/achievements/world-traveler.png", maxProgress: 3, getProgress: s => capped(s.bloomedRarityTiers, 3) },
     { id: "moss-mystic", name: "Moss Mystic", description: "Use a tactical power-up successfully", icon: "🔮", image: "/achievements/moss-mystic.png", maxProgress: 1, getProgress: s => s.powerupsUsed > 0 ? 1 : 0 },
     { id: "daily-dew", name: "Garden Cartographer", description: "Complete levels in 10 unique categories", icon: "💧", image: "/achievements/daily-dew.png", maxProgress: 10, getProgress: s => capped(s.uniqueCategoriesCompleted, 10) },
+    { id: "level-clears-10", name: "Pathfinder", description: "Complete 10 puzzle levels", icon: "🌿", maxProgress: 10, getProgress: s => capped(s.levelsCompleted, 10), family: "level-clears", tier: "bronze", actionableCopy: "Complete 10 levels." },
+    { id: "level-clears-25", name: "Grove Walker", description: "Complete 25 puzzle levels", icon: "🌿", maxProgress: 25, getProgress: s => capped(s.levelsCompleted, 25), family: "level-clears", tier: "silver", actionableCopy: "Complete 25 levels." },
+    { id: "level-clears-100", name: "Canopy Legend", description: "Complete 100 puzzle levels", icon: "🌿", maxProgress: 100, getProgress: s => capped(s.levelsCompleted, 100), family: "level-clears", tier: "exceptional", actionableCopy: "Complete 100 levels." },
+    { id: "bonus-words-25", name: "Wildword Collector", description: "Discover 25 bonus words", icon: "✨", maxProgress: 25, getProgress: s => capped(s.bonusWordsFound, 25), family: "bonus-words", tier: "silver", actionableCopy: "Find 25 words that are not on the list." },
+    { id: "bonus-words-100", name: "Bonus Botanist", description: "Discover 100 bonus words", icon: "✨", maxProgress: 100, getProgress: s => capped(s.bonusWordsFound, 100), family: "bonus-words", tier: "gold", actionableCopy: "Find 100 bonus words." },
+    { id: "categories-30", name: "World Rooted", description: "Explore 30 unique word categories", icon: "🗺️", maxProgress: 30, getProgress: s => capped(s.categoriesSeen, 30), family: "categories", tier: "silver", actionableCopy: "Explore 30 categories." },
+    { id: "categories-all", name: "Flora Atlas", description: "Explore every available word category", icon: "🗺️", maxProgress: 1, getProgress: s => s.totalCategories > 0 && s.categoriesSeen >= s.totalCategories ? 1 : 0, family: "categories", tier: "exceptional", actionableCopy: "Explore every available category." },
+    { id: "hint-free-20", name: "Quiet Gardener", description: "Complete 20 levels without using a hint", icon: "🌱", maxProgress: 20, getProgress: s => capped(s.levelsCompletedWithoutHint, 20), family: "hint-free", tier: "silver", actionableCopy: "Complete 20 levels without hints." },
+    { id: "hint-free-50", name: "Instinctive Cultivator", description: "Complete 50 levels without using a hint", icon: "🌱", maxProgress: 50, getProgress: s => capped(s.levelsCompletedWithoutHint, 50), family: "hint-free", tier: "gold", actionableCopy: "Complete 50 levels without hints." },
+    { id: "plants-bloomed-5", name: "Garden Tender", description: "Bloom 5 plants", icon: "🌸", maxProgress: 5, getProgress: s => capped(s.plantsBloomed, 5), family: "plants-bloomed", tier: "silver", actionableCopy: "Bloom 5 plants." },
+    { id: "plants-bloomed-20", name: "Conservatory Keeper", description: "Bloom 20 plants", icon: "🌸", maxProgress: 20, getProgress: s => capped(s.plantsBloomed, 20), family: "plants-bloomed", tier: "gold", actionableCopy: "Bloom 20 plants." },
+    { id: "powerups-used-10", name: "Toolwise", description: "Use 10 tactical power-ups", icon: "🧰", maxProgress: 10, getProgress: s => capped(s.powerupsUsed, 10), family: "powerups-used", tier: "silver", actionableCopy: "Use 10 tactical power-ups." },
+    { id: "powerups-used-50", name: "Field Master", description: "Use 50 tactical power-ups", icon: "🧰", maxProgress: 50, getProgress: s => capped(s.powerupsUsed, 50), family: "powerups-used", tier: "gold", actionableCopy: "Use 50 tactical power-ups." },
+    { id: "reverse-words-10", name: "Root Reverser", description: "Find 10 words in reverse", icon: "↩️", maxProgress: 10, getProgress: s => capped(s.reverseWordsFound, 10), family: "reverse-words", tier: "silver", actionableCopy: "Find 10 words in reverse." },
+    { id: "reverse-words-50", name: "Mirror Grove", description: "Find 50 words in reverse", icon: "↩️", maxProgress: 50, getProgress: s => capped(s.reverseWordsFound, 50), family: "reverse-words", tier: "gold", actionableCopy: "Find 50 words in reverse." },
 ];
 
 export function evaluateAchievements(stats: AchievementStats): string[] {

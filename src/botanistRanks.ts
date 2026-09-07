@@ -5,6 +5,12 @@ export type BotanistRank = {
     maxLevel: number | null;
 };
 
+export type BotanistPromotion = {
+    from: BotanistRank;
+    to: BotanistRank;
+    level: number;
+};
+
 const RANKS: BotanistRank[] = [
     { title: "Seedling Scout", avatarIndex: 0, minLevel: 1, maxLevel: 3 },
     { title: "Moss Tender", avatarIndex: 1, minLevel: 4, maxLevel: 6 },
@@ -33,6 +39,12 @@ export function getRankProgress(level: number): number {
     if (rank.maxLevel === null) return 1;
     const span = rank.maxLevel - rank.minLevel + 1;
     return Math.min(1, Math.max(0, (Math.max(1, Math.floor(level)) - rank.minLevel + 1) / span));
+}
+
+export function getBotanistPromotion(previousLevel: number, nextLevel: number): BotanistPromotion | null {
+    const from = getBotanistRank(previousLevel);
+    const to = getBotanistRank(nextLevel);
+    return from.title === to.title ? null : { from, to, level: Math.max(1, Math.floor(nextLevel)) };
 }
 
 export { RANKS as BOTANIST_RANKS };

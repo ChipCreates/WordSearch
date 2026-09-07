@@ -40,6 +40,19 @@ async function findAWord(result: { current: ReturnType<typeof useWordSearchGame>
     return word;
 }
 
+async function completeCurrentPuzzle(result: { current: ReturnType<typeof useWordSearchGame> }) {
+    await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+    for (const word of result.current.wordsToFind) {
+        if (result.current.foundWords[word]) continue;
+        const placement = findWordPlacement(result.current.gridData, result.current.gridSize, word);
+        if (!placement) throw new Error(`test setup: could not locate "${word}" on the generated board`);
+        const { r, c, dr, dc } = placement;
+        await act(async () => {
+            await result.current.submitSelection({ r, c }, { r: r + (word.length - 1) * dr, c: c + (word.length - 1) * dc });
+        });
+    }
+}
+
 describe("useWordSearchGame", () => {
     beforeEach(() => {
         localStorage.clear();
@@ -262,6 +275,45 @@ describe("useWordSearchGame", () => {
         act(() => expect(result.current.activateSuperRoot()).toBe(true));
         expect(result.current.powerupInventory["super-root"]).toBe(0);
         expect(result.current.powerupsUsed).toBe(4);
+    });
+
+    it("queues a rank promotion once when a frontier clear crosses a boundary", async () => {
+        localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+            ...DEFAULT_SAVE_DATA,
+            highestUnlockedLevel: 3,
+            level: 3,
+            completedLevels: [1, 2],
+            levelsCompleted: 2,
+        }));
+        const { result } = renderHook(() => useWordSearchGame());
+        await completeCurrentPuzzle(result);
+
+        expect(result.current.highestUnlockedLevel).toBe(4);
+        expect(result.current.promotionQueue).toHaveLength(1);
+        expect(result.current.promotionQueue[0].from.title).toBe("Seedling Scout");
+        expect(result.current.promotionQueue[0].to.title).toBe("Moss Tender");
+
+        act(() => result.current.dismissPromotion());
+        expect(result.current.promotionQueue).toEqual([]);
+    });
+
+    it("does not replay promotions from a loaded save or an older replay", async () => {
+        localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+            ...DEFAULT_SAVE_DATA,
+            highestUnlockedLevel: 4,
+            level: 4,
+            completedLevels: [1, 2, 3],
+            levelsCompleted: 3,
+        }));
+        const { result } = renderHook(() => useWordSearchGame());
+        await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+        expect(result.current.promotionQueue).toEqual([]);
+
+        act(() => result.current.goToLevel(3));
+        await waitFor(() => expect(result.current.level).toBe(3));
+        await waitFor(() => expect(result.current.status).toBe("Puzzle generated. Find the words!"));
+        await completeCurrentPuzzle(result);
+        expect(result.current.promotionQueue).toEqual([]);
     });
 
 });

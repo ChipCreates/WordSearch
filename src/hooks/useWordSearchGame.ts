@@ -10,6 +10,7 @@ import { DEFAULT_ONBOARDING_SEEN, type OnboardingSeen, type OnboardingStepId } f
 import { PLANTS_CATALOG } from "../plantsCatalog";
 import { GARDEN_WATERING_COOLDOWN_MS } from "../gameMechanics";
 import { getPlantEconomy } from "../economy";
+import { getBotanistPromotion, type BotanistPromotion } from "../botanistRanks";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -37,6 +38,7 @@ export function useWordSearchGame() {
     const [categoriesSeen, setCategoriesSeen] = useState<Set<string>>(() => new Set(initialSave.categoriesSeen));
     const [foundDiagonal, setFoundDiagonal] = useState(initialSave.foundDiagonal);
     const [justUnlocked, setJustUnlocked] = useState<Achievement[]>([]);
+    const [promotionQueue, setPromotionQueue] = useState<BotanistPromotion[]>([]);
 
     // Unified Botanical Sanctuary State
     const [ownedPlants, setOwnedPlants] = useState<string[]>(initialSave.ownedPlants);
@@ -226,6 +228,15 @@ export function useWordSearchGame() {
     }, [levelsCompleted, seeds, categoriesSeen, foundDiagonal, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed]);
 
     const dismissJustUnlocked = useCallback(() => setJustUnlocked(prev => prev.slice(1)), []);
+    const dismissPromotion = useCallback(() => setPromotionQueue(prev => prev.slice(1)), []);
+
+    const queueFrontierPromotion = (completedLevel: number) => {
+        if (completedLevel !== highestUnlockedLevel) return;
+        const promotion = getBotanistPromotion(highestUnlockedLevel, completedLevel + 1);
+        if (promotion) {
+            setPromotionQueue(prev => prev.some(item => item.level === promotion.level) ? prev : [...prev, promotion]);
+        }
+    };
 
     const initGame = async () => {
         puzzleInstanceIdRef.current += 1;
@@ -348,6 +359,7 @@ export function useWordSearchGame() {
                     setLevelComplete(true);
                     setLevelsCompleted((n: number) => n + 1);
                     setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
+                    queueFrontierPromotion(playingLevel);
                     setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
                     if (!hintUsedThisLevel) setLevelsCompletedWithoutHint(count => count + 1);
                     setUniqueCategoriesCompleted(count => Math.max(count, categoriesSeen.size + (categoriesSeen.has(category) ? 0 : 1)));
@@ -388,6 +400,7 @@ export function useWordSearchGame() {
             setLevelComplete(true);
             setLevelsCompleted((n: number) => n + 1);
             setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
+            queueFrontierPromotion(playingLevel);
             setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
             const completionReward = completedLevels.includes(playingLevel)
                 ? REWARDS.REPLAY_COMPLETE_SEEDS
@@ -474,6 +487,7 @@ export function useWordSearchGame() {
         setCategoriesSeen(new Set(DEFAULT_SAVE_DATA.categoriesSeen));
         setFoundDiagonal(DEFAULT_SAVE_DATA.foundDiagonal);
         setJustUnlocked([]);
+        setPromotionQueue([]);
         setOwnedPlants(DEFAULT_SAVE_DATA.ownedPlants);
         setWateredTimestamps(DEFAULT_SAVE_DATA.wateredTimestamps);
         setGrowthByPlant(DEFAULT_SAVE_DATA.growthByPlant);
@@ -704,7 +718,7 @@ export function useWordSearchGame() {
         seeds, status, levelComplete, category, levelsCompleted,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
-        unlockedAchievements, justUnlocked, dismissJustUnlocked,
+        unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,

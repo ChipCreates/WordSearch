@@ -44,7 +44,7 @@ export default function App() {
         level, highestUnlockedLevel, seeds, status, levelComplete, category, levelsCompleted,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
-        unlockedAchievements, justUnlocked, dismissJustUnlocked,
+        unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
@@ -76,9 +76,10 @@ export default function App() {
     const [fieldKitOpen, setFieldKitOpen] = useState(false);
     const fieldKitButtonRef = useRef<HTMLButtonElement>(null);
     const onboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
-    const botanistRank = getBotanistRank(level);
+    const botanistRank = getBotanistRank(highestUnlockedLevel);
     const avatarColumnPositions = ["0%", "24.8%", "49.5%", "74.3%", "99%"];
-    const avatarBackgroundPosition = `${avatarColumnPositions[botanistRank.avatarIndex % 5]} ${Math.floor(botanistRank.avatarIndex / 5) * 100}%`;
+    const getAvatarBackgroundPosition = (avatarIndex: number) => `${avatarColumnPositions[avatarIndex % 5]} ${Math.floor(avatarIndex / 5) * 100}%`;
+    const avatarBackgroundPosition = getAvatarBackgroundPosition(botanistRank.avatarIndex);
 
     const handleThemeModeChange = (mode: ThemeMode) => {
         setThemeMode(mode);
@@ -559,7 +560,7 @@ export default function App() {
                     onOpenAchievements={() => { setProfileOpen(false); setActiveTab("achievements"); }}
                     onOpenSettings={() => { setProfileOpen(false); setSettingsOpen(true); }}
                     botanistTitle={botanistRank.title}
-                    level={level}
+                    level={highestUnlockedLevel}
                     seeds={seeds}
                     levelsCompleted={levelsCompleted}
                     categoriesSeen={categoriesSeen.size}
@@ -636,6 +637,9 @@ export default function App() {
                         seeds={seeds}
                         bonusWords={bonusWordsThisLevel}
                         bonusSeeds={bonusSeedsThisLevel}
+                        promotion={promotionQueue[0]}
+                        promotionAvatarBackgroundPosition={promotionQueue[0] ? getAvatarBackgroundPosition(promotionQueue[0].to.avatarIndex) : "0% 0%"}
+                        onDismissPromotion={dismissPromotion}
                         onNextLevel={() => { playSfx("click"); nextLevel(); }}
                         onRestart={() => { playSfx("click"); restart(); }}
                     />

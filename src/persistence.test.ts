@@ -117,4 +117,18 @@ describe("Persistence Module", () => {
     const second = await loadSaveData();
     expect(second).toEqual(first);
   });
+
+  it("preserves legacy achievement IDs while normalizing a migrated save", async () => {
+    localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      version: 2,
+      level: 8,
+      highestUnlockedLevel: undefined,
+      completedLevels: undefined,
+      unlockedAchievements: ["night-bloomer", "word-weaver"],
+    }));
+
+    const loaded = await loadSaveData();
+    expect(loaded.unlockedAchievements).toEqual(["night-bloomer", "word-weaver"]);
+  });
 });

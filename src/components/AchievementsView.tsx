@@ -118,7 +118,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                             }}
                         >
                             <div>
-                                <div className={`ws-achievement-card__banner ${isUnlocked ? "" : "ws-achievement-card__banner--locked"}`}>
+                                    <div className={`ws-achievement-card__banner ${isUnlocked ? "" : "ws-achievement-card__banner--locked"} ${ach.tier ? `ws-achievement-card__banner--${ach.tier}` : ""}`}>
                                     <img className="ws-achievement-card__frame" src={assetUrl("achievements/botanical-banner-frame-circle.png")} alt="" />
                                     <span className="ws-achievement-card__badge">
                                         {ach.image ? (
@@ -147,8 +147,13 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                 </div>
 
                                 <p className="ws-achievement-card__description">
-                                    {ach.description}
+                                    {!isUnlocked && ach.actionableCopy ? ach.actionableCopy : ach.description}
                                 </p>
+                                {ach.tier && (
+                                    <span style={{ alignSelf: "flex-start", padding: "3px 8px", borderRadius: 999, background: isUnlocked ? "rgba(244, 201, 93, 0.16)" : "rgba(255,255,255,0.06)", color: isUnlocked ? "#f4c95d" : "var(--color-on-surface-variant)", border: "1px solid rgba(244, 201, 93, 0.28)", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                                        {ach.tier}
+                                    </span>
+                                )}
                             </div>
 
                             {/* Progress bar footer */}
