@@ -7,6 +7,8 @@ import { POWERUP_DEFINITIONS, type PowerupInventory } from "../../powerups";
 import { getGardenCareModel, formatCareCountdown } from "./gardenModels";
 import { getClosestMilestones } from "./achievementModels";
 import type { AchievementStats } from "../../achievements";
+import FieldNotesPanel from "../FieldNotesPanel";
+import type { FieldNoteId, FieldNotesState } from "../../fieldNotes";
 
 type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
 type Props = {
@@ -41,6 +43,8 @@ type Props = {
     onWaterAllReady: () => void;
     achievementStats: AchievementStats;
     unlockedAchievements: Set<string>;
+    fieldNotes: FieldNotesState;
+    onCollectFieldNote: (noteId: FieldNoteId) => boolean;
 };
 
 const compactButtonStyle: CSSProperties = { justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" };
@@ -90,6 +94,8 @@ export default function ContextSidebar(props: Props) {
             {props.activeTab === "garden" && <div className="ws-sidebar-summary"><strong>Garden Care</strong><span>{care.readyCount ? `${care.readyCount} plant${care.readyCount === 1 ? " is" : "s are"} ready to water.` : `Next watering in ${formatCareCountdown(care.nextReadyAt, now)}.`}</span>{care.closestPlant && <span>Closest bloom: {care.closestPlant.name} ({care.closestPlant.growth}%).</span>}<span>{care.bloomCount} bloomed · {care.collectionCount} collected</span><button className="ws-primary-action-btn" disabled={!care.readyCount} onClick={props.onWaterAllReady}>{care.readyCount ? `Water all ready (${care.readyCount})` : "Nothing ready to water"}</button></div>}
             {props.activeTab === "achievements" && <div className="ws-sidebar-summary"><strong>Closest Milestones</strong>{milestones.map(item => <span key={item.achievement.id}>{item.achievement.icon} {item.achievement.description} · {item.remaining} to go</span>)}</div>}
         </div>
+
+        <FieldNotesPanel state={props.fieldNotes} onCollect={props.onCollectFieldNote} />
 
         <div className="ws-sidebar-utilities">
             <div className="ws-sidebar-audio-controls">

@@ -1,6 +1,8 @@
 import { type CSSProperties } from "react";
 import { Modal } from "@mui/material";
 import { assetUrl } from "../categoryThemes";
+import FieldNotesPanel from "./FieldNotesPanel";
+import { createFieldNotesState, type FieldNoteId, type FieldNotesState } from "../fieldNotes";
 
 type Props = {
     open: boolean;
@@ -22,6 +24,8 @@ type Props = {
     reverseWordsFound: number;
     maxBonusWordsInLevel: number;
     powerupsUsed: number;
+    fieldNotes?: FieldNotesState;
+    onCollectFieldNote?: (noteId: FieldNoteId) => boolean;
 };
 
 export default function PlayerProfileSheet({
@@ -41,6 +45,7 @@ export default function PlayerProfileSheet({
     avatarBackgroundPosition,
     hasGoldenCrest,
     levelsCompletedWithoutHint, reverseWordsFound, maxBonusWordsInLevel, powerupsUsed,
+    fieldNotes = createFieldNotesState(), onCollectFieldNote = () => false,
 }: Props) {
     return (
         <Modal open={open} onClose={onClose} className="ws-profile-sheet">
@@ -86,6 +91,8 @@ export default function PlayerProfileSheet({
                     <div><strong>{maxBonusWordsInLevel}</strong><span>Best bonus words in one level</span></div>
                     <div><strong>{powerupsUsed}</strong><span>Power-ups used</span></div>
                 </div>
+
+                <FieldNotesPanel state={fieldNotes} onCollect={onCollectFieldNote} compact />
 
                 <div className="ws-profile-sheet__progress">
                     <div className="ws-profile-sheet__section-heading">Achievement progress</div>

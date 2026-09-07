@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { getGardenCareModel, formatCareCountdown } from "./gardenModels";
 import { getClosestMilestones } from "./achievementModels";
 import type { AchievementStats } from "../../achievements";
+import FieldNotesPanel from "../FieldNotesPanel";
+import type { FieldNoteId, FieldNotesState } from "../../fieldNotes";
 
 type Props = {
     activeTab: "play" | "levels" | "garden" | "achievements" | "settings";
@@ -13,6 +15,8 @@ type Props = {
     onWaterAllReady: () => void;
     achievementStats: AchievementStats;
     unlockedAchievements: Set<string>;
+    fieldNotes: FieldNotesState;
+    onCollectFieldNote: (noteId: FieldNoteId) => boolean;
 };
 
 export default function ResponsiveContextStrip(props: Props) {
@@ -25,10 +29,13 @@ export default function ResponsiveContextStrip(props: Props) {
     const milestones = getClosestMilestones(props.achievementStats, props.unlockedAchievements);
 
     if (props.activeTab === "settings") return null;
-    return <section className="ws-responsive-context-strip" aria-label="Context summary">
-        {props.activeTab === "play" && <><strong>Level {props.playingLevel}</strong><span>Frontier {props.highestUnlockedLevel}</span><span>Power-ups are available in the Field Kit below the board.</span></>}
-        {props.activeTab === "levels" && <><strong>Journey · Level {props.playingLevel}</strong><span>Highest unlocked: Level {props.highestUnlockedLevel}</span></>}
-        {props.activeTab === "garden" && <><strong>Garden Care</strong><span>{care.readyCount ? `${care.readyCount} ready to water` : `Next watering in ${formatCareCountdown(care.nextReadyAt, now)}`}</span>{care.closestPlant && <span>Closest bloom: {care.closestPlant.name} {care.closestPlant.growth}%</span>}<button disabled={!care.readyCount} onClick={props.onWaterAllReady}>{care.readyCount ? "Water all ready" : "Nothing ready"}</button></>}
-        {props.activeTab === "achievements" && <><strong>Closest Milestones</strong>{milestones.slice(0, 2).map(item => <span key={item.achievement.id}>{item.achievement.icon} {item.remaining} to go · {item.achievement.name}</span>)}</>}
-    </section>;
+    return <>
+        <section className="ws-responsive-context-strip" aria-label="Context summary">
+            {props.activeTab === "play" && <><strong>Level {props.playingLevel}</strong><span>Frontier {props.highestUnlockedLevel}</span><span>Power-ups are available in the Field Kit below the board.</span></>}
+            {props.activeTab === "levels" && <><strong>Journey · Level {props.playingLevel}</strong><span>Highest unlocked: Level {props.highestUnlockedLevel}</span></>}
+            {props.activeTab === "garden" && <><strong>Garden Care</strong><span>{care.readyCount ? `${care.readyCount} ready to water` : `Next watering in ${formatCareCountdown(care.nextReadyAt, now)}`}</span>{care.closestPlant && <span>Closest bloom: {care.closestPlant.name} {care.closestPlant.growth}%</span>}<button disabled={!care.readyCount} onClick={props.onWaterAllReady}>{care.readyCount ? "Water all ready" : "Nothing ready"}</button></>}
+            {props.activeTab === "achievements" && <><strong>Closest Milestones</strong>{milestones.slice(0, 2).map(item => <span key={item.achievement.id}>{item.achievement.icon} {item.remaining} to go · {item.achievement.name}</span>)}</>}
+        </section>
+        <FieldNotesPanel state={props.fieldNotes} onCollect={props.onCollectFieldNote} compact />
+    </>;
 }

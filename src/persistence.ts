@@ -2,6 +2,7 @@ import { CATEGORY_NAMES_BY_TIER } from "./backend";
 import { DEFAULT_POWERUP_INVENTORY, normalizePowerupInventory, type PowerupInventory } from "./powerups";
 import { COMPLETED_ONBOARDING_SEEN, DEFAULT_ONBOARDING_SEEN, type OnboardingSeen } from "./onboarding";
 import { invoke } from "@tauri-apps/api/core";
+import { createFieldNotesState, normalizeFieldNotesState, type FieldNotesState } from "./fieldNotes";
 
 export type SaveData = {
     version: number;
@@ -38,10 +39,11 @@ export type SaveData = {
     bloomedRarityTiers: number;
     uniqueCategoriesCompleted: number;
     powerupsUsed: number;
+    fieldNotes: FieldNotesState;
     onboardingSeen: OnboardingSeen;
 };
 
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 export const DEFAULT_SAVE_DATA: SaveData = {
     version: CURRENT_SCHEMA_VERSION,
@@ -77,6 +79,7 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     bloomedRarityTiers: 0,
     uniqueCategoriesCompleted: 0,
     powerupsUsed: 0,
+    fieldNotes: createFieldNotesState(),
     onboardingSeen: DEFAULT_ONBOARDING_SEEN,
 };
 
@@ -158,6 +161,7 @@ export function normalizeSaveData(raw: Partial<SaveData> & { stars?: number }): 
         totalPuzzleCompletions: Math.max(0, Math.floor(Number(raw.totalPuzzleCompletions) || Number(raw.levelsCompleted) || 0)),
         seeds,
         powerupInventory: normalizePowerupInventory(raw.powerupInventory),
+        fieldNotes: normalizeFieldNotesState(raw.fieldNotes),
         onboardingSeen: raw.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN,
         version: CURRENT_SCHEMA_VERSION,
     };

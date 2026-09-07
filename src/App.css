@@ -2062,3 +2062,31 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 @media (prefers-reduced-motion: reduce) {
   .ws-promotion-ceremony { animation: none; }
 }
+
+.ws-field-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(244, 201, 93, 0.22);
+  border-radius: 16px;
+  background: rgba(244, 201, 93, 0.055);
+}
+.ws-field-notes--compact { margin: 10px 12px 0; }
+.ws-field-notes__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--color-primary); font-family: var(--font-headline); }
+.ws-field-notes__heading span { color: var(--color-on-surface-variant); font-family: var(--font-body); font-size: 0.68rem; font-weight: 700; }
+.ws-field-notes__list { display: grid; gap: 7px; }
+.ws-field-note { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; padding: 8px 9px; border-radius: 11px; background: rgba(255,255,255,0.045); }
+.ws-field-note--complete { border: 1px solid rgba(244, 201, 93, 0.42); background: rgba(244, 201, 93, 0.1); }
+.ws-field-note__copy { display: grid; min-width: 0; gap: 2px; }
+.ws-field-note__copy strong { overflow: hidden; color: var(--color-on-surface); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+.ws-field-note__copy span { overflow: hidden; color: var(--color-on-surface-variant); font-size: 0.68rem; text-overflow: ellipsis; white-space: nowrap; }
+.ws-field-note__action { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; color: var(--color-on-surface-variant); font-size: 0.68rem; font-weight: 800; }
+.ws-field-note__action button { min-height: 32px; padding: 5px 8px; border: 1px solid rgba(244, 201, 93, 0.5); border-radius: 9px; background: rgba(244, 201, 93, 0.18); color: #f4c95d; font: inherit; cursor: pointer; }
+.ws-field-note__action button:hover, .ws-field-note__action button:focus-visible { background: rgba(244, 201, 93, 0.3); outline: 2px solid #f4c95d; outline-offset: 2px; }
+.ws-field-note__claimed { color: var(--color-primary); }
+
+@media (max-width: 1279px) {
+  .ws-field-notes:not(.ws-field-notes--compact) { display: none; }
+  .ws-field-notes--compact { margin: 8px 0 12px; }
+}

@@ -11,6 +11,7 @@ import { PLANTS_CATALOG } from "../plantsCatalog";
 import { GARDEN_WATERING_COOLDOWN_MS } from "../gameMechanics";
 import { getPlantEconomy } from "../economy";
 import { getBotanistPromotion, type BotanistPromotion } from "../botanistRanks";
+import { applyFieldNoteEvent, claimFieldNote as claimFieldNoteState, type FieldNoteEvent, type FieldNotesState } from "../fieldNotes";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -57,8 +58,14 @@ export function useWordSearchGame() {
     const [bloomedRarityTiers, setBloomedRarityTiers] = useState(initialSave.bloomedRarityTiers);
     const [uniqueCategoriesCompleted, setUniqueCategoriesCompleted] = useState(initialSave.uniqueCategoriesCompleted);
     const [powerupsUsed, setPowerupsUsed] = useState(initialSave.powerupsUsed);
+    const [fieldNotes, setFieldNotes] = useState<FieldNotesState>(initialSave.fieldNotes);
     const [hintUsedThisLevel, setHintUsedThisLevel] = useState(false);
     const [onboardingSeen, setOnboardingSeen] = useState<OnboardingSeen>(initialSave.onboardingSeen);
+    const fieldNotesRef = useRef(fieldNotes);
+    useEffect(() => { fieldNotesRef.current = fieldNotes; }, [fieldNotes]);
+    const recordFieldNoteEvent = useCallback((event: FieldNoteEvent) => {
+        setFieldNotes(previous => applyFieldNoteEvent(previous, event));
+    }, []);
     useEffect(() => {
         if (!bonusDiscovery) return;
         const timer = setTimeout(() => setBonusDiscovery(null), 2200);
@@ -125,6 +132,7 @@ export function useWordSearchGame() {
             setBloomedRarityTiers(native.bloomedRarityTiers);
             setUniqueCategoriesCompleted(native.uniqueCategoriesCompleted);
             setPowerupsUsed(native.powerupsUsed);
+            setFieldNotes(native.fieldNotes);
             setOnboardingSeen(native.onboardingSeen);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,6 +175,7 @@ export function useWordSearchGame() {
                 bloomedRarityTiers,
                 uniqueCategoriesCompleted,
                 powerupsUsed,
+                fieldNotes,
                 onboardingSeen,
             });
         }, 400);
@@ -198,6 +207,7 @@ export function useWordSearchGame() {
         bloomedRarityTiers,
         uniqueCategoriesCompleted,
         powerupsUsed,
+        fieldNotes,
         onboardingSeen,
     ]);
 
@@ -338,8 +348,14 @@ export function useWordSearchGame() {
 
             setFoundLines(prev => [...prev, newLine]);
             setFoundWords(nextFoundWords);
-            if (dr !== 0 && dc !== 0) setFoundDiagonal(true);
-            if (currentWord !== matchedWord) setReverseWordsFound(count => count + 1);
+            if (dr !== 0 && dc !== 0) {
+                setFoundDiagonal(true);
+                recordFieldNoteEvent({ kind: "word_found_diagonal" });
+            }
+            if (currentWord !== matchedWord) {
+                setReverseWordsFound(count => count + 1);
+                recordFieldNoteEvent({ kind: "word_found_reverse" });
+            }
 
             const rewardMultiplier = doubleSeedsActive ? 2 : 1;
             if (selection.kind === "bonus-found") {
@@ -349,6 +365,7 @@ export function useWordSearchGame() {
                 setBonusWordsFound((n: number) => n + 1);
                 setBonusWordsThisLevel(prev => [...prev, matchedWord]);
                 setBonusSeedsThisLevel(total => total + bonusSeeds);
+                recordFieldNoteEvent({ kind: "bonus_word_found" });
                 setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length + 1));
                 setBonusDiscovery({ word: matchedWord, seeds: bonusSeeds });
                 setStatus(`Bonus sprout! ${matchedWord} +${bonusSeeds} Seeds`);
@@ -361,6 +378,7 @@ export function useWordSearchGame() {
                     setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
                     queueFrontierPromotion(playingLevel);
                     setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
+                    recordFieldNoteEvent({ kind: "puzzle_completed", isFrontier: playingLevel === highestUnlockedLevel, hintUsed: hintUsedThisLevel, category });
                     if (!hintUsedThisLevel) setLevelsCompletedWithoutHint(count => count + 1);
                     setUniqueCategoriesCompleted(count => Math.max(count, categoriesSeen.size + (categoriesSeen.has(category) ? 0 : 1)));
                     setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length));
@@ -392,7 +410,10 @@ export function useWordSearchGame() {
 
         setFoundLines(prev => [...prev, newLine]);
         setFoundWords(nextFoundWords);
-        if (dr !== 0 && dc !== 0) setFoundDiagonal(true);
+        if (dr !== 0 && dc !== 0) {
+            setFoundDiagonal(true);
+            recordFieldNoteEvent({ kind: "word_found_diagonal" });
+        }
 
         const foundMainCount = wordsToFind.filter(w => nextFoundWords[w]).length;
         if (foundMainCount === wordsToFind.length) {
@@ -402,6 +423,7 @@ export function useWordSearchGame() {
             setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
             queueFrontierPromotion(playingLevel);
             setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
+            recordFieldNoteEvent({ kind: "puzzle_completed", isFrontier: playingLevel === highestUnlockedLevel, hintUsed: true, category });
             const completionReward = completedLevels.includes(playingLevel)
                 ? REWARDS.REPLAY_COMPLETE_SEEDS
                 : REWARDS.LEVEL_COMPLETE_SEEDS;
@@ -426,6 +448,7 @@ export function useWordSearchGame() {
         }
         setPowerupInventory(consumed.inventory);
         setPowerupsUsed(count => count + 1);
+        recordFieldNoteEvent({ kind: "powerup_used" });
         const size = gridSize;
         const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
 
@@ -488,6 +511,7 @@ export function useWordSearchGame() {
         setFoundDiagonal(DEFAULT_SAVE_DATA.foundDiagonal);
         setJustUnlocked([]);
         setPromotionQueue([]);
+        setFieldNotes(DEFAULT_SAVE_DATA.fieldNotes);
         setOwnedPlants(DEFAULT_SAVE_DATA.ownedPlants);
         setWateredTimestamps(DEFAULT_SAVE_DATA.wateredTimestamps);
         setGrowthByPlant(DEFAULT_SAVE_DATA.growthByPlant);
@@ -545,10 +569,21 @@ export function useWordSearchGame() {
         return true;
     }, [powerupInventory]);
 
+    const claimFieldNote = useCallback((noteId: Parameters<typeof claimFieldNoteState>[1]): boolean => {
+        const result = claimFieldNoteState(fieldNotesRef.current, noteId);
+        if (!result) return false;
+        fieldNotesRef.current = result.state;
+        setFieldNotes(result.state);
+        setSeeds(previous => previous + result.reward);
+        setStatus(`Field Note collected: +${result.reward} Seeds.`);
+        return true;
+    }, []);
+
     const claimHintUse = useCallback((): "free" | "paid" | null => {
         if (freeHintUsesRemaining > 0) {
             setHintUsedThisLevel(true);
             setPowerupsUsed(count => count + 1);
+            recordFieldNoteEvent({ kind: "powerup_used" });
             setFreeHintUsesRemaining(previous => previous - 1);
             return "free";
         }
@@ -557,6 +592,7 @@ export function useWordSearchGame() {
         setPowerupInventory(result.inventory);
         setHintUsedThisLevel(true);
         setPowerupsUsed(count => count + 1);
+        recordFieldNoteEvent({ kind: "powerup_used" });
         return "paid";
     }, [freeHintUsesRemaining, powerupInventory]);
 
@@ -582,7 +618,8 @@ export function useWordSearchGame() {
     const recordPlantBloom = useCallback(() => {
         setPlantsBloomed(count => count + 1);
         setBloomedRarityTiers(count => Math.min(7, count + 1));
-    }, []);
+        recordFieldNoteEvent({ kind: "plant_bloomed" });
+    }, [recordFieldNoteEvent]);
 
     const waterAllReady = useCallback((now = Date.now()) => {
         const readyPlants = PLANTS_CATALOG.filter(plant => {
@@ -593,6 +630,7 @@ export function useWordSearchGame() {
             setStatus("No plants are ready for watering yet.");
             return { watered: 0, bloomed: 0, seeds: 0 };
         }
+        recordFieldNoteEvent({ kind: "plant_watered" });
         const nextTimestamps: Record<string, number> = {};
         const nextGrowth: Record<string, number> = {};
         let bloomCount = 0;
@@ -613,10 +651,11 @@ export function useWordSearchGame() {
             setSeeds(previous => previous + bounty);
             setPlantsBloomed(previous => previous + bloomCount);
             setBloomedRarityTiers(previous => Math.min(7, previous + bloomCount));
+            recordFieldNoteEvent({ kind: "plant_bloomed" });
         }
         setStatus(`Watered ${readyPlants.length} plant${readyPlants.length === 1 ? "" : "s"}${bloomCount ? ` and bloomed ${bloomCount}` : ""}.`);
         return { watered: readyPlants.length, bloomed: bloomCount, seeds: bounty };
-    }, [ownedPlants, growthByPlant, wateredTimestamps]);
+    }, [ownedPlants, growthByPlant, wateredTimestamps, recordFieldNoteEvent]);
 
     // Store power-ups: Nitrogen Booster, theme unlocks, the profile crest.
     // Seed cost is deducted by the caller (SeedStoreDialog's handleRedeem)
@@ -631,6 +670,7 @@ export function useWordSearchGame() {
         setPowerupInventory(result.inventory);
         setDoubleSeedsActive(true);
         setPowerupsUsed(count => count + 1);
+        recordFieldNoteEvent({ kind: "powerup_used" });
         setStatus("Nitrogen Booster active: 2× Seeds for this puzzle.");
         return true;
     }, [doubleSeedsActive, levelComplete, wordsToFind.length, powerupInventory]);
@@ -656,6 +696,7 @@ export function useWordSearchGame() {
             setStatus("Super Root could not find a valid target.");
             return false;
         }
+        recordFieldNoteEvent({ kind: "powerup_used" });
         setStatus(`Super Root solved ${target}.`);
         return true;
     }, [wordsToFind, foundWords, levelComplete, powerupInventory, revealAndSolveWord]);
@@ -674,6 +715,7 @@ export function useWordSearchGame() {
         }
         setPowerupInventory(result.inventory);
         setPowerupsUsed(count => count + 1);
+        recordFieldNoteEvent({ kind: "powerup_used" });
         setCompassDirection({ dr: placement.dr, dc: placement.dc });
         setStatus("Compass active for 4 seconds.");
         window.setTimeout(() => setCompassDirection(null), 4000);
@@ -697,6 +739,7 @@ export function useWordSearchGame() {
         }
         setPowerupInventory(result.inventory);
         setPowerupsUsed(count => count + 1);
+        recordFieldNoteEvent({ kind: "powerup_used" });
         setSpectrometerCells(cells);
         setStatus(`${cells.length} unfound word starts highlighted for 5 seconds.`);
         window.setTimeout(() => setSpectrometerCells([]), 5000);
@@ -723,6 +766,7 @@ export function useWordSearchGame() {
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
         levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
+        fieldNotes, claimFieldNote,
         // Botanical Sanctuary state & handlers
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom, waterAllReady,

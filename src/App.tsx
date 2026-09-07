@@ -48,6 +48,7 @@ export default function App() {
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
+        fieldNotes, claimFieldNote,
         levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         onboardingSeen, dismissOnboardingStep, replayOnboarding,
         ownedPlants, wateredTimestamps, growthByPlant,
@@ -335,6 +336,8 @@ export default function App() {
                     }}
                     achievementStats={{ levelsCompleted, seeds, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed }}
                     unlockedAchievements={unlockedAchievements}
+                    fieldNotes={fieldNotes}
+                    onCollectFieldNote={claimFieldNote}
                 />
 
                 {/* ── Main Content Container ───────────────────────────────────── */}
@@ -352,6 +355,8 @@ export default function App() {
                         }}
                         achievementStats={{ levelsCompleted, seeds, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed }}
                         unlockedAchievements={unlockedAchievements}
+                        fieldNotes={fieldNotes}
+                        onCollectFieldNote={claimFieldNote}
                     />
                     {activeTab === "levels" ? (
                         <LevelsView
@@ -574,6 +579,8 @@ export default function App() {
                     reverseWordsFound={reverseWordsFound}
                     maxBonusWordsInLevel={maxBonusWordsInLevel}
                     powerupsUsed={powerupsUsed}
+                    fieldNotes={fieldNotes}
+                    onCollectFieldNote={claimFieldNote}
                 />
 
                 {/* ── Mobile Bottom Navigation Bar (BottomNavBar) ────────────────── */}

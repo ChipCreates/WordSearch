@@ -82,7 +82,7 @@ describe("Persistence Module", () => {
 
     const loaded = await loadSaveData();
 
-    expect(loaded.version).toBe(3);
+    expect(loaded.version).toBe(4);
     expect(loaded.seeds).toBe(275);
     expect(loaded.powerupInventory["single-letter-sprout"]).toBe(0);
     expect(loaded.powerupInventory["lumina-cyclone"]).toBe(0);
@@ -108,7 +108,7 @@ describe("Persistence Module", () => {
     }));
 
     const first = await loadSaveData();
-    expect(first.version).toBe(3);
+    expect(first.version).toBe(4);
     expect(first.highestUnlockedLevel).toBe(10);
     expect(first.completedLevels).toEqual(Array.from({ length: 9 }, (_, index) => index + 1));
     expect(first.level).toBe(10);
@@ -130,5 +130,18 @@ describe("Persistence Module", () => {
 
     const loaded = await loadSaveData();
     expect(loaded.unlockedAchievements).toEqual(["night-bloomer", "word-weaver"]);
+  });
+
+  it("initializes Field Notes without changing a legacy balance", async () => {
+    localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      version: 3,
+      fieldNotes: undefined,
+      seeds: 765,
+    }));
+    const loaded = await loadSaveData();
+    expect(loaded.version).toBe(4);
+    expect(loaded.seeds).toBe(765);
+    expect(loaded.fieldNotes.activeIds).toHaveLength(3);
   });
 });
