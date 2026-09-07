@@ -39,4 +39,13 @@ export default defineConfig(async () => ({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "mui-vendor": ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
+        },
+      },
+    },
+  },
 }));
