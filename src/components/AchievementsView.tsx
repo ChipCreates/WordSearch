@@ -37,7 +37,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                             </h2>
                         </div>
                         <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--color-on-surface-variant)", maxWidth: 640, lineHeight: 1.5 }}>
-                            You are blooming beautifully. Continue your linguistic cultivation to unlock more bioluminescent species for your digital conservatory.
+                            You are blooming beautifully. Keep finding words to bring new species to the Moonlit Conservatory.
                         </p>
                     </div>
 
@@ -119,6 +119,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                         >
                             <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
                                 <div
+                                    className={`ws-achievement-icon-frame ${isUnlocked ? "ws-achievement-icon-frame--unlocked" : "ws-achievement-icon-frame--locked"}`}
                                     style={{
                                         width: 64,
                                         height: 64,
@@ -139,6 +140,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                                 >
                                     {ach.image ? (
                                         <img
+                                            className="ws-achievement-art"
                                             src={ach.image.startsWith("http") ? ach.image : assetUrl(ach.image.startsWith("/") ? ach.image.slice(1) : ach.image)}
                                             alt={ach.name}
                                             style={{

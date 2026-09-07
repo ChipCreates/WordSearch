@@ -18,11 +18,16 @@
   --color-surface-container-low: #f8f4e3;
   --color-surface-container-high: #ece8d8;
   --color-on-surface:         #1d1c12;
-  --color-on-surface-variant: #404943;
+  --color-on-surface-variant: #344039;
   --color-outline:            #707973;
   --color-outline-variant:    #bfc9c1;
   --color-error:              #ba1a1a;
   --color-accent-gold:        #f4c95d;
+  --color-locked:             #58655e;
+  --color-reward:             #f4c95d;
+  --card-radius:              1.25rem;
+  --card-border:              1px solid var(--glass-border);
+  --card-glow:                0 0 20px rgba(var(--color-primary-rgb), 0.16);
 
   --glass-bg: rgba(242, 238, 221, 0.75);
   --glass-border: rgba(15, 82, 56, 0.15);
@@ -78,11 +83,13 @@
   --color-surface-container-low: #202a25;
   --color-surface-container-high: #354f52;
   --color-on-surface:         #cad2c5;
-  --color-on-surface-variant: #84a98c;
+  --color-on-surface-variant: #a8c7ad;
   --color-outline:            #52796f;
   --color-outline-variant:    #354f52;
   --color-error:              #ffb4ab;
   --color-accent-gold:        #ffe099;
+  --color-locked:             #8fa99a;
+  --color-reward:             #ffe099;
 
   --glass-bg: rgba(26, 36, 33, 0.95);
   --glass-border: rgba(255, 255, 255, 0.05);
@@ -114,11 +121,13 @@
   --color-surface-container-low: #faeddb;
   --color-surface-container-high: #efdcc0;
   --color-on-surface:         #2e1d0f;
-  --color-on-surface-variant: #5c4530;
+  --color-on-surface-variant: #6b4b2f;
   --color-outline:            #8a7259;
   --color-outline-variant:    #d4c0a3;
   --color-error:              #ba1a1a;
   --color-accent-gold:        #e0a840;
+  --color-locked:             #806b57;
+  --color-reward:             #e0a840;
 
   --glass-bg: rgba(245, 227, 204, 0.78);
   --glass-border: rgba(168, 85, 27, 0.18);
@@ -150,11 +159,13 @@
   --color-surface-container-low: #0a212a;
   --color-surface-container-high: #163542;
   --color-on-surface:         #d3ecf2;
-  --color-on-surface-variant: #7fa8b3;
+  --color-on-surface-variant: #9ed4dd;
   --color-outline:            #3d6875;
   --color-outline-variant:    #1c3944;
   --color-error:              #ffb4ab;
   --color-accent-gold:        #7fe8d4;
+  --color-locked:             #85aeb7;
+  --color-reward:             #7fe8d4;
 
   --glass-bg: rgba(7, 26, 34, 0.95);
   --glass-border: rgba(63, 208, 201, 0.12);
@@ -460,7 +471,7 @@ body {
 /* ── Level Goal Card Header Toolbar ────────────────────────────────────────── */
 .ws-level-goal-card {
   padding: var(--space-lg);
-  border-radius: var(--radius-leaf);
+  border-radius: var(--card-radius);
   margin-bottom: var(--space-md);
   display: flex;
   flex-direction: column;
@@ -723,9 +734,9 @@ body {
 .ws-bottom-nav__item .ws-navigation-art { width: 48px; height: 48px; }
 .ws-bottom-nav__item { padding: 2px 8px; gap: 0; min-width: 56px; }
 .ws-top-nav__link--active .ws-navigation-art,
-.ws-bottom-nav__item--active .ws-navigation-art { filter: drop-shadow(0 0 5px #f4dc70aa); transform: translateY(-2px); }
+.ws-bottom-nav__item--active .ws-navigation-art { filter: drop-shadow(0 0 5px rgba(var(--color-primary-rgb), 0.65)); transform: translateY(-2px); }
 button:hover > .ws-navigation-art { transform: translateY(-2px) scale(1.05); }
-button:focus-visible:has(.ws-navigation-art) { outline: 2px solid #d0ac32; outline-offset: 2px; }
+button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .ws-bottom-nav { height: calc(80px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .ws-main-layout { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
 .ws-main-layout.ws-main-layout--levels { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
@@ -746,7 +757,20 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid #d0ac32; outli
   text-align: center;
   font-size: 0.78rem;
   color: var(--color-on-surface-variant);
+  font-weight: 500;
 }
+
+.glass-panel {
+  border-radius: var(--card-radius);
+  border: var(--card-border);
+}
+
+.ws-plant-art,
+.ws-achievement-art {
+  filter: drop-shadow(0 0 10px rgba(var(--color-primary-rgb), 0.55));
+}
+
+.ws-achievement-art { transform: scale(1.08); }
 
 .ws-footer p {
   margin: 0;

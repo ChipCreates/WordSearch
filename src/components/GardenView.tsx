@@ -201,7 +201,7 @@ export default function GardenView({
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                             <EcoLeaf style={{ fontSize: 32, color: "var(--color-primary)" }} />
                             <h2 className="glow-text-emerald" style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.75rem", fontWeight: 800, color: "var(--color-primary)" }}>
-                                Digital Conservatory & Botanical Sanctuary
+                                Moonlit Conservatory
                             </h2>
                         </div>
                         <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--color-on-surface-variant)", maxWidth: 680, lineHeight: 1.5 }}>
@@ -334,6 +334,7 @@ export default function GardenView({
                                     }}
                                 >
                                     <img
+                                        className="ws-plant-art"
                                         src={plantImage}
                                         alt={plant.name}
                                         style={{

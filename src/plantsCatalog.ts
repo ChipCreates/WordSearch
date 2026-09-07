@@ -26,7 +26,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/moss-sprout.png",
         seedCost: 100,
         bloomBounty: 250,
-        description: "Soft bioluminescent carpeting moss that absorbs ambient moisture in crystalline terrarium glass.",
+        description: "Soft glowing moss that drinks in the mist beneath the glass.",
     },
     {
         id: "emerald-fern",
@@ -37,7 +37,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/emerald-fern.png",
         seedCost: 250,
         bloomBounty: 500,
-        description: "Fronds that glow with a brilliant viridian hue inside geometric brass-bound glass.",
+        description: "Bright green fronds glowing inside an old brass frame.",
     },
     {
         id: "succulent-rosette",
@@ -59,7 +59,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/midnight-lotus.png",
         seedCost: 600,
         bloomBounty: 1200,
-        description: "Opens only under moonlit glass panels, floating in runic aquatic water spheres.",
+        description: "Opens beneath the moon and floats in a quiet pool.",
     },
     {
         id: "golden-sunflower",
@@ -70,7 +70,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/golden-sunflower.png",
         seedCost: 850,
         bloomBounty: 1700,
-        description: "Channels solar radiation into pure botanical energy and golden light particles.",
+        description: "Catches the sun and fills the room with warm golden light.",
     },
     {
         id: "bonsai-bloom",
@@ -92,7 +92,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/crystal-succulent.png",
         seedCost: 1600,
         bloomBounty: 3200,
-        description: "Leaf tips crystallize into shimmering light refractors inside a botanical prism.",
+        description: "Its leaf tips catch the light like tiny crystals.",
     },
     {
         id: "solar-vine",
@@ -147,7 +147,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/emerald-fern.png",
         seedCost: 4200,
         bloomBounty: 8400,
-        description: "Neon green bamboo stalks with glowing nodes inside terrarium glass.",
+        description: "Tall green bamboo with lantern-bright joints.",
     },
     {
         id: "amber-flytrap",
@@ -158,7 +158,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/golden-sunflower.png",
         seedCost: 5000,
         bloomBounty: 10000,
-        description: "Golden amber carnivorous flora snapping at surrounding light specks.",
+        description: "Golden pitcher leaves that curl toward every little spark.",
     },
     {
         id: "calathea-orbifolia",
@@ -180,7 +180,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/bonsai-bloom.png",
         seedCost: 7200,
         bloomBounty: 14400,
-        description: "Radiant cherry blossom branch cascading with ethereal pink light particles.",
+        description: "A cherry branch dusted with drifting pink light.",
     },
     {
         id: "prism-cactus",
@@ -191,7 +191,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/crystal-succulent.png",
         seedCost: 8500,
         bloomBounty: 17000,
-        description: "Multi-faceted crystal cactus refracting vibrant rainbow beam flares.",
+        description: "A crystal cactus that scatters rainbows across the shelves.",
     },
     {
         id: "shadow-thistle",
@@ -202,7 +202,7 @@ export const PLANTS_CATALOG: PlantDef[] = [
         bloomImage: "/plants/nebula-pitcher.png",
         seedCost: 10000,
         bloomBounty: 20000,
-        description: "Electric violet thistle glowing brightly in total midnight shadow.",
+        description: "A violet thistle that shines brightest after dark.",
     },
     {
         id: "pothos-trailing",
