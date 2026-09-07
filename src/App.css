@@ -1935,6 +1935,9 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   }
 
   .ws-game-board-panel--compact { padding: 8px !important; }
+  .ws-gameplay-grid { gap: 6px; }
+  .ws-game-board-panel { margin-bottom: 0; }
+  .ws-found-words-panel { margin-top: 0; }
 
   .ws-found-words-header {
     display: none !important;
