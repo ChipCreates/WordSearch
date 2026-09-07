@@ -13,6 +13,14 @@ const lifecycle = keyframes`
   100% { transform: translate(-50%, -160%) scale(0.85); opacity: 0; }
 `;
 
+const cornerLifecycle = keyframes`
+  0%   { transform: translate(0, 24px) scale(0.7); opacity: 0; }
+  10%  { transform: translate(0, 0) scale(1.06); opacity: 1; }
+  18%  { transform: translate(0, 0) scale(1); opacity: 1; }
+  82%  { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(0, 24px) scale(0.85); opacity: 0; }
+`;
+
 const shine = keyframes`
   0%, 22% { transform: translateX(-140%) rotate(20deg); }
   55%, 100% { transform: translateX(240%) rotate(20deg); }
@@ -65,14 +73,19 @@ export default function AchievementBanner({ achievement, onDismiss }: Props) {
             }}
             sx={{
                 position: "fixed",
-                top: 0,
-                left: "50%",
+                top: { xs: 0, md: "auto" },
+                bottom: { xs: "auto", md: 24 },
+                left: { xs: "50%", md: "auto" },
+                right: { xs: "auto", md: 24 },
                 zIndex: 2000,
-                width: { xs: "calc(100% - 24px)", sm: 520 },
-                maxWidth: 520,
+                width: { xs: "calc(100% - 24px)", sm: 520, md: 470 },
+                maxWidth: { xs: 520, md: 470 },
                 cursor: "pointer",
                 pointerEvents: "auto",
-                animation: `${lifecycle} ${TOTAL_MS}ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
+                animation: {
+                    xs: `${lifecycle} ${TOTAL_MS}ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
+                    md: `${cornerLifecycle} ${TOTAL_MS}ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
+                },
             }}
         >
             <Box
@@ -84,12 +97,12 @@ export default function AchievementBanner({ achievement, onDismiss }: Props) {
                     gap: { xs: 1.5, sm: 2.5 },
                     mt: { xs: 1.5, sm: 2.5 },
                     p: { xs: 1.5, sm: 2.5 },
-                    borderRadius: 5,
+                    borderRadius: { xs: 5, md: 6 },
                     background:
-                        "linear-gradient(135deg, rgba(20, 40, 30, 0.95) 0%, rgba(10, 80, 50, 0.95) 50%, rgba(0, 228, 121, 0.85) 100%)",
-                    border: "2px solid rgba(0,228,121,0.6)",
+                        "linear-gradient(135deg, rgba(12, 34, 26, 0.96) 0%, rgba(13, 78, 51, 0.96) 58%, rgba(82, 143, 73, 0.92) 100%)",
+                    border: "1px solid rgba(164,247,146,0.7)",
                     boxShadow:
-                        "0 12px 40px rgba(0,0,0,0.6), 0 0 40px rgba(0,228,121,0.4)",
+                        "0 18px 46px rgba(0,0,0,0.55), 0 0 42px rgba(116,195,101,0.34), inset 0 1px 0 rgba(255,255,255,0.18)",
                     backdropFilter: "blur(12px)",
                 }}
             >
@@ -111,13 +124,13 @@ export default function AchievementBanner({ achievement, onDismiss }: Props) {
                         flexShrink: 0,
                         width: { xs: 60, sm: 76 },
                         height: { xs: 60, sm: 76 },
-                        borderRadius: "1rem",
+                        borderRadius: "50%",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "rgba(0, 228, 121, 0.15)",
-                        border: "2px solid rgba(0,228,121,0.5)",
-                        boxShadow: "0 0 20px rgba(0,228,121,0.3)",
+                        background: "radial-gradient(circle at 35% 30%, rgba(210,255,177,0.32), rgba(23,105,67,0.56) 55%, rgba(17,53,38,0.82))",
+                        border: "2px solid rgba(196,255,164,0.76)",
+                        boxShadow: "0 0 0 5px rgba(164,247,146,0.1), 0 0 28px rgba(164,247,146,0.42), inset 0 0 18px rgba(255,255,255,0.12)",
                         animation: `${medallionPulse} 1.1s ease-in-out infinite`,
                         overflow: "hidden",
                         padding: 1,

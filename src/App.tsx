@@ -462,10 +462,11 @@ export default function App() {
                             </div>
 
                             {/* Level Goal Header Toolbar */}
-                            <div className="glass-panel ws-level-goal-card">
+                            <div className={`glass-panel ws-level-goal-card${levelComplete ? " ws-level-goal-card--complete" : ""}`}>
                                 <div className="ws-level-goal-card__main">
                                     <div className="ws-level-goal-card__heading-row">
                                         <h2 className="ws-level-goal-card__level glow-text-emerald">{category || "Botanical"}</h2>
+                                        {levelComplete && <span className="ws-level-goal-card__complete-badge" role="status">✓ Goal complete</span>}
                                     </div>
                                     <div className="ws-level-goal-card__goal-row">
                                         <div className="ws-level-goal-card__goal-copy">

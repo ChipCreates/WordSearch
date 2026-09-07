@@ -223,7 +223,7 @@ body {
 .glass-panel.ws-level-goal-card {
   background: color-mix(in srgb, var(--glass-bg) 68%, transparent);
   backdrop-filter: blur(12px);
-  box-shadow: inset 0 0 32px rgba(var(--color-primary-rgb), 0.05), 0 6px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 0 32px rgba(var(--color-primary-rgb), 0.08), 0 8px 28px rgba(0, 0, 0, 0.18);
 }
 
 .glass-panel {
@@ -377,17 +377,35 @@ body {
 }
 
 .ws-side-nav__profile {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-md);
   margin-bottom: var(--space-lg);
-  padding: var(--space-md) var(--space-sm);
+  padding: 18px 14px 16px;
+  border: 1px solid rgba(132, 169, 140, 0.28);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(25, 58, 43, 0.72), rgba(10, 30, 24, 0.42));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 30px rgba(0,0,0,0.16);
+  overflow: hidden;
+}
+
+.ws-side-nav__profile::after {
+  content: "";
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  right: -70px;
+  top: -78px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(164,247,146,0.22), transparent 68%);
+  pointer-events: none;
 }
 
 .ws-side-nav__avatar-box {
-  width: 80px;
-  height: 132px;
-  border-radius: 0;
+  width: 92px;
+  height: 146px;
+  border-radius: 18px;
   background: transparent;
   display: flex;
   align-items: center;
@@ -401,7 +419,8 @@ body {
   background-position: var(--avatar-position);
   background-repeat: no-repeat;
   overflow: hidden;
-  box-shadow: none;
+  box-shadow: 0 0 0 1px rgba(164,247,146,0.2), 0 0 26px rgba(116,195,101,0.22);
+  filter: saturate(1.05) drop-shadow(0 8px 12px rgba(0,0,0,0.24));
 }
 
 .ws-side-nav__profile-copy {
@@ -416,13 +435,13 @@ body {
   gap: 6px;
   color: var(--color-primary);
   font-family: var(--font-headline);
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   font-weight: 800;
   line-height: 1.1;
 }
 
 .ws-side-nav__rank-level {
-  margin-top: 5px;
+  margin-top: 8px;
   color: var(--color-on-surface-variant);
   font-size: 0.72rem;
   font-weight: 600;
@@ -519,6 +538,29 @@ body {
   background: color-mix(in srgb, var(--glass-bg) 68%, transparent);
   backdrop-filter: blur(12px);
   box-shadow: inset 0 0 32px rgba(var(--color-primary-rgb), 0.05), 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.ws-level-goal-card--complete {
+  border-color: rgba(164, 247, 146, 0.62);
+  background: linear-gradient(110deg, rgba(15, 55, 35, 0.66), rgba(17, 42, 35, 0.44));
+  box-shadow: inset 0 0 38px rgba(116, 195, 101, 0.12), 0 0 32px rgba(116, 195, 101, 0.16);
+}
+
+.ws-level-goal-card__complete-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border: 1px solid rgba(164, 247, 146, 0.62);
+  border-radius: var(--radius-full);
+  color: #eaffd9;
+  background: rgba(116, 195, 101, 0.16);
+  box-shadow: 0 0 18px rgba(116, 195, 101, 0.22);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .ws-level-goal-card__main { flex: 1; min-width: 0; }
@@ -920,7 +962,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   right: 0;
   bottom: 0;
   z-index: 100;
-  background: rgba(19, 19, 19, 0.78);
+  background: radial-gradient(circle at 50% 40%, rgba(35, 112, 70, 0.22), transparent 42%), rgba(19, 19, 19, 0.78);
   backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
@@ -929,6 +971,33 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   gap: var(--space-md);
   padding: var(--space-lg);
   animation: successFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ws-success-overlay::before,
+.ws-success-overlay::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(72vw, 560px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(164, 247, 146, 0.24);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.55);
+  box-shadow: 0 0 80px rgba(116, 195, 101, 0.18), inset 0 0 70px rgba(155, 93, 229, 0.12);
+  pointer-events: none;
+  animation: successHalo 2.2s ease-out both;
+}
+
+.ws-success-overlay::after {
+  width: min(48vw, 360px);
+  animation-delay: 180ms;
+}
+
+@keyframes successHalo {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.55); }
+  28% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.12); }
 }
 
 @keyframes successFadeIn {
@@ -963,6 +1032,9 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   color: var(--color-primary);
 
   margin: 0;
+  text-shadow: 0 0 26px rgba(164, 247, 146, 0.45);
+  position: relative;
+  z-index: 1;
   animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
 
@@ -973,6 +1045,8 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   color: var(--color-on-surface-variant);
   margin: 0;
   animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+  position: relative;
+  z-index: 1;
 }
 
 .ws-success-overlay__actions {
@@ -980,6 +1054,8 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   gap: var(--space-md);
   margin-top: var(--space-md);
   animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s both;
+  position: relative;
+  z-index: 1;
 }
 
 .ws-success-overlay__actions button {
