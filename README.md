@@ -41,7 +41,7 @@ Word Sprout now sits on your home screen with its own icon, opens full-screen wi
 
 ## Words. Growth. Mindful Fun.
 
-From quick daily puzzles to a thriving collection of exotic plants, Word Sprout is a peaceful escape and a brain-boosting ritual in one — three ideas running through everything below: **challenge your brain**, **grow your collection**, **nurture beauty**.
+From quick themed puzzles to a thriving collection of exotic plants, Word Sprout is a peaceful escape and a brain-boosting ritual in one — three ideas running through everything below: **challenge your brain**, **grow your collection**, **nurture beauty**.
 
 ### 🔍 Find hidden words
 

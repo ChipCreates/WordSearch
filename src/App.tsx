@@ -498,16 +498,16 @@ export default function App() {
                                 </div>
                             </div>
 
-                            {/* Daily Goal Header Toolbar */}
-                            <div className="glass-panel ws-daily-goal-card">
+                            {/* Level Goal Header Toolbar */}
+                            <div className="glass-panel ws-level-goal-card">
                                 <div style={{ flex: 1 }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 8 }}>
                                         <div>
                                             <h2 className="glow-text-emerald" style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-primary)" }}>
-                                                Daily Goal
+                                                Level Goal
                                             </h2>
                                             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--color-on-surface-variant)" }}>
-                                                Harvest {wordsToFind.length} words to bloom your garden
+                                                Find all {wordsToFind.length} target words
                                             </p>
                                         </div>
                                         <span style={{ fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-primary)" }}>
@@ -530,7 +530,7 @@ export default function App() {
                                     <div style={{ width: 1, height: 36, background: "var(--glass-border)" }} />
                                     <div style={{ textAlign: "center" }}>
                                         <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--color-primary)" }}>#{level}</div>
-                                        <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.05em" }}>STREAK</div>
+                                        <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.05em" }}>LEVEL</div>
                                     </div>
                                 </div>
                             </div>

@@ -457,8 +457,8 @@ body {
   }
 }
 
-/* ── Daily Goal Card Header Toolbar ────────────────────────────────────────── */
-.ws-daily-goal-card {
+/* ── Level Goal Card Header Toolbar ────────────────────────────────────────── */
+.ws-level-goal-card {
   padding: var(--space-lg);
   border-radius: var(--radius-leaf);
   margin-bottom: var(--space-md);
@@ -468,7 +468,7 @@ body {
 }
 
 @media (min-width: 768px) {
-  .ws-daily-goal-card {
+  .ws-level-goal-card {
     flex-direction: row;
     align-items: center;
   }
@@ -884,7 +884,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid #d0ac32; outli
     padding-right: 10px;
   }
 
-  .ws-daily-goal-card {
+  .ws-level-goal-card {
     padding: 10px 14px;
     margin-bottom: 8px;
     gap: 6px;
@@ -925,7 +925,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid #d0ac32; outli
 }
 
 @media (max-width: 767px) {
-  .ws-daily-goal-card {
+  .ws-level-goal-card {
     display: none !important;
   }
 
