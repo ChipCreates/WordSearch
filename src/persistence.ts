@@ -1,6 +1,7 @@
 import { CATEGORY_NAMES_BY_TIER } from "./backend";
 import { DEFAULT_POWERUP_INVENTORY, normalizePowerupInventory, type PowerupInventory } from "./powerups";
 import { COMPLETED_ONBOARDING_SEEN, DEFAULT_ONBOARDING_SEEN, type OnboardingSeen } from "./onboarding";
+import { invoke } from "@tauri-apps/api/core";
 
 export type SaveData = {
     version: number;
@@ -143,7 +144,6 @@ export async function loadSaveData(): Promise<SaveData> {
     // Try loading from native Tauri filesystem store first
     if (isTauri()) {
         try {
-            const { invoke } = await import("@tauri-apps/api/core");
             const nativeState = await invoke<string | null>("load_game_state");
             if (nativeState) {
                 const parsed = JSON.parse(nativeState);
@@ -295,7 +295,6 @@ export async function writeSaveData(data: Partial<SaveData>): Promise<void> {
 
     if (isTauri()) {
         try {
-            const { invoke } = await import("@tauri-apps/api/core");
             await invoke("save_game_state", { state: serialized });
         } catch {
             // Ignore if backend command is not registered yet

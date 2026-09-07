@@ -34,17 +34,39 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Default globPatterns is js/css/html/ico/png/svg only -- misses
-        // the category background .jpg art, dictionary.json (the bonus-
-        // word list), and the background music/SFX .mp3 files, all of
-        // which need to be precached for the game to actually work offline
-        // once installed.
-        globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg,json,webmanifest,mp3}"],
-        // The 125k-word dictionary.json (~1.4MB) needs an explicit bump --
-        // workbox's default precache limit is 2MB total, and this one file
-        // alone is a meaningful chunk of that budget on top of the app
-        // bundle and every background image.
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // Keep the install payload focused on the app shell and core data.
+        // Optional art, music, and feature chunks are cached on demand below.
+        globPatterns: ["**/*.{js,css,html,ico,svg,webmanifest}", "dictionary.json"],
+        maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            urlPattern: /\/backgrounds\/.*\.(?:png|jpg|jpeg|webp)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "word-sprout-backgrounds",
+              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /\/(?:plants|achievements|powerups|avatars|navigation)\/.*\.(?:png|jpg|jpeg|webp)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "word-sprout-optional-art",
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /\/sounds\/.*\.mp3$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "word-sprout-audio",
+              expiration: { maxEntries: 16, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],
@@ -54,5 +76,13 @@ export default defineConfig({
   base: "/WordSprout/",
   build: {
     outDir: "dist-web",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom"],
+          "mui-vendor": ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
+        },
+      },
+    },
   },
 });

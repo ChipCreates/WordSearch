@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from "react";
 import { ThemeProvider, CssBaseline, Snackbar, Alert } from "@mui/material";
 
 import { sproutLightTheme, sproutDarkTheme, sproutAutumnTheme, sproutOceanTheme } from "./theme";
@@ -12,13 +12,13 @@ import { findWordPlacement } from "./gameMechanics";
 import GameCanvas from "./components/GameCanvas";
 import SuccessScreen from "./components/SuccessScreen";
 import AchievementBanner from "./components/AchievementBanner";
-import SettingsDialog from "./components/SettingsDialog";
-import AboutDialog from "./components/AboutDialog";
-import LevelsView from "./components/LevelsView";
-import GreenhouseFloorplanPanel from "./components/GreenhouseFloorplanPanel";
-import SeedStoreDialog from "./components/SeedStoreDialog";
-import AchievementsView from "./components/AchievementsView";
-import GardenView from "./components/GardenView";
+const SettingsDialog = lazy(() => import("./components/SettingsDialog"));
+const AboutDialog = lazy(() => import("./components/AboutDialog"));
+const LevelsView = lazy(() => import("./components/LevelsView"));
+const GreenhouseFloorplanPanel = lazy(() => import("./components/GreenhouseFloorplanPanel"));
+const SeedStoreDialog = lazy(() => import("./components/SeedStoreDialog"));
+const AchievementsView = lazy(() => import("./components/AchievementsView"));
+const GardenView = lazy(() => import("./components/GardenView"));
 import OnboardingCoachmark from "./components/OnboardingCoachmark";
 import { nextOnboardingStep } from "./onboarding";
 import EcoLeaf from "./components/icons/EcoLeaf";
@@ -179,13 +179,14 @@ export default function App() {
     };
 
     return (
+        <Suspense fallback={<div className="ws-loading-screen" role="status">Loading your conservatory…</div>}>
         <ThemeProvider theme={muiTheme}>
             <CssBaseline />
 
             <div
                 style={{
                     minHeight: "100vh",
-                    background: buildBackground(),
+                    backgroundImage: buildBackground(),
                     backgroundSize: (bgTheme as { backgroundSize?: string }).backgroundSize ?? "cover",
                     backgroundPosition: (bgTheme as { backgroundPosition?: string }).backgroundPosition ?? "center",
                     backgroundRepeat: (bgTheme as { backgroundRepeat?: string }).backgroundRepeat ?? "no-repeat",
@@ -615,7 +616,7 @@ export default function App() {
             </div>
 
             {/* ── Dialogs ───────────────────────────────────────────────────── */}
-            <SettingsDialog
+            {settingsOpen && <SettingsDialog
                 open={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
                 difficultyMode={difficultyMode}
@@ -635,11 +636,11 @@ export default function App() {
                 themeMode={themeMode}
                 onThemeModeChange={handleThemeModeChange}
                 unlockedThemes={unlockedThemes}
-            />
+            />}
 
-                <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} onReplayOnboarding={replayOnboarding} />
+                {aboutOpen && <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} onReplayOnboarding={replayOnboarding} />}
 
-            <SeedStoreDialog
+            {seedStoreOpen && <SeedStoreDialog
                 open={seedStoreOpen}
                 onClose={() => setSeedStoreOpen(false)}
                 seeds={seeds}
@@ -654,7 +655,7 @@ export default function App() {
                 hasGoldenCrest={hasGoldenCrest}
                 onUnlockGoldenCrest={unlockGoldenCrest}
                 showToast={showToast}
-            />
+            />}
 
             <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />
 
@@ -671,5 +672,6 @@ export default function App() {
                 </Alert>
             </Snackbar>
         </ThemeProvider>
+        </Suspense>
     );
 }
