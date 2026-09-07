@@ -1672,6 +1672,20 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 .ws-footer p {
   margin: 0;
 }
+.ws-bonus-sprouts {
+  margin-top: 8px;
+  padding: 2px 4px;
+  color: var(--color-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .ws-footer { display: none; }
+  .ws-bonus-sprouts { margin-top: 5px; padding: 0 2px; }
+}
 
 /* ── Winning Success Overlay & Celebration Animations ────────────────────── */
 .ws-success-overlay {
