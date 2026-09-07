@@ -23,6 +23,7 @@ export type PuzzleGenerationRequest = {
     category: string;
     level: number;
     mode: PuzzleMode;
+    gridSize?: number;
     rng?: () => number;
 };
 
@@ -37,8 +38,8 @@ export type PuzzleGenerationResult = {
     fallbackReason?: string;
 };
 
-export function getPuzzleDifficulty(level: number, mode: PuzzleMode): PuzzleDifficulty {
-    const gridSize = calculateGridSize(level, mode === "challenging" ? "hard" : mode === "easy" ? "easy" : "normal");
+export function getPuzzleDifficulty(level: number, mode: PuzzleMode, gridSizeOverride?: number): PuzzleDifficulty {
+    const gridSize = gridSizeOverride ?? calculateGridSize(level, mode === "challenging" ? "hard" : mode === "easy" ? "easy" : "normal");
     return {
         gridSize,
         targetCount: Math.max(3, gridSize - 1),
@@ -151,7 +152,7 @@ function fillGrid(grid: string[][], words: string[], rng: () => number): void {
 }
 
 export function generatePuzzle(request: PuzzleGenerationRequest): PuzzleGenerationResult {
-    const difficulty = getPuzzleDifficulty(request.level, request.mode);
+    const difficulty = getPuzzleDifficulty(request.level, request.mode, request.gridSize);
     const rng = request.rng ?? Math.random;
     const requestedTargets = request.targetWords.slice(0, difficulty.targetCount).map(word => word.toUpperCase());
     const bonusWords = (request.bonusWords ?? []).slice(0, difficulty.bonusCandidateCount).map(word => word.toUpperCase());

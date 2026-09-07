@@ -137,6 +137,20 @@ export function calculateGridSize(level: number, mode: "easy" | "normal" | "hard
     return Math.min(cap, baseSize + Math.floor((level - 1) / growthEvery));
 }
 
+/**
+ * Keeps dense boards comfortable on narrow touch screens. The cap is based on
+ * the CSS viewport rather than a device name so it also works in responsive
+ * previews and split-screen layouts.
+ */
+export function getResponsiveGridSize(
+    level: number,
+    mode: "easy" | "normal" | "hard" = "normal",
+    viewportWidth = typeof window === "undefined" ? Number.POSITIVE_INFINITY : window.innerWidth,
+): number {
+    const touchFriendlyCap = viewportWidth < 390 ? 8 : viewportWidth < 480 ? 9 : Number.POSITIVE_INFINITY;
+    return Math.min(calculateGridSize(level, mode), touchFriendlyCap);
+}
+
 export type WordPlacement = { r: number; c: number; dr: number; dc: number };
 
 /**

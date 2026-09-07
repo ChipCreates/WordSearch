@@ -1940,6 +1940,12 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
     margin: 0 auto;
   }
 
+  /* Give larger phones room to breathe around dense boards while keeping
+     each canvas cell a single, predictable touch target. */
+  @media (min-width: 400px) {
+    .ws-planter { max-width: min(96vw, min(48vh, 420px)) !important; }
+  }
+
   /* Keep the target list in the first viewport on the small early boards. */
   .ws-game-board-panel--compact .ws-planter {
     max-width: min(84vw, min(38vh, 270px)) !important;

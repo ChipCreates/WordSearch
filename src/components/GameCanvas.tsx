@@ -125,11 +125,12 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
         const cellSize = rect.width / gridSize;
         const compactViewport = window.matchMedia?.("(max-width: 767px)").matches ?? false;
+        const roomyPhoneViewport = compactViewport && window.matchMedia?.("(min-width: 400px)").matches;
         // Large cells on small grids otherwise make the glyphs feel oversized
         // on phones. Keep the denser boards readable while giving 4x4 and 5x5
         // layouts enough breathing room inside the board panel.
         const letterScale = compactViewport
-            ? (gridSize <= 4 ? 0.64 : gridSize <= 5 ? 0.69 : 0.74)
+            ? (gridSize <= 4 ? 0.64 : gridSize <= 5 ? 0.69 : roomyPhoneViewport ? 0.64 : 0.74)
             : 0.75;
         const t = celebrateProgressRef.current;
 

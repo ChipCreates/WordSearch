@@ -3,7 +3,7 @@ import { getPuzzleWords, validateWord, CATEGORY_NAMES, type Tier } from "../back
 import { HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 import { loadSaveDataSync, loadSaveData, writeSaveData, hasLocalSave, isTauri, CURRENT_SCHEMA_VERSION, DEFAULT_SAVE_DATA } from "../persistence";
-import { getRandomFillLetter, findWordPlacement, calculateGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel, classifyWordSelection } from "../gameMechanics";
+import { getRandomFillLetter, findWordPlacement, getResponsiveGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel, classifyWordSelection } from "../gameMechanics";
 import { consumePowerupCharge as consumeCharge, purchasePowerupCharge as purchaseCharge, type PowerupId, type PowerupInventory } from "../powerups";
 import { generatePuzzle, placeWordOnGrid } from "../puzzleGenerator";
 import { DEFAULT_ONBOARDING_SEEN, type OnboardingSeen, type OnboardingStepId } from "../onboarding";
@@ -261,7 +261,7 @@ export function useWordSearchGame() {
         setBonusSeedsThisLevel(0);
         setBonusDiscovery(null);
         setHintUsedThisLevel(false);
-        const size = calculateGridSize(playingLevel, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
+        const size = getResponsiveGridSize(playingLevel, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
         const count = Math.max(3, size - 1);
         const maxWordLength = size <= 4 ? size : size - 1;
 
@@ -292,6 +292,7 @@ export function useWordSearchGame() {
             category: puzzle.category,
             level: playingLevel,
             mode: difficultyMode,
+            gridSize: size,
         });
 
         setWordsToFind(generated.targetWords);
