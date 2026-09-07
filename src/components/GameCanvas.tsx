@@ -124,6 +124,13 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         if (!gridData.length) return;
 
         const cellSize = rect.width / gridSize;
+        const compactViewport = window.matchMedia?.("(max-width: 767px)").matches ?? false;
+        // Large cells on small grids otherwise make the glyphs feel oversized
+        // on phones. Keep the denser boards readable while giving 4x4 and 5x5
+        // layouts enough breathing room inside the board panel.
+        const letterScale = compactViewport
+            ? (gridSize <= 4 ? 0.64 : gridSize <= 5 ? 0.69 : 0.74)
+            : 0.75;
         const t = celebrateProgressRef.current;
 
         // Draws a found-word pill — collapses to a dot as celebrate progress t→1
@@ -223,17 +230,42 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             drawSelectionTrace(startCell.r, startCell.c, currentTarget.r, currentTarget.c);
         }
 
+        const letterColor = surfaceLetterColor(canvas);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        // Use Space Grotesk — gated on document.fonts.ready in the useEffect below.
+        ctx.font = `bold ${cellSize * letterScale}px 'Space Grotesk', 'Segoe UI', sans-serif`;
+
         if (!celebrate && focusedCell) {
             ctx.save();
             ctx.strokeStyle = surfacePrimaryColor(canvas);
             ctx.lineWidth = 3;
             ctx.shadowColor = surfacePrimaryColor(canvas);
             ctx.shadowBlur = 10;
+            const focusRadius = Math.max(10, cellSize * 0.45);
+            const focusCellCenterX = focusedCell.c * cellSize + cellSize / 2;
+            const focusCellCenterY = focusedCell.r * cellSize + cellSize / 2;
+            const focusedGlyph = gridData[focusedCell.r]?.[focusedCell.c] ?? "";
+            const glyphMetrics = ctx.measureText(focusedGlyph);
+            const glyphOffsetX = Number.isFinite(glyphMetrics.actualBoundingBoxLeft) && Number.isFinite(glyphMetrics.actualBoundingBoxRight)
+                ? (glyphMetrics.actualBoundingBoxRight - glyphMetrics.actualBoundingBoxLeft) / 2
+                : 0;
+            const glyphOffsetY = Number.isFinite(glyphMetrics.actualBoundingBoxAscent) && Number.isFinite(glyphMetrics.actualBoundingBoxDescent)
+                ? (glyphMetrics.actualBoundingBoxDescent - glyphMetrics.actualBoundingBoxAscent) / 2
+                : 0;
+            const opticalX = Math.max(-cellSize * 0.08, Math.min(cellSize * 0.08, glyphOffsetX));
+            const opticalY = Math.max(-cellSize * 0.08, Math.min(cellSize * 0.08, glyphOffsetY));
+            // Center on the visible glyph bounds, but keep the first-row ring
+            // inside the canvas on narrow/mobile layouts.
+            const focusY = Math.max(
+                focusCellCenterY + opticalY,
+                focusRadius + ctx.lineWidth / 2 + 2,
+            );
             ctx.beginPath();
             ctx.arc(
-                focusedCell.c * cellSize + cellSize / 2,
-                focusedCell.r * cellSize + cellSize / 2 - cellSize * 0.08,
-                Math.max(10, cellSize * 0.45),
+                focusCellCenterX + opticalX,
+                focusY,
+                focusRadius,
                 0,
                 Math.PI * 2,
             );
@@ -241,11 +273,6 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             ctx.restore();
         }
 
-        const letterColor = surfaceLetterColor(canvas);
-        ctx.textAlign    = "center";
-        ctx.textBaseline = "middle";
-        // Use Space Grotesk — gated on document.fonts.ready in the useEffect below.
-        ctx.font = `bold ${cellSize * 0.75}px 'Space Grotesk', 'Segoe UI', sans-serif`;
         ctx.globalAlpha = Math.max(0, 1 - t / 0.8);
 
         for (let r = 0; r < gridSize; r++) {

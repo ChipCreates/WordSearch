@@ -1177,7 +1177,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   }
 
   .ws-game-board-panel {
-    padding: 6px !important;
+    padding: 14px !important;
   }
 
   .ws-found-words-header {
