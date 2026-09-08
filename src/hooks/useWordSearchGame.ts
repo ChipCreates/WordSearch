@@ -805,6 +805,10 @@ export function useWordSearchGame() {
             const promotion = getBotanistPromotion(highestUnlockedLevel, toLevel);
             if (promotion) setPromotionQueue(prev => [...prev, promotion]);
         },
+        queueAchievementPreview: (id: string) => {
+            const achievement = ACHIEVEMENTS.find(a => a.id === id);
+            if (achievement) setJustUnlocked(prev => [...prev, achievement]);
+        },
     } : undefined;
 
     return {

@@ -43,6 +43,8 @@ type Props = {
     activateDoubleSeeds: () => boolean;
     staticPreviewActive: boolean;
     onSetStaticPreview: (active: boolean) => void;
+    persistAchievementBanner: boolean;
+    onSetPersistAchievementBanner: (active: boolean) => void;
 };
 
 function Section({ title, defaultOpen, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
@@ -155,27 +157,53 @@ export default function DebugPanel(props: Props) {
                 </Section>
 
                 <Section title={`Achievements (${props.unlockedAchievements.size}/${ACHIEVEMENTS.length})`}>
-                    <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                         <Button size="small" variant="outlined" onClick={() => debugApi.setUnlockedAchievements(ACHIEVEMENTS.map(a => a.id))}>Unlock all</Button>
                         <Button size="small" variant="outlined" onClick={() => debugApi.setUnlockedAchievements([])}>Lock all</Button>
                         <Button size="small" variant="outlined" onClick={() => props.onNavigate("achievements")}>Jump to Trophies</Button>
+                        <Button
+                            size="small"
+                            variant={props.persistAchievementBanner ? "contained" : "outlined"}
+                            onClick={() => props.onSetPersistAchievementBanner(!props.persistAchievementBanner)}
+                        >
+                            {props.persistAchievementBanner ? "Persisting banner" : "Persist achievement banner"}
+                        </Button>
                     </div>
+                    {props.persistAchievementBanner && (
+                        <p style={{ fontSize: 12, opacity: 0.7, marginTop: 0 }}>
+                            Banners previewed below stay on screen instead of auto-dismissing after
+                            6 seconds -- useful for screenshots. Click a banner (or turn this off) to
+                            dismiss it.
+                        </p>
+                    )}
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 240, overflowY: "auto" }}>
                         {ACHIEVEMENTS.map(a => {
                             const unlocked = props.unlockedAchievements.has(a.id);
                             return (
-                                <label key={a.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={unlocked}
-                                        onChange={() => {
-                                            const next = new Set(props.unlockedAchievements);
-                                            if (unlocked) next.delete(a.id); else next.add(a.id);
-                                            debugApi.setUnlockedAchievements(Array.from(next));
+                                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                                    <label style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={unlocked}
+                                            onChange={() => {
+                                                const next = new Set(props.unlockedAchievements);
+                                                if (unlocked) next.delete(a.id); else next.add(a.id);
+                                                debugApi.setUnlockedAchievements(Array.from(next));
+                                            }}
+                                        />
+                                        <span>{a.icon} {a.name}</span>
+                                    </label>
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={() => {
+                                            props.onNavigate("play");
+                                            debugApi.queueAchievementPreview(a.id);
                                         }}
-                                    />
-                                    <span>{a.icon} {a.name}</span>
-                                </label>
+                                    >
+                                        Preview banner
+                                    </Button>
+                                </div>
                             );
                         })}
                     </div>

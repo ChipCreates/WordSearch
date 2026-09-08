@@ -17,6 +17,7 @@ function makeDebugApi(): DebugApi {
         setUnlockedThemes: vi.fn(),
         setHasGoldenCrest: vi.fn(),
         queuePromotionPreview: vi.fn(),
+        queueAchievementPreview: vi.fn(),
     };
 }
 
@@ -43,6 +44,8 @@ function baseProps() {
         activateDoubleSeeds: vi.fn(() => true),
         staticPreviewActive: false,
         onSetStaticPreview: vi.fn(),
+        persistAchievementBanner: false,
+        onSetPersistAchievementBanner: vi.fn(),
     };
 }
 
@@ -109,6 +112,18 @@ describe("DebugPanel", () => {
         expect(props.debugApi.setUnlockedAchievements).toHaveBeenCalledWith(ACHIEVEMENTS.map(a => a.id));
         fireEvent.click(screen.getByRole("button", { name: "Lock all" }));
         expect(props.debugApi.setUnlockedAchievements).toHaveBeenCalledWith([]);
+    });
+
+    it("previews an achievement banner on the board and can toggle persisting it", () => {
+        const props = baseProps();
+        render(<DebugPanel {...props} />);
+        fireEvent.click(screen.getByText(`Achievements (0/${ACHIEVEMENTS.length})`));
+        fireEvent.click(screen.getAllByRole("button", { name: "Preview banner" })[0]);
+        expect(props.debugApi.queueAchievementPreview).toHaveBeenCalledWith(ACHIEVEMENTS[0].id);
+        expect(props.onNavigate).toHaveBeenCalledWith("play");
+
+        fireEvent.click(screen.getByRole("button", { name: "Persist achievement banner" }));
+        expect(props.onSetPersistAchievementBanner).toHaveBeenCalledWith(true);
     });
 
     it("calls onClose from its close button", () => {

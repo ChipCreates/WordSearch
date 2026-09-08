@@ -18,4 +18,13 @@ describe("botanical achievement banner", () => {
         const { container } = render(<AchievementBanner achievement={null} onDismiss={() => {}} />);
         expect(container.childElementCount).toBe(0);
     });
+
+    it("does not auto-dismiss when persist is set, for debug-panel screenshots", () => {
+        vi.useFakeTimers();
+        const onDismiss = vi.fn();
+        render(<AchievementBanner achievement={ACHIEVEMENTS[0]} onDismiss={onDismiss} persist />);
+        vi.advanceTimersByTime(10000);
+        expect(onDismiss).not.toHaveBeenCalled();
+        vi.useRealTimers();
+    });
 });

@@ -92,6 +92,7 @@ export default function App() {
     // GameCanvas's `celebrateStatic` prop) instead of the real completion
     // timeline -- suppresses the SuccessScreen popup below accordingly.
     const [debugStaticCelebration, setDebugStaticCelebration] = useState(false);
+    const [debugPersistAchievementBanner, setDebugPersistAchievementBanner] = useState(false);
     useEffect(() => {
         if (!debugRequested) return;
         const onKeyDown = (e: KeyboardEvent) => {
@@ -708,7 +709,11 @@ export default function App() {
                 </Suspense>
             )}
 
-            <AchievementBanner achievement={currentToast ?? null} onDismiss={dismissJustUnlocked} />
+            <AchievementBanner
+                achievement={currentToast ?? null}
+                onDismiss={dismissJustUnlocked}
+                persist={debugRequested && debugPersistAchievementBanner}
+            />
 
             <OnboardingCoachmark step={onboardingStep} onDismiss={() => onboardingStep && dismissOnboardingStep(onboardingStep.id)} />
 
@@ -762,6 +767,8 @@ export default function App() {
                                 activateDoubleSeeds={activateDoubleSeeds}
                                 staticPreviewActive={debugStaticCelebration}
                                 onSetStaticPreview={setDebugStaticCelebration}
+                                persistAchievementBanner={debugPersistAchievementBanner}
+                                onSetPersistAchievementBanner={setDebugPersistAchievementBanner}
                             />
                         </Suspense>
                     )}
