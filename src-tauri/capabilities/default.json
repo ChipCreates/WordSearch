@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
+  "description": "Capability for the main window. Note: save_game_state/load_game_state in src/lib.rs use raw std::fs against a fixed app_data_dir path and bypass this capability system entirely -- this file is not the complete picture of the app's filesystem access.",
   "windows": ["main"],
   "permissions": [
     "core:default",

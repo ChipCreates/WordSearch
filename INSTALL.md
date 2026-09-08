@@ -46,6 +46,21 @@ The Tauri desktop/Android app gets puzzle words and bonus-word validation from R
 npm install
 ```
 
+### Debug panel
+
+Any dev server (`npm run dev`, `npm run tauri dev`, or `npm run preview:web` after a dev build)
+answers `?debug=true` with a debug panel that can force any board size (4x4-12x12 with a real,
+solvable puzzle), unlock/lock any achievement, own or bloom any plant, jump to any Botanist rank,
+and grant or fire any power-up — all without touching your real save (autosave is disabled while
+the panel is active). Press **Ctrl+Shift+H** (rebindable from the panel) to hide the panel/banner
+for a clean screenshot.
+
+It's gated on `import.meta.env.DEV` in a shape Vite/Rollup dead-code-eliminates for good in a
+production build (`npm run build`/`npm run build:web`) -- there's no `DebugPanel` chunk, marker
+string, or reachable code path in `dist`/`dist-web` at all. `scripts/check-build-budget.mjs`
+greps every production build's output for that marker and fails the build if it's ever present;
+`.github/workflows/deploy-web.yml` runs it on every deploy.
+
 ### Desktop
 
 ```bash

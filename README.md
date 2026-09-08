@@ -3,6 +3,9 @@
 </p>
 
 # Word Sprout
+[![License: MIT](https://img.shields.io/github/license/ChipCreates/WordSprout)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/ChipCreates/WordSprout)](https://github.com/ChipCreates/WordSprout/releases/latest)
+[![Deploy to GitHub Pages](https://github.com/ChipCreates/WordSprout/actions/workflows/deploy-web.yml/badge.svg)](https://github.com/ChipCreates/WordSprout/actions/workflows/deploy-web.yml)
 
 ### 🌱 Grow Your Mind
 
@@ -66,6 +69,8 @@ From quick themed puzzles to a thriving collection of exotic plants, Word Sprout
 
 **Levels that actually celebrate you.** Clear one and every found word bar collapses into a large glowing dot. A fast constellation sweep connects all of those dots in discovery order, holds for a beat, then the whole board dissolves to reveal the category art underneath — closing with the action buttons gliding into place. It's a small thing. It still feels great every single time.
 
+**Your rank grows with you.** Ten Botanist ranks — from *Seedling Scout* up through *Cosmic Conservator* — unlock as you level up, each with its own title and avatar. Hit the next tier and a short promotion ceremony marks the occasion.
+
 **28 achievements dare you to keep climbing.** From *First Bloom* (finish your very first level) to *Canopy Legend* (reach level 100) to the sneaky *Diagonal Detective* (find a word placed on the diagonal), there's a badge tracking almost everything you do — including bonus words, reverse finds, hint-free runs, plant blooms, categories, and power-up use — visible any time from the trophy case. Rotating Field Notes add three short garden tasks at a time for extra Seed rewards.
 
 ### 🌿 Grow your garden
@@ -80,4 +85,8 @@ Underneath the collecting and the climbing, Word Sprout is still just a calming 
 
 ---
 
-**Play. Grow. Thrive.** Building it yourself, or want the full technical rundown of how one codebase ships to five platforms? That's all in **[INSTALL.md](INSTALL.md)**.
+**Play. Grow. Thrive.**
+
+## 🛠 Contributing
+
+Word Sprout is open source, and contributions are welcome — bug reports, feature ideas, and pull requests alike. Want to build it yourself, poke around the code, or ship a fix? **[INSTALL.md](INSTALL.md)** has the full technical rundown: tech stack, prerequisites, and build commands for desktop, Android, and the web PWA.

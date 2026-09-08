@@ -38,9 +38,19 @@ const format = (bytes) => `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 console.log(`Build budget: largest JavaScript entry ${format(jsBytes)} / ${format(limits.javascriptBytes)}`);
 console.log(`Build budget: precached install payload ${format(precacheBytes)} / ${format(limits.precacheBytes)}`);
 
+// Must never survive into a production bundle -- see src/components/DebugPanel.tsx
+// (this exact string is that file's WS_DEBUG_PANEL_MARKER export) and
+// src/debug/debugMode.ts (the import.meta.env.DEV gate that's supposed to
+// dead-code-eliminate it). A hit here means that gate failed.
+const DEBUG_PANEL_MARKER = "ws-debug-panel-root";
+const debugLeakFiles = jsEntries
+  .filter(({ file }) => fs.readFileSync(file, "utf8").includes(DEBUG_PANEL_MARKER))
+  .map(({ file }) => file);
+
 const violations = [];
 if (jsBytes > limits.javascriptBytes) violations.push(`JavaScript exceeds ${format(limits.javascriptBytes)}`);
 if (precacheBytes > limits.precacheBytes) violations.push(`install payload exceeds ${format(limits.precacheBytes)}`);
+if (debugLeakFiles.length) violations.push(`debug panel present in production bundle: ${debugLeakFiles.join(", ")}`);
 
 if (violations.length) {
   console.error(`Build budget failed: ${violations.join("; ")}.`);

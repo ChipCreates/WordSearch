@@ -12,6 +12,8 @@ import { GARDEN_WATERING_COOLDOWN_MS } from "../gameMechanics";
 import { getPlantEconomy } from "../economy";
 import { getBotanistPromotion, type BotanistPromotion } from "../botanistRanks";
 import { applyFieldNoteEvent, claimFieldNote as claimFieldNoteState, type FieldNoteEvent, type FieldNotesState } from "../fieldNotes";
+import { isDebugModeRequested } from "../debug/debugMode";
+import { DEBUG_CATEGORY, DEBUG_WORDS_BY_SIZE } from "../debug/debugContent";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -147,6 +149,9 @@ export function useWordSearchGame() {
     useEffect(() => {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
+            // Debug-panel tampering (fake achievements, granted plants, jumped
+            // levels...) must never overwrite the player's real save.
+            if (isDebugModeRequested()) return;
             writeSaveData({
                 version: CURRENT_SCHEMA_VERSION,
                 level: highestUnlockedLevel,
@@ -755,6 +760,53 @@ export function useWordSearchGame() {
         setHasGoldenCrest(true);
     }, []);
 
+    // Debug-only surface for the dev `?debug=true` panel (see
+    // src/debug/ and src/components/DebugPanel.tsx). `isDebugModeRequested()`
+    // is false in every production build, so this object -- and everything
+    // it closes over that isn't already used elsewhere in the hook -- is
+    // dead code eliminated from release bundles.
+    const debugApi = isDebugModeRequested() ? {
+        loadGrid: (size: number) => {
+            const words = DEBUG_WORDS_BY_SIZE[size] ?? [];
+            const generated = generatePuzzle({
+                targetWords: words,
+                category: DEBUG_CATEGORY,
+                level: playingLevel,
+                mode: difficultyMode,
+                gridSize: size,
+            });
+            setCategory(generated.category);
+            setWordsToFind(generated.targetWords);
+            setFoundWords({});
+            setFoundLines([]);
+            setGridSize(generated.gridSize);
+            setGridData(generated.grid);
+            setLevelComplete(false);
+            setDoubleSeedsActive(false);
+            setSpectrometerCells([]);
+            setCompassDirection(null);
+            setBonusWordsThisLevel([]);
+            setBonusSeedsThisLevel(0);
+            setBonusDiscovery(null);
+            setHintUsedThisLevel(false);
+            setStatus(`Debug: loaded a ${generated.gridSize}x${generated.gridSize} board.`);
+        },
+        setUnlockedAchievements: (ids: string[]) => setUnlockedAchievements(new Set(ids)),
+        setOwnedPlants: (ids: string[]) => setOwnedPlants(ids),
+        setGrowthByPlant: (plantId: string, value: number) => setGrowthByPlant(prev => ({ ...prev, [plantId]: value })),
+        setPowerupInventory: (id: PowerupId, value: number) => setPowerupInventory(prev => ({ ...prev, [id]: value })),
+        setHighestUnlockedLevel: (level: number) => {
+            setHighestUnlockedLevel(level);
+            setPlayingLevel(level);
+        },
+        setUnlockedThemes: (ids: string[]) => setUnlockedThemes(ids),
+        setHasGoldenCrest: (value: boolean) => setHasGoldenCrest(value),
+        queuePromotionPreview: (toLevel: number) => {
+            const promotion = getBotanistPromotion(highestUnlockedLevel, toLevel);
+            if (promotion) setPromotionQueue(prev => [...prev, promotion]);
+        },
+    } : undefined;
+
     return {
         // `level` remains a compatibility alias for existing presentation
         // components; progression decisions use the explicit fields above.
@@ -778,5 +830,8 @@ export function useWordSearchGame() {
         onboardingSeen, dismissOnboardingStep, replayOnboarding,
         unlockedThemes, unlockTheme,
         hasGoldenCrest, unlockGoldenCrest,
+        debugApi,
     };
 }
+
+export type DebugApi = NonNullable<ReturnType<typeof useWordSearchGame>["debugApi"]>;

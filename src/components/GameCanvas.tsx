@@ -15,6 +15,12 @@ type Props = {
     onSelectionEnd: (startCell: Cell, endCell: Cell) => void;
     onSwipe?: () => void;
     celebrate?: boolean;
+    // Dev-only: render the celebration in its fully-formed end state -- every
+    // pill collapsed to a dot, every constellation link fully drawn -- as a
+    // single frozen frame, instead of animating the reveal from scratch. Lets
+    // the debug panel preview "what the end screen looks like" without
+    // waiting through (or repeatedly re-triggering) the timed sweep.
+    celebrateStatic?: boolean;
     hintCell?: Cell | null;
     // Flora Spectrometer power-up: same glow treatment as hintCell, applied
     // to every currently-unfound word's start cell at once.
@@ -51,7 +57,11 @@ function surfacePrimaryColor(canvas: HTMLCanvasElement): string {
         .trim() || "#00e479";
 }
 
-export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false, hintCell, spectrometerCells = [], compassDirection = null, status = "" }: Props) {
+export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false, celebrateStatic = false, hintCell, spectrometerCells = [], compassDirection = null, status = "" }: Props) {
+    // Static preview is visually identical to a genuine celebration -- same
+    // collapsed dots, same fully-drawn constellation -- it just skips the
+    // driving rAF loop below instead of animating toward that state.
+    const celebrateActive = celebrate || celebrateStatic;
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const bubbleRef = useRef<HTMLDivElement>(null);
     const reducedMotionRef = useRef(false);
@@ -197,7 +207,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
         // Draw Reveal Root hint glow (full strength) and Flora Spectrometer
         // glow (dimmer, multiple cells at once) with the same circle style.
-        if (!celebrate && hintCell && hintCell.r >= 0 && hintCell.c >= 0) {
+        if (!celebrateActive && hintCell && hintCell.r >= 0 && hintCell.c >= 0) {
             const hx = hintCell.c * cellSize + cellSize / 2;
             const hy = hintCell.r * cellSize + cellSize / 2;
             ctx.save();
@@ -212,7 +222,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
             ctx.stroke();
             ctx.restore();
         }
-        (celebrate ? [] : spectrometerCells).forEach(cell => {
+        (celebrateActive ? [] : spectrometerCells).forEach(cell => {
             const sx = cell.c * cellSize + cellSize / 2;
             const sy = cell.r * cellSize + cellSize / 2;
             ctx.save();
@@ -238,7 +248,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         // Use Space Grotesk — gated on document.fonts.ready in the useEffect below.
         ctx.font = `bold ${cellSize * letterScale}px 'Space Grotesk', 'Segoe UI', sans-serif`;
 
-        if (!celebrate && focusedCell) {
+        if (!celebrateActive && focusedCell) {
             ctx.save();
             ctx.strokeStyle = surfacePrimaryColor(canvas);
             ctx.lineWidth = 3;
@@ -283,7 +293,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
                 const isHintCell = hintCell && hintCell.r === r && hintCell.c === c;
                 ctx.fillStyle = isHintCell
                     ? "#ffffff"
-                    : (pillColor && !celebrate ? contrastingTextColor(pillColor) : letterColor);
+                    : (pillColor && !celebrateActive ? contrastingTextColor(pillColor) : letterColor);
 
                 if (isHintCell) {
                     ctx.save();
@@ -304,7 +314,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         }
         ctx.globalAlpha = 1;
 
-        if (celebrate && celebrateElapsedRef.current >= CELEBRATE_DOTS_FORM_MS) {
+        if (celebrateActive && celebrateElapsedRef.current >= CELEBRATE_DOTS_FORM_MS) {
             drawConstellation(ctx, points, cellSize,
                 (celebrateElapsedRef.current - CELEBRATE_DOTS_FORM_MS) / CELEBRATE_TRAIL_MS,
                 celebrateElapsedRef.current);
@@ -343,9 +353,20 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
     useEffect(() => { schedulePaint(); }, [gridData, gridSize, foundLines, hintCell, spectrometerCells, focusedCell, keyboardSelection]);
 
-    // Celebration rAF loop (pill → dot collapse)
+    // Celebration rAF loop (pill → dot collapse). `celebrateStatic` wins over
+    // `celebrate` here -- it freezes progress/elapsed at the fully-revealed
+    // moment (every dot collapsed, every constellation link drawn, the flare
+    // burst included) instead of animating toward it, then paints that one
+    // frame and stops. Nothing else in `draw()` distinguishes the two --
+    // they share `celebrateActive` for every other rendering decision.
     useEffect(() => {
         let rafId: number | null = null;
+        if (celebrateStatic) {
+            celebrateProgressRef.current = 1;
+            celebrateElapsedRef.current = CELEBRATE_DOTS_FORM_MS + CELEBRATE_TRAIL_MS;
+            schedulePaint();
+            return;
+        }
         if (!celebrate || reducedMotionRef.current) {
             celebrateProgressRef.current = 0;
             celebrateElapsedRef.current = 0;
@@ -363,7 +384,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         };
         rafId = requestAnimationFrame(tick);
         return () => { if (rafId !== null) cancelAnimationFrame(rafId); };
-    }, [celebrate]);
+    }, [celebrate, celebrateStatic]);
 
     // ResizeObserver — coalesced via rAF
     useEffect(() => {
@@ -421,7 +442,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
     };
 
     const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-        if (celebrate) return;
+        if (celebrateActive) return;
         e.currentTarget.setPointerCapture(e.pointerId);
         const cell = getCellFromEvent(e);
         if (cell) {
@@ -486,7 +507,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
-        if (celebrate) return;
+        if (celebrateActive) return;
         if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
             e.preventDefault();
             const next = moveCell(focusedCell, e.key);
@@ -529,7 +550,7 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
 
     return (
         <div className="ws-planter">
-            {compassDirection && !celebrate && (
+            {compassDirection && !celebrateActive && (
                 <div
                     className="ws-compass-indicator"
                     style={{

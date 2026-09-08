@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Keeps the commit-SHA pins in .github/workflows/*.yml current -- Dependabot
+  # resolves the new SHA for a version bump the same way a tag-pinned
+  # workflow would auto-update, but as a reviewable PR instead of a silent
+  # moving target.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

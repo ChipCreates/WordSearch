@@ -23,12 +23,15 @@ const LevelsView = lazy(() => import("./components/LevelsView"));
 const SeedStoreDialog = lazy(() => import("./components/SeedStoreDialog"));
 const AchievementsView = lazy(() => import("./components/AchievementsView"));
 const GardenView = lazy(() => import("./components/GardenView"));
+const DebugPanel = import.meta.env.DEV ? lazy(() => import("./components/DebugPanel")) : null;
 import OnboardingCoachmark from "./components/OnboardingCoachmark";
 import { nextOnboardingStep } from "./onboarding";
 import EcoLeaf from "./components/icons/EcoLeaf";
 import NavigationArt from "./components/NavigationArt";
 import { getBotanistRank } from "./botanistRanks";
 import { ACHIEVEMENTS } from "./achievements";
+import { isDebugModeRequested } from "./debug/debugMode";
+import { loadScreenshotHotkey, comboMatches } from "./debug/screenshotMode";
 import {
     CheckCircleOutlined,
     LockOutlined,
@@ -37,12 +40,9 @@ import {
 
 const THEME_STORAGE_KEY = "wordsearch.themeMode";
 
-const isTwelveByTwelvePreview = import.meta.env.DEV
-    && typeof window !== "undefined"
-    && new URLSearchParams(window.location.search).get("preview") === "12x12";
-const TWELVE_BY_TWELVE_PREVIEW_GRID = Array.from({ length: 12 }, (_, row) =>
-    Array.from({ length: 12 }, (_, column) => "WORDSPROUTLEVEL12"[(row * 12 + column) % "WORDSPROUTLEVEL12".length]),
-);
+// `?debug=true` is only ever true in a dev build (see debugMode.ts) -- this
+// constant, and every branch it gates below, is dead code in production.
+const debugRequested = isDebugModeRequested();
 
 type ThemeMode = "sprout" | "midnight" | "autumn" | "ocean";
 type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
@@ -51,7 +51,7 @@ export default function App() {
     const {
         level, highestUnlockedLevel, seeds, status, levelComplete, category, levelsCompleted,
         gridSize, gridData, wordsToFind, foundWords, foundLines,
-        submitSelection, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
+        submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
@@ -67,10 +67,8 @@ export default function App() {
         powerupInventory, freeHintUsesRemaining, purchasePowerupCharge, claimHintUse,
         activateSuperRoot, activateCompass, activateSpectrometer, activateDoubleSeeds,
         spectrometerCells, compassDirection,
+        debugApi,
     } = useWordSearchGame();
-
-    const renderedGridSize = isTwelveByTwelvePreview ? 12 : gridSize;
-    const renderedGridData = isTwelveByTwelvePreview ? TWELVE_BY_TWELVE_PREVIEW_GRID : gridData;
 
     const {
         musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
@@ -86,6 +84,24 @@ export default function App() {
 
     const [activeTab, setActiveTab] = useState<ActiveTab>("play");
     const [fieldKitOpen, setFieldKitOpen] = useState(false);
+
+    // ── Debug panel (dev only -- see debugMode.ts) ──────────────────────────
+    const [debugPanelOpen, setDebugPanelOpen] = useState(debugRequested);
+    const [screenshotMode, setScreenshotMode] = useState(false);
+    // Freezes GameCanvas's celebration at its fully-formed end state (see
+    // GameCanvas's `celebrateStatic` prop) instead of the real completion
+    // timeline -- suppresses the SuccessScreen popup below accordingly.
+    const [debugStaticCelebration, setDebugStaticCelebration] = useState(false);
+    useEffect(() => {
+        if (!debugRequested) return;
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (!comboMatches(loadScreenshotHotkey(), e)) return;
+            e.preventDefault();
+            setScreenshotMode(value => !value);
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, []);
     const fieldKitButtonRef = useRef<HTMLButtonElement>(null);
     const onboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
     const botanistRank = getBotanistRank(highestUnlockedLevel);
@@ -464,15 +480,15 @@ export default function App() {
                             {/* Gameplay Grid & Found Words Side Panel */}
                             <div className="ws-gameplay-grid">
                                 {/* Left: Canvas Word Grid Panel */}
-                                <div className={`glass-panel ws-game-board-panel${renderedGridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
+                                <div className={`glass-panel ws-game-board-panel${gridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
                                     <div className="ws-mobile-board-header">
                                         <strong>{category || "Botanical"}</strong>
                                         <span>{foundCount}/{wordsToFind.length}</span>
                                     </div>
                                     <GameCanvas
-                                        gridSize={renderedGridSize}
-                                        gridData={renderedGridData}
-                                        foundLines={isTwelveByTwelvePreview ? [] : foundLines}
+                                        gridSize={gridSize}
+                                        gridData={gridData}
+                                        foundLines={foundLines}
                                         hintCell={hintCell}
                                         spectrometerCells={spectrometerCells}
                                         compassDirection={compassDirection}
@@ -480,6 +496,7 @@ export default function App() {
                                         onSelectionEnd={submitSelection}
                                         onSwipe={() => playSfx("swipe")}
                                         celebrate={levelComplete}
+                                        celebrateStatic={debugStaticCelebration}
                                     />
                                     {bonusDiscovery && (
                                         <div className="ws-bonus-sprouts" role="status">
@@ -621,7 +638,7 @@ export default function App() {
                 </nav>
 
                 {/* ── Success Overlay ────────────────────────────────────────────── */}
-                {showSuccessOverlay && (
+                {showSuccessOverlay && !debugStaticCelebration && (
                     <SuccessScreen
                         category={category}
                         level={level}
@@ -705,6 +722,51 @@ export default function App() {
                     {toast}
                 </Alert>
             </Snackbar>
+
+            {debugRequested && debugApi && !screenshotMode && (
+                <>
+                    <button
+                        type="button"
+                        onClick={() => setDebugPanelOpen(open => !open)}
+                        aria-label="Toggle debug panel"
+                        title="Debug panel"
+                        style={{
+                            position: "fixed", bottom: 16, right: 16, zIndex: 2000,
+                            width: 44, height: 44, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.3)",
+                            background: "#1a1a1a", color: "#fff", fontSize: 20, cursor: "pointer",
+                        }}
+                    >
+                        🐛
+                    </button>
+                    {debugPanelOpen && DebugPanel && (
+                        <Suspense fallback={null}>
+                            <DebugPanel
+                                onClose={() => setDebugPanelOpen(false)}
+                                onNavigate={setActiveTab}
+                                debugApi={debugApi}
+                                unlockedAchievements={unlockedAchievements}
+                                ownedPlants={ownedPlants}
+                                growthByPlant={growthByPlant}
+                                powerupInventory={powerupInventory}
+                                unlockedThemes={unlockedThemes}
+                                hasGoldenCrest={hasGoldenCrest}
+                                highestUnlockedLevel={highestUnlockedLevel}
+                                gridSize={gridSize}
+                                wordsToFind={wordsToFind}
+                                foundWords={foundWords}
+                                revealAndSolveWord={revealAndSolveWord}
+                                reshuffle={reshuffle}
+                                activateSuperRoot={activateSuperRoot}
+                                activateCompass={activateCompass}
+                                activateSpectrometer={activateSpectrometer}
+                                activateDoubleSeeds={activateDoubleSeeds}
+                                staticPreviewActive={debugStaticCelebration}
+                                onSetStaticPreview={setDebugStaticCelebration}
+                            />
+                        </Suspense>
+                    )}
+                </>
+            )}
         </ThemeProvider>
     );
 }
