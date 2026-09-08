@@ -801,8 +801,8 @@ export function useWordSearchGame() {
         },
         setUnlockedThemes: (ids: string[]) => setUnlockedThemes(ids),
         setHasGoldenCrest: (value: boolean) => setHasGoldenCrest(value),
-        queuePromotionPreview: (toLevel: number) => {
-            const promotion = getBotanistPromotion(highestUnlockedLevel, toLevel);
+        queuePromotionPreview: (fromLevel: number, toLevel: number) => {
+            const promotion = getBotanistPromotion(fromLevel, toLevel);
             if (promotion) setPromotionQueue(prev => [...prev, promotion]);
         },
         queueAchievementPreview: (id: string) => {

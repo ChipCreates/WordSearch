@@ -3,7 +3,7 @@ import { Dialog, DialogTitle, DialogContent, IconButton, Button, Chip } from "@m
 import CloseIcon from "@mui/icons-material/Close";
 import { ACHIEVEMENTS } from "../achievements";
 import { PLANTS_CATALOG } from "../plantsCatalog";
-import { BOTANIST_RANKS } from "../botanistRanks";
+import { BOTANIST_RANKS, getBotanistRank } from "../botanistRanks";
 import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../powerups";
 import type { DebugApi } from "../hooks/useWordSearchGame";
 import {
@@ -221,7 +221,22 @@ export default function DebugPanel(props: Props) {
                                 {rank.title}
                             </Button>
                         ))}
-                        <Button size="small" variant="outlined" onClick={() => debugApi.queuePromotionPreview(props.highestUnlockedLevel)}>Preview promotion ceremony</Button>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => {
+                                const currentRank = getBotanistRank(props.highestUnlockedLevel);
+                                const currentRankIndex = BOTANIST_RANKS.findIndex(r => r.title === currentRank.title);
+                                const previousRank = BOTANIST_RANKS[currentRankIndex - 1];
+                                const nextRank = BOTANIST_RANKS[currentRankIndex + 1];
+                                const [fromLevel, toLevel] = previousRank
+                                    ? [previousRank.minLevel, props.highestUnlockedLevel]
+                                    : [currentRank.minLevel, nextRank?.minLevel ?? currentRank.minLevel];
+                                debugApi.queuePromotionPreview(fromLevel, toLevel);
+                            }}
+                        >
+                            Preview promotion ceremony
+                        </Button>
                     </div>
                 </Section>
 

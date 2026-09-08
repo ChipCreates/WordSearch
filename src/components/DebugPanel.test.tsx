@@ -126,6 +126,24 @@ describe("DebugPanel", () => {
         expect(props.onSetPersistAchievementBanner).toHaveBeenCalledWith(true);
     });
 
+    it("previews a genuine promotion spanning the rank below the current one", () => {
+        const props = baseProps();
+        props.highestUnlockedLevel = 7; // Fern Forager (minLevel 7), preceded by Moss Tender (minLevel 4)
+        render(<DebugPanel {...props} />);
+        fireEvent.click(screen.getByText("Botanist rank"));
+        fireEvent.click(screen.getByRole("button", { name: "Preview promotion ceremony" }));
+        expect(props.debugApi.queuePromotionPreview).toHaveBeenCalledWith(4, 7);
+    });
+
+    it("previews an upcoming promotion when already at the lowest rank", () => {
+        const props = baseProps();
+        props.highestUnlockedLevel = 1; // Seedling Scout, the first rank, has no preceding rank
+        render(<DebugPanel {...props} />);
+        fireEvent.click(screen.getByText("Botanist rank"));
+        fireEvent.click(screen.getByRole("button", { name: "Preview promotion ceremony" }));
+        expect(props.debugApi.queuePromotionPreview).toHaveBeenCalledWith(1, 4); // Moss Tender starts at 4
+    });
+
     it("calls onClose from its close button", () => {
         const props = baseProps();
         render(<DebugPanel {...props} />);
