@@ -45,7 +45,9 @@ From quick themed puzzles to a thriving collection of exotic plants, Word Sprout
 
 ### 🔍 Find hidden words
 
-**44 hand-curated categories, and none of them get old.** Standard categories (Animals, Food, Sports, Horror Themes, Mythical Creatures) and 16 brutal Challenging ones (Chemistry, Legal Terms, Etymology, Cryptic/Obscure Adjectives) rotate as you level up. Boards grow from a friendly 4×4 up to a punishing 10×10 on Standard — 5×5 to 12×12 on Challenging — so the game keeps pace with how good you're getting instead of staying easy forever.
+**113 hand-curated categories, and none of them get old.** Choose from Easy, Standard, or Challenging word pools, including familiar themes such as Animals, Food, and Sports alongside tougher Chemistry, Legal Terms, Etymology, and Cryptic/Obscure Adjectives categories. Boards grow from a gentle 3×3 up to 8×8 on Easy, 4×4 to 10×10 on Standard, and 5×5 to 12×12 on Challenging, so the game keeps pace with how good you're getting instead of staying easy forever. On narrow touch screens, dense boards scale down automatically to keep each letter comfortable to select.
+
+**Make the rotation your own.** Search and select favorite categories in Settings, then turn on the favorites-only option when you want a more personal route through the garden. The game remembers your choices and keeps recently used words from repeating immediately when a favorite category comes around again.
 
 **Bonus words are hiding in plain sight, too.** The list on the side isn't the whole puzzle — drag out *any* real English word hiding in the grid, not just the ones asked for, and bank bonus Seeds for it. There are 125,312 of them to find, courtesy of the full ENABLE word list, so the board is a lot more generous than it looks.
 
@@ -62,9 +64,9 @@ From quick themed puzzles to a thriving collection of exotic plants, Word Sprout
 
 ### 🏆 Progress & achieve
 
-**Levels that actually celebrate you.** Clear one and the found words collapse into glowing dots, hold for a beat, then the whole board dissolves to reveal the category art underneath — closing with the action buttons gliding into place. It's a small thing. It still feels great every single time.
+**Levels that actually celebrate you.** Clear one and every found word bar collapses into a large glowing dot. A fast constellation sweep connects all of those dots in discovery order, holds for a beat, then the whole board dissolves to reveal the category art underneath — closing with the action buttons gliding into place. It's a small thing. It still feels great every single time.
 
-**13 achievements dare you to keep climbing.** From *Night Bloomer* (finish your very first level) to *Zenith Climber* (reach level 50) to the sneaky *Diagonal Detective* (find one single word placed on the diagonal), there's a badge tracking almost everything you do — visible any time from the trophy case.
+**28 achievements dare you to keep climbing.** From *First Bloom* (finish your very first level) to *Canopy Legend* (reach level 100) to the sneaky *Diagonal Detective* (find a word placed on the diagonal), there's a badge tracking almost everything you do — including bonus words, reverse finds, hint-free runs, plant blooms, categories, and power-up use — visible any time from the trophy case. Rotating Field Notes add three short garden tasks at a time for extra Seed rewards.
 
 ### 🌿 Grow your garden
 
@@ -74,7 +76,7 @@ From quick themed puzzles to a thriving collection of exotic plants, Word Sprout
 
 ### 🧘 Relax & focus, anywhere
 
-Underneath the collecting and the climbing, Word Sprout is still just a calming word search — the kind of thing you open for two minutes and stay with for twenty. The web build is a fully installable, offline-capable PWA, and real native apps cover Windows, macOS, Linux, and Android besides — so there's no platform, and no five minutes of downtime, where you can't pick it back up.
+Underneath the collecting and the climbing, Word Sprout is still just a calming word search — the kind of thing you open for two minutes and stay with for twenty. The responsive play surface supports touch and keyboard navigation, and the mobile Field Kit keeps power-ups and Field Notes within easy reach without crowding the board. The web build is a fully installable, offline-capable PWA, and real native apps cover Windows, macOS, Linux, and Android besides — so there's no platform, and no five minutes of downtime, where you can't pick it back up.
 
 ---
 
