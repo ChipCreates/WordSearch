@@ -5,7 +5,7 @@ import type { AchievementStats } from "../../achievements";
 import type { FieldNoteId, FieldNotesState } from "../../fieldNotes";
 
 type Props = {
-    activeTab: "play" | "levels" | "garden" | "achievements" | "settings";
+    activeTab: "play" | "levels" | "garden" | "achievements" | "settings" | "about";
     highestUnlockedLevel: number;
     playingLevel: number;
     ownedPlants: string[];
@@ -27,7 +27,7 @@ export default function ResponsiveContextStrip(props: Props) {
     const care = getGardenCareModel(props.ownedPlants, props.wateredTimestamps, props.growthByPlant, now);
     const milestones = getClosestMilestones(props.achievementStats, props.unlockedAchievements);
 
-    if (props.activeTab === "settings") return null;
+    if (props.activeTab === "settings" || props.activeTab === "about") return null;
     if (props.activeTab === "play") return null;
     return <>
         <section className="ws-responsive-context-strip" aria-label="Context summary">

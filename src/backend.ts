@@ -42,6 +42,9 @@ const WEB_CATEGORIES: CategoryData[] = Object.keys(categoryModules)
     .map(k => categoryModules[k]);
 
 export const CATEGORY_NAMES: string[] = WEB_CATEGORIES.map(c => c.name);
+export const MAX_TARGET_WORD_LENGTH = Math.max(
+    ...WEB_CATEGORIES.flatMap(category => category.words.map(word => word.length)),
+);
 
 function webPool(tier: Tier): CategoryData[] {
     return WEB_CATEGORIES.filter(c => c.tier === tier);

@@ -57,6 +57,18 @@ function surfacePrimaryColor(canvas: HTMLCanvasElement): string {
         .trim() || "#00e479";
 }
 
+export function letterScaleForGrid(gridSize: number, compactViewport: boolean, roomyPhoneViewport = false): number {
+    if (compactViewport) {
+        if (gridSize <= 4) return 0.54;
+        if (gridSize <= 5) return 0.60;
+        return roomyPhoneViewport ? 0.64 : 0.70;
+    }
+    if (gridSize <= 4) return 0.56;
+    if (gridSize <= 5) return 0.62;
+    if (gridSize <= 6) return 0.68;
+    return 0.72;
+}
+
 export default function GameCanvas({ gridSize, gridData, foundLines, onSelectionEnd, onSwipe, celebrate = false, celebrateStatic = false, hintCell, spectrometerCells = [], compassDirection = null, status = "" }: Props) {
     // Static preview is visually identical to a genuine celebration -- same
     // collapsed dots, same fully-drawn constellation -- it just skips the
@@ -136,12 +148,10 @@ export default function GameCanvas({ gridSize, gridData, foundLines, onSelection
         const cellSize = rect.width / gridSize;
         const compactViewport = window.matchMedia?.("(max-width: 767px)").matches ?? false;
         const roomyPhoneViewport = compactViewport && window.matchMedia?.("(min-width: 400px)").matches;
-        // Large cells on small grids otherwise make the glyphs feel oversized
-        // on phones. Keep the denser boards readable while giving 4x4 and 5x5
-        // layouts enough breathing room inside the board panel.
-        const letterScale = compactViewport
-            ? (gridSize <= 4 ? 0.64 : gridSize <= 5 ? 0.69 : roomyPhoneViewport ? 0.64 : 0.74)
-            : 0.75;
+        // Small grids create very large cells, so their glyphs need a lower
+        // scale than dense boards. CSS adds matching board inset by grid size;
+        // this second adjustment keeps the letter-to-cell ratio balanced.
+        const letterScale = letterScaleForGrid(gridSize, compactViewport, roomyPhoneViewport);
         const t = celebrateProgressRef.current;
 
         // Draws a found-word pill — collapses to a dot as celebrate progress t→1

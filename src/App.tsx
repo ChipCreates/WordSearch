@@ -5,7 +5,7 @@ import { sproutLightTheme, sproutDarkTheme, sproutAutumnTheme, sproutOceanTheme 
 import { useWordSearchGame } from "./hooks/useWordSearchGame";
 import { useAudio } from "./hooks/useAudio";
 import { CATEGORY_THEMES, DEFAULT_THEME, assetUrl } from "./categoryThemes";
-import { CATEGORY_NAMES } from "./backend";
+import { CATEGORY_NAMES, MAX_TARGET_WORD_LENGTH } from "./backend";
 import { CELEBRATE_FADE_DELAY_MS } from "./constants";
 import { findWordPlacement } from "./gameMechanics";
 
@@ -18,7 +18,7 @@ import ResponsiveContextStrip from "./components/sidebar/ResponsiveContextStrip"
 import MobilePowerupDrawer from "./components/sidebar/MobilePowerupDrawer";
 import DestinationSkeleton from "./components/DestinationSkeleton";
 const SettingsDialog = lazy(() => import("./components/SettingsDialog"));
-const AboutDialog = lazy(() => import("./components/AboutDialog"));
+const AboutView = lazy(() => import("./components/AboutView"));
 const LevelsView = lazy(() => import("./components/LevelsView"));
 const SeedStoreDialog = lazy(() => import("./components/SeedStoreDialog"));
 const AchievementsView = lazy(() => import("./components/AchievementsView"));
@@ -45,7 +45,7 @@ const THEME_STORAGE_KEY = "wordsearch.themeMode";
 const debugRequested = isDebugModeRequested();
 
 type ThemeMode = "sprout" | "midnight" | "autumn" | "ocean";
-type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
+type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings" | "about";
 
 export default function App() {
     const {
@@ -55,7 +55,7 @@ export default function App() {
         unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
-        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
+        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsToFind, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
         fieldNotes, claimFieldNote,
         levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         onboardingSeen, dismissOnboardingStep, replayOnboarding,
@@ -133,7 +133,6 @@ export default function App() {
 
     // ── Dialog & Celebration states ────────────────────────────────────────────
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [aboutOpen, setAboutOpen] = useState(false);
     const [seedStoreOpen, setSeedStoreOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     // Shared toast, replacing alert() across the Garden and Seed Store --
@@ -200,6 +199,8 @@ export default function App() {
     const bgTheme = CATEGORY_THEMES[category] ?? DEFAULT_THEME;
     const currentToast = justUnlocked[0];
     const foundCount = wordsToFind.filter(w => foundWords[w]).length;
+    const bonusGoalCount = bonusWordsToFind.length;
+    const bonusGoalProgress = Math.min(bonusWordsThisLevel.length, bonusGoalCount);
     const muiTheme = themeMode === "midnight" ? sproutDarkTheme
         : themeMode === "autumn" ? sproutAutumnTheme
         : themeMode === "ocean" ? sproutOceanTheme
@@ -333,7 +334,7 @@ export default function App() {
                     musicMuted={musicMuted}
                     onToggleSfx={toggleSfxMuted}
                     onToggleMusic={toggleMusicMuted}
-                    onHelp={() => setAboutOpen(true)}
+                    onHelp={() => setActiveTab("about")}
                     ownedPlants={ownedPlants}
                     wateredTimestamps={wateredTimestamps}
                     growthByPlant={growthByPlant}
@@ -348,7 +349,10 @@ export default function App() {
                 />
 
                 {/* ── Main Content Container ───────────────────────────────────── */}
-                <main className={`ws-main-layout${activeTab === "levels" ? " ws-main-layout--levels" : ""}`}>
+                <main
+                    className={`ws-main-layout${activeTab === "levels" ? " ws-main-layout--levels" : ""}${activeTab === "about" ? " ws-main-layout--about" : ""}`}
+                    style={{ "--found-words-width": `${192 + MAX_TARGET_WORD_LENGTH * 10}px` } as CSSProperties}
+                >
                     <ResponsiveContextStrip
                         activeTab={activeTab}
                         highestUnlockedLevel={highestUnlockedLevel}
@@ -365,7 +369,11 @@ export default function App() {
                         fieldNotes={fieldNotes}
                         onCollectFieldNote={claimFieldNote}
                     />
-                    {activeTab === "levels" ? (
+                    {activeTab === "about" ? (
+                        <Suspense fallback={<DestinationSkeleton destination="about" />}>
+                            <AboutView onReplayOnboarding={() => { replayOnboarding(); setActiveTab("play"); }} />
+                        </Suspense>
+                    ) : activeTab === "levels" ? (
                         <Suspense fallback={<DestinationSkeleton destination="levels" />}>
                             <LevelsView
                             currentLevel={level}
@@ -454,7 +462,7 @@ export default function App() {
                                                     </svg>
                                                 </div>
                                                 <div className="ws-level-goal-card__complete-sub">
-                                                    All words found. Well done, Botanist!
+                                                    All target words found{bonusGoalCount ? ` · ${bonusGoalProgress}/${bonusGoalCount} bonus sprouts` : ""}. Well done, Botanist!
                                                 </div>
                                             </div>
                                         </div>
@@ -474,6 +482,16 @@ export default function App() {
                                         <div className="ws-level-goal-card__progress">
                                             <div className="bioluminescent-line" style={{ width: `${Math.min(100, (foundCount / (wordsToFind.length || 1)) * 100)}%` }} />
                                         </div>
+                                        {bonusGoalCount > 0 && (
+                                            <div className="ws-level-goal-card__bonus-goal">
+                                                <div className="ws-level-goal-card__bonus-copy">
+                                                    <span aria-hidden="true">✨</span>
+                                                    <span className="ws-level-goal-card__goal-label">Bonus Goal</span>
+                                                    <strong>Plus, try to find the {bonusGoalCount} hidden bonus {bonusGoalCount === 1 ? "word" : "words"}, if you can.</strong>
+                                                </div>
+                                                <span className="ws-level-goal-card__bonus-count">{bonusGoalProgress}/{bonusGoalCount}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -481,7 +499,7 @@ export default function App() {
                             {/* Gameplay Grid & Found Words Side Panel */}
                             <div className="ws-gameplay-grid">
                                 {/* Left: Canvas Word Grid Panel */}
-                                <div className={`glass-panel ws-game-board-panel${gridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
+                                <div className={`glass-panel ws-game-board-panel ws-game-board-panel--grid-${gridSize}${gridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
                                     <div className="ws-mobile-board-header">
                                         <strong>{category || "Botanical"}</strong>
                                         <span>{foundCount}/{wordsToFind.length}</span>
@@ -535,7 +553,7 @@ export default function App() {
                                             {foundCount} / {wordsToFind.length}
                                         </span>
                                     </div>
-                                    <div className="ws-bonus-sprouts" aria-label={`${bonusWordsThisLevel.length} bonus words found`}>
+                                    <div className="ws-bonus-sprouts ws-bonus-sprouts--summary" aria-label={`${bonusWordsThisLevel.length} bonus words found`}>
                                         ✨ Bonus sprouts: {bonusWordsThisLevel.length ? bonusWordsThisLevel.join(", ") : "Find extra words for Seeds"}
                                     </div>
 
@@ -562,10 +580,6 @@ export default function App() {
                         </>
                     )}
 
-                    {/* ── Footer ───────────────────────────────────────────────── */}
-                    <footer className="ws-footer">
-                        <p>© {new Date().getFullYear()} Word Sprout Studio. v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.1.0"}</p>
-                    </footer>
                 </main>
 
                 <PlayerProfileSheet
@@ -678,13 +692,8 @@ export default function App() {
                         themeMode={themeMode}
                         onThemeModeChange={handleThemeModeChange}
                         unlockedThemes={unlockedThemes}
+                        onOpenAbout={() => { setSettingsOpen(false); setActiveTab("about"); }}
                     />
-                </Suspense>
-            )}
-
-            {aboutOpen && (
-                <Suspense fallback={<div className="ws-lazy-dialog-fallback"><DestinationSkeleton destination="about" /></div>}>
-                    <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} onReplayOnboarding={replayOnboarding} />
                 </Suspense>
             )}
 

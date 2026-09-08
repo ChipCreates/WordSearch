@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { findWordPlacement } from "./gameMechanics";
-import { MAX_GENERATION_ATTEMPTS, generatePuzzle, getPuzzleDifficulty } from "./puzzleGenerator";
+import { MAX_GENERATION_ATTEMPTS, generatePuzzle, getBonusGoalCount, getPuzzleDifficulty } from "./puzzleGenerator";
 
 const WORDS = ["ALPHA", "BETA", "GAMMA", "DELTA", "OMEGA", "SIGMA", "THETA", "ZETA", "IOTA", "KAPPA"];
 
@@ -13,6 +13,31 @@ function seeded(seed: number): () => number {
 }
 
 describe("puzzleGenerator", () => {
+    it("scales the guaranteed bonus offering by difficulty, board size, and open space", () => {
+        expect(getBonusGoalCount("easy", 8, 32, 8)).toBe(2);
+        expect(getBonusGoalCount("standard", 8, 32, 8)).toBe(3);
+        expect(getBonusGoalCount("challenging", 8, 32, 8)).toBe(4);
+        expect(getBonusGoalCount("challenging", 8, 5, 8)).toBe(0);
+        expect(getBonusGoalCount("challenging", 8, 32, 2)).toBe(2);
+    });
+
+    it("places every word promised by the optional bonus goal", () => {
+        const result = generatePuzzle({
+            targetWords: ["ALPHA", "BETA", "GAMMA", "DELTA", "OMEGA", "SIGMA", "THETA"],
+            bonusWords: ["APPLE", "PEAR", "PLUM", "MELON", "LIME", "KIWI", "FIG", "DATE"],
+            category: "Guarantee",
+            level: 12,
+            mode: "challenging",
+            gridSize: 8,
+            rng: seeded(17),
+        });
+
+        expect(result.bonusWords.length).toBeGreaterThan(0);
+        for (const word of result.bonusWords) {
+            expect(findWordPlacement(result.grid, result.gridSize, word)).not.toBeNull();
+        }
+    });
+
     it("keeps the configured target count and places every target legally", () => {
         for (const mode of ["easy", "standard", "challenging"] as const) {
             for (const level of [1, 5, 12, 25]) {

@@ -1,7 +1,13 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
 import path from "path";
-import { getPuzzleWords, type Tier } from "./backend";
+import { getPuzzleWords, MAX_TARGET_WORD_LENGTH, type Tier } from "./backend";
+
+describe("category word limits", () => {
+    it("tracks the longest target so the Found Words panel fits its content", () => {
+        expect(MAX_TARGET_WORD_LENGTH).toBe(10);
+    });
+});
 
 // Asserts every (tier, level) pair against data/category_order.json -- the
 // same fixture scripts/gen_categories.py emits from its own DISPLAY_NAMES

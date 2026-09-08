@@ -50,6 +50,7 @@ export function useWordSearchGame() {
 
     // Lifetime stat feeding the "found a word that wasn't on the list" achievement
     const [bonusWordsFound, setBonusWordsFound] = useState(initialSave.bonusWordsFound);
+    const [bonusWordsToFind, setBonusWordsToFind] = useState<string[]>([]);
     const [bonusWordsThisLevel, setBonusWordsThisLevel] = useState<string[]>([]);
     const [bonusSeedsThisLevel, setBonusSeedsThisLevel] = useState(0);
     const [bonusDiscovery, setBonusDiscovery] = useState<{ word: string; seeds: number } | null>(null);
@@ -263,6 +264,7 @@ export function useWordSearchGame() {
         setCompassDirection(null);
         setFreeHintUsesRemaining(1);
         setBonusWordsThisLevel([]);
+        setBonusWordsToFind([]);
         setBonusSeedsThisLevel(0);
         setBonusDiscovery(null);
         setHintUsedThisLevel(false);
@@ -301,6 +303,7 @@ export function useWordSearchGame() {
         });
 
         setWordsToFind(generated.targetWords);
+        setBonusWordsToFind(generated.bonusWords);
         setFoundWords({});
         setFoundLines([]);
         setGridSize(generated.gridSize);
@@ -414,6 +417,10 @@ export function useWordSearchGame() {
         const newLine: FoundLine = { startR: r, startC: c, endR, endC, color: randomColor };
         const nextFoundWords = { ...foundWords, [word]: randomColor };
 
+        // Keep imperative debug/tool calls made in the same event in sync.
+        // React has not committed the state update yet, but the next call
+        // should still see this word as solved.
+        stateRef.current = { ...stateRef.current, foundWords: nextFoundWords };
         setFoundLines(prev => [...prev, newLine]);
         setFoundWords(nextFoundWords);
         if (dr !== 0 && dc !== 0) {
@@ -452,38 +459,47 @@ export function useWordSearchGame() {
             setStatus("Buy a Shuffle charge in the Seed Store first.");
             return false;
         }
+        const size = gridSize;
+        const unfoundWords = wordsToFind.filter(w => !foundWords[w]);
+        const unfoundBonusWords = bonusWordsToFind.filter(word => !rewardedBonusWordsRef.current.has(word));
+        let shuffledGrid: string[][] | null = null;
+
+        for (let attempt = 0; attempt < 20 && !shuffledGrid; attempt++) {
+            const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
+
+            // Preserve completed target cells so their highlight pills remain
+            // accurate while every still-hidden target and offered bonus moves.
+            foundLines.forEach(line => {
+                const dr = Math.sign(line.endR - line.startR);
+                const dc = Math.sign(line.endC - line.startC);
+                const steps = Math.max(Math.abs(line.endR - line.startR), Math.abs(line.endC - line.startC));
+                for (let i = 0; i <= steps; i++) {
+                    const r = line.startR + i * dr;
+                    const c = line.startC + i * dc;
+                    if (gridData[r]?.[c]) grid[r][c] = gridData[r][c];
+                }
+            });
+
+            if (!unfoundWords.every(word => placeWordOnGrid(grid, word))) continue;
+            if (!unfoundBonusWords.every(word => placeWordOnGrid(grid, word))) continue;
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    if (grid[r][c] === '') grid[r][c] = getRandomFillLetter(unfoundWords.length ? unfoundWords : wordsToFind);
+                }
+            }
+            shuffledGrid = grid;
+        }
+
+        if (!shuffledGrid) {
+            setStatus("This board is too tightly packed to reshuffle safely.");
+            return false;
+        }
+
         setPowerupInventory(consumed.inventory);
         setPowerupsUsed(count => count + 1);
         recordFieldNoteEvent({ kind: "powerup_used" });
-        const size = gridSize;
-        const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
-
-        // Reserve the cells already covered by found-word lines so their
-        // pills stay visually accurate afterward -- a reshuffle redistributes
-        // what's left to find, it doesn't erase what's already been found.
-        foundLines.forEach(line => {
-            const dr = Math.sign(line.endR - line.startR);
-            const dc = Math.sign(line.endC - line.startC);
-            const steps = Math.max(Math.abs(line.endR - line.startR), Math.abs(line.endC - line.startC));
-            for (let i = 0; i <= steps; i++) {
-                const r = line.startR + i * dr;
-                const c = line.startC + i * dc;
-                if (gridData[r]?.[c]) grid[r][c] = gridData[r][c];
-            }
-        });
-
-        const unfoundWords = wordsToFind.filter(w => !foundWords[w]);
-        unfoundWords.forEach(word => {
-            placeWordOnGrid(grid, word);
-        });
-        for (let r = 0; r < size; r++) {
-            for (let c = 0; c < size; c++) {
-                if (grid[r][c] === '') {
-                    grid[r][c] = getRandomFillLetter(unfoundWords.length ? unfoundWords : wordsToFind);
-                }
-            }
-        }
-        setGridData(grid);
+        setGridData(shuffledGrid);
         setSpectrometerCells([]);
         setCompassDirection(null);
         setStatus("Board reshuffled!");
@@ -777,6 +793,7 @@ export function useWordSearchGame() {
             });
             setCategory(generated.category);
             setWordsToFind(generated.targetWords);
+            setBonusWordsToFind(generated.bonusWords);
             setFoundWords({});
             setFoundLines([]);
             setGridSize(generated.gridSize);
@@ -821,7 +838,7 @@ export function useWordSearchGame() {
         unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
-        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
+        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsToFind, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
         levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         fieldNotes, claimFieldNote,
         // Botanical Sanctuary state & handlers

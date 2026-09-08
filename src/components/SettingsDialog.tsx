@@ -38,6 +38,7 @@ type Props = {
     themeMode: ThemeMode;
     onThemeModeChange: (mode: ThemeMode) => void;
     unlockedThemes: string[];
+    onOpenAbout?: () => void;
 };
 
 function SoundRow({
@@ -83,7 +84,7 @@ function SettingsContent({
     favoriteCategories, onFavoriteCategoriesChange, useFavorites, onUseFavoritesChange,
     musicMuted, onToggleMusicMuted, musicVolume, onMusicVolumeChange,
     sfxMuted, onToggleSfxMuted, sfxVolume, onSfxVolumeChange,
-    themeMode, onThemeModeChange, unlockedThemes,
+    themeMode, onThemeModeChange, unlockedThemes, onOpenAbout,
 }: Omit<Props, "open" | "onClose">) {
     const [pickerOpen, setPickerOpen] = useState(false);
     const canUseFavorites = favoriteCategories.length >= MIN_FAVORITE_CATEGORIES;
@@ -192,6 +193,11 @@ function SettingsContent({
                     volume={sfxVolume} onVolumeChange={onSfxVolumeChange}
                 />
             </div>
+
+            {onOpenAbout && <div className="ws-settings-section">
+                <div className="ws-settings-section__label">Help</div>
+                <Button variant="outlined" fullWidth onClick={onOpenAbout}>About &amp; How to Play</Button>
+            </div>}
         </>
     );
 }

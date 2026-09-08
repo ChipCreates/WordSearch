@@ -1,16 +1,17 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { AutoFixHighOutlined, ShuffleOutlined, RefreshOutlined, VolumeOffOutlined, VolumeUpOutlined, MusicOffOutlined, MusicNoteOutlined } from "@mui/icons-material";
+import { useEffect, useState, type CSSProperties } from "react";
+import { RefreshOutlined, VolumeOffOutlined, VolumeUpOutlined, MusicOffOutlined, MusicNoteOutlined } from "@mui/icons-material";
 import NavigationArt from "../NavigationArt";
 import EcoLeaf from "../icons/EcoLeaf";
 import { getSidebarProfileModel } from "./sidebarModels";
-import { POWERUP_DEFINITIONS, type PowerupInventory } from "../../powerups";
+import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../../powerups";
+import { assetUrl } from "../../categoryThemes";
 import { getGardenCareModel, formatCareCountdown } from "./gardenModels";
 import { getClosestMilestones } from "./achievementModels";
 import type { AchievementStats } from "../../achievements";
 import FieldNotesPanel from "../FieldNotesPanel";
 import type { FieldNoteId, FieldNotesState } from "../../fieldNotes";
 
-type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings";
+type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings" | "about";
 type Props = {
     activeTab: ActiveTab;
     highestUnlockedLevel: number;
@@ -47,10 +48,13 @@ type Props = {
     onCollectFieldNote: (noteId: FieldNoteId) => boolean;
 };
 
-const compactButtonStyle: CSSProperties = { justifyContent: "center", padding: "8px 10px", fontSize: "0.8rem" };
-
-function ToolButton({ disabled, title, onClick, children }: { disabled?: boolean; title: string; onClick: () => void; children: ReactNode }) {
-    return <button className="ws-control-btn" disabled={disabled} title={title} onClick={onClick} style={compactButtonStyle}>{children}</button>;
+function PowerupButton({ id, countLabel, disabled, title, onClick }: { id: PowerupId; countLabel: string; disabled?: boolean; title: string; onClick: () => void }) {
+    const item = POWERUP_DEFINITIONS[id];
+    return <button className="ws-sidebar-powerup" disabled={disabled} title={title} onClick={onClick}>
+        <img src={assetUrl(item.image.replace(/^\//, ""))} alt="" />
+        <span>{item.shortLabel}</span>
+        <small>{countLabel}</small>
+    </button>;
 }
 
 export default function ContextSidebar(props: Props) {
@@ -79,15 +83,16 @@ export default function ContextSidebar(props: Props) {
         <div className="ws-sidebar-context">
             {props.activeTab === "play" && <>
                 <div className="ws-sidebar-section-label">Tactical Toolkit</div>
-                {props.levelComplete ? <button className="ws-primary-action-btn" onClick={props.onNextLevel} style={{ width: "100%", justifyContent: "center", padding: "10px 16px" }}><EcoLeaf /><span>Next Level 🌱</span></button> : <button className="ws-primary-action-btn" disabled={!props.hintAvailable} title={props.hintAvailable ? "Reveal a target start" : "Buy a hint charge in the Seed Store"} onClick={props.onRevealHint} style={{ width: "100%", justifyContent: "center", padding: "10px 16px" }}><AutoFixHighOutlined /><span>Hint · {props.freeHintUsesRemaining ? "Free" : `x${inv["single-letter-sprout"]}`}</span></button>}
+                {props.levelComplete && <button className="ws-primary-action-btn" onClick={props.onNextLevel} style={{ width: "100%", justifyContent: "center", padding: "10px 16px" }}><EcoLeaf /><span>Next Level 🌱</span></button>}
                 <div className="ws-sidebar-tool-grid">
-                    <ToolButton disabled={!inv["lumina-cyclone"]} title={missing("lumina-cyclone", "Shuffle the unfound words")} onClick={props.onShuffle}><ShuffleOutlined style={{ fontSize: 16 }} /> Shuffle · x{inv["lumina-cyclone"]}</ToolButton>
-                    <ToolButton title="Retry this board without repaying bonus words" onClick={props.onRetry}><RefreshOutlined style={{ fontSize: 16 }} /> Restart</ToolButton>
-                    <ToolButton disabled={!inv["super-root"]} title={missing("super-root", "Solve one unfound target")} onClick={props.onSuperRoot}>🌱 Root · x{inv["super-root"]}</ToolButton>
-                    <ToolButton disabled={!inv["bioluminescent-compass"]} title={missing("bioluminescent-compass", "Point toward an unfound word")} onClick={props.onCompass}>🧭 Compass · x{inv["bioluminescent-compass"]}</ToolButton>
-                    <ToolButton disabled={!inv["flora-spectrometer"]} title={missing("flora-spectrometer", "Highlight unfound word starts")} onClick={props.onSpectrometer}>🔬 Spectro · x{inv["flora-spectrometer"]}</ToolButton>
-                    <ToolButton disabled={!inv["nitrogen-booster"] || props.doubleSeedsActive} title={props.doubleSeedsActive ? "2× Seeds active for this puzzle" : missing("nitrogen-booster", "Double completion and bonus rewards")} onClick={props.onDoubleSeeds}>⚡ {props.doubleSeedsActive ? "2× Active" : `2× Seeds · x${inv["nitrogen-booster"]}`}</ToolButton>
+                    <PowerupButton id="single-letter-sprout" countLabel={props.freeHintUsesRemaining ? "Free" : `×${inv["single-letter-sprout"]}`} disabled={!props.hintAvailable} title={props.hintAvailable ? "Reveal a target start" : "Buy a hint charge in the Seed Store"} onClick={props.onRevealHint} />
+                    <PowerupButton id="lumina-cyclone" countLabel={`×${inv["lumina-cyclone"]}`} disabled={!inv["lumina-cyclone"]} title={missing("lumina-cyclone", "Shuffle the unfound words")} onClick={props.onShuffle} />
+                    <PowerupButton id="super-root" countLabel={`×${inv["super-root"]}`} disabled={!inv["super-root"]} title={missing("super-root", "Solve one unfound target")} onClick={props.onSuperRoot} />
+                    <PowerupButton id="bioluminescent-compass" countLabel={`×${inv["bioluminescent-compass"]}`} disabled={!inv["bioluminescent-compass"]} title={missing("bioluminescent-compass", "Point toward an unfound word")} onClick={props.onCompass} />
+                    <PowerupButton id="flora-spectrometer" countLabel={`×${inv["flora-spectrometer"]}`} disabled={!inv["flora-spectrometer"]} title={missing("flora-spectrometer", "Highlight unfound word starts")} onClick={props.onSpectrometer} />
+                    <PowerupButton id="nitrogen-booster" countLabel={props.doubleSeedsActive ? "Active" : `×${inv["nitrogen-booster"]}`} disabled={!inv["nitrogen-booster"] || props.doubleSeedsActive} title={props.doubleSeedsActive ? "2× Seeds active for this puzzle" : missing("nitrogen-booster", "Double completion and bonus rewards")} onClick={props.onDoubleSeeds} />
                 </div>
+                <button className="ws-sidebar-restart" title="Retry this board without repaying bonus words" onClick={props.onRetry}><RefreshOutlined /> Restart this board</button>
                 {props.doubleSeedsActive && <div role="status" className="ws-sidebar-booster-status">⚡ 2× Seeds active for this puzzle</div>}
             </>}
             {props.activeTab === "levels" && <div className="ws-sidebar-summary"><strong>Journey Progress</strong><span>Level {props.playingLevel} selected</span><span>Frontier: Level {props.highestUnlockedLevel}</span><button className="ws-control-btn" onClick={props.onNextLevel}>Return to current level</button></div>}

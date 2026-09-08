@@ -155,6 +155,21 @@ describe("useWordSearchGame", () => {
         expect(result.current.foundWords[word]).toBeTruthy();
     });
 
+    it("can solve every word through immediate consecutive reveal calls", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+        await waitFor(() => {
+            expect(result.current.wordsToFind.length).toBeGreaterThan(1);
+            expect(result.current.gridData.length).toBeGreaterThan(0);
+        });
+
+        act(() => {
+            result.current.wordsToFind.forEach(word => result.current.revealAndSolveWord(word));
+        });
+
+        expect(result.current.wordsToFind.every(word => result.current.foundWords[word])).toBe(true);
+        expect(result.current.levelComplete).toBe(true);
+    });
+
     it("retryLevel clears foundWords and foundLines without resetting level or seeds", async () => {
         const { result } = renderHook(() => useWordSearchGame());
 

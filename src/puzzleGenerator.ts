@@ -53,6 +53,20 @@ export function getPuzzleDifficulty(level: number, mode: PuzzleMode, gridSizeOve
     };
 }
 
+/** Choose a modest optional bonus goal from difficulty and usable board room. */
+export function getBonusGoalCount(
+    mode: PuzzleMode,
+    gridSize: number,
+    emptyCellCount: number,
+    candidateCount: number,
+): number {
+    const difficultyAllowance = mode === "easy" ? 1 : mode === "standard" ? 2 : 3;
+    const sizeAllowance = Math.floor(Math.max(0, gridSize - 4) / 4);
+    const spacePerBonus = Math.max(3, Math.ceil(gridSize * 0.75));
+    const spaceAllowance = Math.floor(Math.max(0, emptyCellCount) / spacePerBonus);
+    return Math.max(0, Math.min(candidateCount, difficultyAllowance + sizeAllowance, spaceAllowance));
+}
+
 function emptyGrid(size: number): string[][] {
     return Array.from({ length: size }, () => Array.from({ length: size }, () => ""));
 }
@@ -170,7 +184,14 @@ export function generatePuzzle(request: PuzzleGenerationRequest): PuzzleGenerati
             });
         if (!placedTargets) continue;
 
-        const placedBonusWords = bonusWords.filter(word => placeWord(grid, word, difficulty.allowedDirections, rng, difficulty) !== null);
+        const emptyCellCount = grid.flat().filter(cell => cell === "").length;
+        const bonusGoalCount = getBonusGoalCount(request.mode, difficulty.gridSize, emptyCellCount, bonusWords.length);
+        const placedBonusWords: string[] = [];
+        for (const word of bonusWords) {
+            if (placedBonusWords.length >= bonusGoalCount) break;
+            if (placeWord(grid, word, difficulty.allowedDirections, rng, difficulty)) placedBonusWords.push(word);
+        }
+        if (placedBonusWords.length < bonusGoalCount) continue;
         fillGrid(grid, requestedTargets, rng);
         return {
             grid,
@@ -185,21 +206,33 @@ export function generatePuzzle(request: PuzzleGenerationRequest): PuzzleGenerati
 
     // The normal path is intentionally randomized, but the fallback is
     // deterministic and still refuses to return a puzzle missing a target.
-    const fallbackGridSize = Math.max(difficulty.gridSize, ...requestedTargets.map(word => word.length));
+    const fallbackBonusCap = getBonusGoalCount(
+        request.mode,
+        difficulty.gridSize,
+        difficulty.gridSize * difficulty.gridSize,
+        bonusWords.length,
+    );
+    const fallbackGridSize = Math.max(
+        difficulty.gridSize,
+        ...requestedTargets.map(word => word.length),
+        requestedTargets.length + fallbackBonusCap,
+    );
     const grid = emptyGrid(fallbackGridSize);
     const placements: Record<string, GeneratedPlacement> = {};
-    for (const word of requestedTargets) {
-        const placement = placeWord(grid, word, [[1, 0]], rng, { ...difficulty, overlapPressure: 0 });
-        if (!placement) {
-            throw new Error(`Unable to place required target word "${word}" on the fallback board`);
-        }
-        placements[word] = placement;
-    }
+    requestedTargets.forEach((word, row) => {
+        [...word].forEach((letter, col) => { grid[row][col] = letter; });
+        placements[word] = { row, col: 0, dc: 1, dr: 0 };
+    });
+    const placedBonusWords = bonusWords.slice(0, fallbackBonusCap);
+    placedBonusWords.forEach((word, index) => {
+        const row = requestedTargets.length + index;
+        [...word].forEach((letter, col) => { grid[row][col] = letter; });
+    });
     fillGrid(grid, requestedTargets, rng);
     return {
         grid,
         targetWords: requestedTargets,
-        bonusWords: [],
+        bonusWords: placedBonusWords,
         placements,
         category: request.category,
         gridSize: fallbackGridSize,
