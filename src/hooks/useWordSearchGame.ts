@@ -462,9 +462,15 @@ export function useWordSearchGame() {
         const size = gridSize;
         const unfoundWords = wordsToFind.filter(w => !foundWords[w]);
         const unfoundBonusWords = bonusWordsToFind.filter(word => !rewardedBonusWordsRef.current.has(word));
+        const wordsToPlace = [...unfoundWords, ...unfoundBonusWords]
+            .sort((a, b) => b.length - a.length);
         let shuffledGrid: string[][] | null = null;
 
-        for (let attempt = 0; attempt < 20 && !shuffledGrid; attempt++) {
+        // Longest-first placement avoids short words consuming the few paths
+        // available to longer words. Keep a generous retry budget because a
+        // reshuffle is a paid action and should not fail due to unlucky random
+        // candidate selection on a board that has already proved solvable.
+        for (let attempt = 0; attempt < 100 && !shuffledGrid; attempt++) {
             const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
 
             // Preserve completed target cells so their highlight pills remain
@@ -480,8 +486,7 @@ export function useWordSearchGame() {
                 }
             });
 
-            if (!unfoundWords.every(word => placeWordOnGrid(grid, word))) continue;
-            if (!unfoundBonusWords.every(word => placeWordOnGrid(grid, word))) continue;
+            if (!wordsToPlace.every(word => placeWordOnGrid(grid, word))) continue;
 
             for (let r = 0; r < size; r++) {
                 for (let c = 0; c < size; c++) {
