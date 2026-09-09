@@ -36,10 +36,10 @@ There's no App Store listing — Apple's Safari lets you install the web version
 Word Sprout now sits on your home screen with its own icon, opens full-screen with no browser chrome, and keeps working with the phone in airplane mode.
 
 <p>
-  <img src="docs/screenshots/desktop.jpg" alt="Word Sprout desktop screenshot — Cities category" width="620">
+  <img src="docs/screenshots/desktop.jpg" alt="Word Sprout desktop screenshot — Animals category" width="620">
 </p>
 <p>
-  <img src="docs/screenshots/mobile.jpg" alt="Word Sprout mobile screenshot — Cities category" width="260">
+  <img src="docs/screenshots/mobile.jpg" alt="Word Sprout mobile screenshot — responsive Animals puzzle" width="260">
 </p>
 
 ## Words. Growth. Mindful Fun.

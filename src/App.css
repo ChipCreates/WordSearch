@@ -2450,8 +2450,8 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   .ws-field-notes--compact { margin: 8px 0 12px; }
 }
 
-/* Final specificity pass for approved navigation controls. */
-.ws-top-nav__icon-btn { border: 2px solid #d9b653; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #f4f4ef, #95a29f 58%, #44514f); box-shadow: inset 0 2px 0 #fff, 0 3px 0 #78551f, 0 6px 12px #0008; }
+/* The illustrated settings asset already contains its own circular frame. */
+.ws-top-nav__icon-btn { border: 0; border-radius: 50%; background: transparent; box-shadow: none; }
 .ws-bottom-nav__item { color: #e8ead7; font-family: Georgia, var(--font-headline); font-weight: 700; }
 .ws-bottom-nav__item--active { border-radius: 16px; background: linear-gradient(180deg, #285d40aa, #123a29dd); color: #fffbe7; }
 .ws-bottom-nav__item--active .ws-navigation-art { filter: drop-shadow(0 0 9px #dfff79) drop-shadow(0 4px 3px #0009); transform: translateY(-2px); }

@@ -61,10 +61,10 @@ export default function AboutView({ onReplayOnboarding, onBack }: { onReplayOnbo
                     <p>The Found Words panel tracks the required words. Each board also guarantees a small, optional set of hidden Bonus Sprouts based on its difficulty and open space. They do not finish the level, but every valid extra word awards Seeds.</p>
                     <GuideImage
                         src={dragSelectImage}
-                        alt="A Word Sprout board with GROVE traced diagonally and the target list beside it"
-                        caption="Trace from G to E in one continuous gesture; the live path shows exactly what will be submitted."
+                        alt="A Word Sprout board with BEAR traced across the grid and the target list beside it"
+                        caption="Trace from B to R in one continuous gesture; the highlighted path confirms the submitted word."
                         callouts={[
-                            { x: "46%", y: "38%", label: "Release here" },
+                            { x: "63%", y: "67%", label: "Release here" },
                             { x: "80%", y: "14%", label: "Track targets", direction: "left" },
                         ]}
                     />
@@ -74,7 +74,7 @@ export default function AboutView({ onReplayOnboarding, onBack }: { onReplayOnbo
                     <span className="ws-about-section__number">02</span>
                     <h2>Grow through the journey</h2>
                     <p>Completing a level opens the next stop on the trail. Use Levels to replay any unlocked puzzle. Difficulty changes board density and vocabulary, while favorite categories let you steer future puzzles toward subjects you enjoy.</p>
-                    <GuideImage src={progressionImage} alt="The Word Sprout level trail with completed, current, and locked levels" caption="Completed clearings stay replayable; the glowing frontier marks your next challenge." callouts={[{ x: "51%", y: "42%", label: "Current frontier" }]} />
+                    <GuideImage src={progressionImage} alt="The Word Sprout level trail with completed, current, and locked levels" caption="Completed clearings stay replayable; the glowing frontier marks your next challenge." callouts={[{ x: "36%", y: "55%", label: "Current frontier" }]} />
                     <h3>Botanist ranks</h3>
                     <p>Your highest unlocked level determines your title. There are {BOTANIST_RANKS.length} ranks, from Seedling Scout to Cosmic Conservator, with a new portrait and promotion moment at each milestone.</p>
                     <GuideImage src={rankImage} alt="A Botanist rank promotion in Word Sprout" caption="Rank promotions celebrate long-term progress; your current rank is always visible in the profile area." />
@@ -100,21 +100,21 @@ export default function AboutView({ onReplayOnboarding, onBack }: { onReplayOnbo
                     <span className="ws-about-section__number">04</span>
                     <h2>Cultivate your garden</h2>
                     <p>Spend Seeds to acquire plants, then return to water them when they are ready. Every species has its own four-stage artwork—empty vessel, new sprout, young plant, and full bloom—and mature plants add to your collection progress.</p>
-                    <GuideImage src={gardenImage} alt="The Garden showing plants at several growth stages" caption={`The Garden contains ${PLANTS_CATALOG.length} plants, each with its own rarity, watering rhythm, and bloom reward.`} callouts={[{ x: "22%", y: "47%", label: "Water when ready" }, { x: "73%", y: "31%", label: "Growth stage", direction: "left" }]} />
+                    <GuideImage src={gardenImage} alt="The Garden showing a fully bloomed plant collection" caption={`The Garden contains ${PLANTS_CATALOG.length} plants, each with its own rarity, watering rhythm, and bloom reward.`} callouts={[{ x: "22%", y: "47%", label: "Bloomed specimen" }, { x: "73%", y: "15%", label: "Collection progress", direction: "left" }]} />
                 </section>
 
                 <section id="trophies" className="ws-about-section">
                     <span className="ws-about-section__number">05</span>
                     <h2>Record discoveries</h2>
                     <p>{ACHIEVEMENTS.length} achievements recognize puzzle streaks, diagonal and reverse finds, Bonus Sprouts, category exploration, power-up use, and garden milestones. Open Trophies to see your nearest goals and completed badges.</p>
-                    <GuideImage src={achievementsImage} alt="The Word Sprout trophy collection with achievement badges" caption="Every badge shows its requirement; unlocked achievements keep their full illustrated color." callouts={[{ x: "76%", y: "8%", label: "Overall progress", direction: "left" }]} />
+                    <GuideImage src={achievementsImage} alt="The Word Sprout trophy collection with achievement badges" caption="Every badge shows its requirement; unlocked achievements keep their full illustrated color." callouts={[{ x: "88%", y: "10%", label: "Overall progress", direction: "left" }]} />
                 </section>
 
                 <section id="cosmetics" className="ws-about-section">
                     <span className="ws-about-section__number">06</span>
                     <h2>Spend Seeds your way</h2>
                     <p>The Seed Store offers plants, power-up charges, seasonal themes, and prestige cosmetics. Purchases never block the main journey: replay levels and find Bonus Sprouts to keep earning Seeds.</p>
-                    <GuideImage src={storeImage} alt="The Seed Store showing illustrated power-ups and cosmetic unlocks" caption="Each store card states its effect and Seed price before you buy." callouts={[{ x: "18%", y: "38%", label: "Power-up art" }, { x: "74%", y: "76%", label: "Theme unlocks", direction: "left" }]} />
+                    <GuideImage src={storeImage} alt="The Seed Store showing illustrated power-ups and cosmetic unlocks" caption="Each store card states its effect and Seed price before you buy." callouts={[{ x: "18%", y: "47%", label: "Power-up art" }, { x: "74%", y: "91%", label: "Theme unlocks", direction: "left" }]} />
                 </section>
 
                 <section id="credits" className="ws-about-section ws-about-credits">
