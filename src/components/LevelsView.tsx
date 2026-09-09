@@ -37,6 +37,9 @@ export type RenderWaypoint = Waypoint & { key: string; afterLevel: number; isSto
 
 const TILE_OVERLAP = 120;
 const REGION_OVERLAP = 180;
+const highResLevelAsset = (path: string) => path.replace(/(\.[^.]+)$/, "-3x$1");
+export const shouldUseHighResLevelArt = (screenWidth: number, screenHeight: number, devicePixelRatio: number) =>
+    Math.max(screenWidth, screenHeight) * devicePixelRatio >= 2800;
 
 export const regionForLevel = (level: number) => LEVEL_REGIONS.find(r => level >= r.start && level <= r.end) ?? LEVEL_REGIONS[LEVEL_REGIONS.length - 1];
 const scrollMap = (element: HTMLDivElement, options: ScrollToOptions) => {
@@ -51,6 +54,8 @@ export default function LevelsView({ currentLevel, onSelectLevel }: Props) {
     const [orientationOverride, setOrientationOverride] = useState(mediaLandscape);
     const landscape = editMode ? orientationOverride : mediaLandscape;
     const orientationKey: OrientationKey = landscape ? "landscape" : "portrait";
+    const useHighResArt = useMemo(() => shouldUseHighResLevelArt(window.screen.width, window.screen.height, window.devicePixelRatio || 1), []);
+    const levelAsset = (path: string) => assetUrl(useHighResArt ? highResLevelAsset(path) : path);
 
     const originalLayout = useRef(cloneLayout(TRAIL_LAYOUT)).current;
     const [stones, setStones] = useState<{ portrait: StoneMap; landscape: StoneMap }>(() => cloneLayout(TRAIL_LAYOUT.stones));
@@ -232,7 +237,7 @@ export default function LevelsView({ currentLevel, onSelectLevel }: Props) {
                                 top: landscape ? 0 : region.length - (tile + 1) * tileLength + tile * TILE_OVERLAP,
                                 width: landscape ? tileLength : crossSize,
                                 height: landscape ? crossSize : tileLength,
-                                backgroundImage: `url("${assetUrl(`backgrounds/levels/${region.id}-${landscape ? "landscape" : "portrait"}.webp`)}")`,
+                                backgroundImage: `url("${levelAsset(`backgrounds/levels/${region.id}-${landscape ? "landscape" : "portrait"}.webp`)}")`,
                                 WebkitMaskImage: tileMask,
                                 maskImage: tileMask,
                             }}
@@ -243,7 +248,8 @@ export default function LevelsView({ currentLevel, onSelectLevel }: Props) {
             {regions.slice(0, -1).map((_region, idx) => {
                 const transDef = transitions[idx] ?? { id: `seam-${idx}`, mistColor: "#2db38d" };
                 const override = transDef[orientationKey];
-                const baseSpan = defaultTransitionSpan(!!transDef.imageLandscape, tileLength);
+                const transitionImage = landscape ? transDef.imageLandscape : transDef.imagePortrait;
+                const baseSpan = defaultTransitionSpan(!!transitionImage, tileLength);
                 const span = resolveTransitionSpan(baseSpan, override);
                 const center = resolveTransitionCenter(seamBoundaries[idx], override);
                 const transitionWidth = landscape ? span : crossSize;
@@ -269,17 +275,17 @@ export default function LevelsView({ currentLevel, onSelectLevel }: Props) {
                         }),
                     }}
                 >
-                    {transDef.imageLandscape && landscape && (
+                    {transitionImage && (
                         <div
                             className="ws-trail__transition-pano"
                             style={{
                                 position: "absolute",
                                 inset: 0,
-                                backgroundImage: `url("${assetUrl(`backgrounds/levels/${transDef.imageLandscape}`)}")`,
+                                backgroundImage: `url("${levelAsset(`backgrounds/levels/${transitionImage}`)}")`,
                                 backgroundSize: "cover",
                                 backgroundPosition: "center",
-                                WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 22%, black 78%, transparent 100%)",
-                                maskImage: "linear-gradient(to right, transparent 0%, black 22%, black 78%, transparent 100%)",
+                                WebkitMaskImage: `linear-gradient(to ${landscape ? "right" : "top"}, transparent 0%, black 22%, black 78%, transparent 100%)`,
+                                maskImage: `linear-gradient(to ${landscape ? "right" : "top"}, transparent 0%, black 22%, black 78%, transparent 100%)`,
                             }}
                         />
                     )}
