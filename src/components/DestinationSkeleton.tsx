@@ -1,4 +1,4 @@
-type Destination = "levels" | "garden" | "achievements" | "settings" | "about" | "store";
+type Destination = "levels" | "garden" | "achievements" | "field-kit" | "settings" | "about" | "store";
 
 type DestinationSkeletonProps = {
     destination: Destination;
@@ -8,6 +8,7 @@ const destinationLabels: Record<Destination, string> = {
     levels: "levels",
     garden: "garden",
     achievements: "trophies",
+    "field-kit": "field kit",
     settings: "settings",
     about: "about",
     store: "seed store",

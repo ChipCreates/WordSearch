@@ -3,6 +3,7 @@ import { BOTANIST_RANKS } from "../botanistRanks";
 import { assetUrl } from "../categoryThemes";
 import { PLANTS_CATALOG } from "../plantsCatalog";
 import { POWERUP_DEFINITIONS, type PowerupId } from "../powerups";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 
 import dragSelectImage from "../../docs/screenshots/howto-drag-select.webp";
 import progressionImage from "../../docs/screenshots/howto-progression.webp";
@@ -31,9 +32,11 @@ function GuideImage({ src, alt, caption, callouts = [] }: { src: string; alt: st
 
 const powerupOrder = Object.keys(POWERUP_DEFINITIONS) as PowerupId[];
 
-export default function AboutView({ onReplayOnboarding }: { onReplayOnboarding: () => void }) {
+export default function AboutView({ onReplayOnboarding, onBack }: { onReplayOnboarding: () => void; onBack?: () => void }) {
     return <div className="ws-about-view">
         <header className="ws-about-hero">
+            {onBack && <button className="ws-round-icon-btn ws-about-back" onClick={onBack} aria-label="Back"><ArrowBackRounded /></button>}
+            <img className="ws-about-logo" src={assetUrl("branding/word-sprout-logo.webp")} alt="Word Sprout" />
             <span className="ws-about-eyebrow">Field Guide</span>
             <h1>About &amp; How to Play</h1>
             <p>Trace hidden words, gather Seeds, and turn every solved puzzle into a thriving botanical collection.</p>
@@ -96,8 +99,8 @@ export default function AboutView({ onReplayOnboarding }: { onReplayOnboarding: 
                 <section id="garden" className="ws-about-section">
                     <span className="ws-about-section__number">04</span>
                     <h2>Cultivate your garden</h2>
-                    <p>Spend Seeds to acquire plants, then return to water them when they are ready. Growth advances through five stages—Seedling, Sprout, Budding, Flowering, and Bloomed—and mature plants add to your collection progress.</p>
-                    <GuideImage src={gardenImage} alt="The Botanical Sanctuary showing plants at several growth stages" caption={`The conservatory contains ${PLANTS_CATALOG.length} plants, each with its own rarity, watering rhythm, and bloom reward.`} callouts={[{ x: "22%", y: "47%", label: "Water when ready" }, { x: "73%", y: "31%", label: "Growth stage", direction: "left" }]} />
+                    <p>Spend Seeds to acquire plants, then return to water them when they are ready. Every species has its own four-stage artwork—empty vessel, new sprout, young plant, and full bloom—and mature plants add to your collection progress.</p>
+                    <GuideImage src={gardenImage} alt="The Garden showing plants at several growth stages" caption={`The Garden contains ${PLANTS_CATALOG.length} plants, each with its own rarity, watering rhythm, and bloom reward.`} callouts={[{ x: "22%", y: "47%", label: "Water when ready" }, { x: "73%", y: "31%", label: "Growth stage", direction: "left" }]} />
                 </section>
 
                 <section id="trophies" className="ws-about-section">

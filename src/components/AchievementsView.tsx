@@ -25,9 +25,9 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
     });
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 24, width: "100%" }}>
+        <div className="ws-trophies" style={{ display: "flex", flexDirection: "column", gap: 24, width: "100%" }}>
             {/* Header Banner Card */}
-            <div className="glass-panel" style={{ padding: 24, borderRadius: "1.25rem", display: "flex", flexDirection: "column", gap: 16 }}>
+            <div className="glass-panel ws-trophies__summary" style={{ padding: 24, borderRadius: "1.25rem", display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
                     <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
@@ -37,7 +37,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                             </h2>
                         </div>
                         <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--color-on-surface-variant)", maxWidth: 640, lineHeight: 1.5 }}>
-                            You are blooming beautifully. Keep finding words to bring new species to the Moonlit Conservatory.
+                            You are blooming beautifully. Keep finding words to bring new species to The Garden.
                         </p>
                     </div>
 
@@ -69,6 +69,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                     {(["all", "unlocked", "locked"] as FilterType[]).map(tab => (
                         <button
                             key={tab}
+                            className={`ws-trophies-filter${filter === tab ? " is-selected" : ""}`}
                             onClick={() => setFilter(tab)}
                             style={{
                                 padding: "8px 18px",
@@ -92,7 +93,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
             </div>
 
             {/* Achievement Cards Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+            <div className="ws-trophies__grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
                 {filteredAchievements.map(ach => {
                     const isUnlocked = unlockedAchievements.has(ach.id);
                     const currentProgress = ach.getProgress(stats);
@@ -101,7 +102,7 @@ export default function AchievementsView({ unlockedAchievements, stats }: Props)
                     return (
                         <div
                             key={ach.id}
-                            className={`glass-panel ${isUnlocked ? "glow-emerald" : ""}`}
+                            className={`glass-panel ws-trophy-card ${isUnlocked ? "glow-emerald" : ""}`}
                             style={{
                                 padding: 20,
                                 borderRadius: "1.25rem",

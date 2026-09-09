@@ -1087,6 +1087,135 @@ body {
   .ws-success-overlay, .ws-success-overlay * { animation: none !important; }
   .ws-success-overlay::before, .ws-success-overlay::after { display: none; }
 }
+
+/* ── Approved illustrated control language ───────────────────────────────── */
+.ws-primary-action-btn,
+.ws-control-btn,
+.ws-trail__play,
+.MuiButton-root,
+.ws-garden-action {
+  position: relative;
+  min-height: 44px;
+  border: 2px solid #e7c45e !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, #c9f76c 0%, #83c63d 72%, #5e962c 100%) !important;
+  color: #17351d !important;
+  box-shadow: inset 0 2px 0 #ffffff9c, inset 0 -4px 0 #386a28aa, 0 4px 0 #6a4b1e, 0 8px 18px #061a11aa !important;
+  font-family: Georgia, var(--font-headline) !important;
+  font-weight: 800 !important;
+  transition: transform .16s ease, filter .16s ease, box-shadow .16s ease !important;
+}
+.ws-control-btn { background: linear-gradient(180deg, #185c46, #0b382d) !important; color: #fff8dc !important; }
+.ws-primary-action-btn:hover,
+.ws-control-btn:hover,
+.ws-trail__play:hover,
+.MuiButton-root:hover,
+.ws-garden-action:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.ws-primary-action-btn:active,
+.ws-control-btn:active,
+.ws-trail__play:active,
+.MuiButton-root:active,
+.ws-garden-action:active { transform: translateY(3px); box-shadow: inset 0 2px 5px #17351d66, 0 1px 0 #6a4b1e !important; }
+.ws-primary-action-btn:focus-visible,
+.ws-control-btn:focus-visible,
+.ws-trail__play:focus-visible,
+.ws-screen-view button:focus-visible,
+.ws-garden button:focus-visible { outline: 3px solid #fff3a5 !important; outline-offset: 4px; }
+button:disabled { filter: grayscale(.55); opacity: .58; }
+
+.ws-round-icon-btn {
+  display: grid; place-items: center; flex: 0 0 auto; width: 48px; height: 48px; padding: 0;
+  border: 3px solid #e7c45e; border-radius: 50%; color: #f9f4df;
+  background: radial-gradient(circle at 35% 28%, #397a69, #0a3b30 65%, #06261e);
+  box-shadow: inset 0 2px 0 #ffffff88, inset 0 -4px 0 #00181288, 0 4px 0 #815d22, 0 7px 16px #0008;
+  cursor: pointer;
+}
+.ws-navigation-art { filter: drop-shadow(0 3px 2px #0008); }
+.ws-bottom-nav__item--active { background: linear-gradient(180deg, #214f38aa, #173d2daa); }
+.ws-bottom-nav__item--active .ws-navigation-art { filter: drop-shadow(0 0 8px #dfff79) drop-shadow(0 3px 2px #0008); }
+
+/* ── Full-viewport mobile utility destinations ───────────────────────────── */
+.ws-main-layout--utility { padding-right: 0; }
+.ws-screen-view { width: min(920px, 100%); min-height: 100%; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 110px; color: var(--color-on-surface); }
+.ws-screen-view__header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding: 16px 18px; border: 1px solid #d4b34f88; border-radius: 22px; background: linear-gradient(135deg, #123f31ee, #07271fee); box-shadow: 0 12px 28px #0006; }
+.ws-screen-view__header h1 { margin: 2px 0 0; color: #fff6d8; font: 800 clamp(1.8rem, 5vw, 2.6rem)/1 Georgia, var(--font-headline); }
+.ws-screen-view__eyebrow { color: #bfe78d; font-size: .72rem; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+.ws-screen-view__content { padding: clamp(18px, 4vw, 34px); border: 1px solid #d4b34f66; border-radius: 24px; background: linear-gradient(155deg, #123f31f2, #071f19f2); box-shadow: 0 18px 45px #0007; }
+.ws-settings-view__content { max-width: 680px; margin: 0 auto; }
+.ws-field-kit-view__intro { margin: 0 0 18px; color: #cfe1c4; }
+.ws-field-kit-view__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ws-field-kit-view__grid button { display: grid; grid-template-columns: 72px 1fr; grid-template-rows: auto auto; align-items: center; min-height: 92px; padding: 10px 14px; text-align: left; }
+.ws-field-kit-view__grid button img, .ws-field-kit-view__grid button > svg { grid-row: 1 / span 2; width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 5px 5px #0008); }
+.ws-field-kit-view__grid button span { color: inherit; font-weight: 900; }
+.ws-field-kit-view__grid button small { opacity: .78; }
+.ws-field-kit-view__restart { grid-column: 1 / -1; }
+.ws-field-kit-view__notes { margin-top: 22px; }
+.ws-store-view { width: min(1200px, 100%); }
+.ws-store-view__header > img { width: 54px; height: 54px; object-fit: contain; filter: drop-shadow(0 5px 8px #0008); }
+.ws-store-view__content { border-color: #d4b34f88; }
+.ws-store-view__content .MuiCard-root { border-color: #b8913f88 !important; background: linear-gradient(155deg, #123f31f2, #071f19f2) !important; }
+
+@media (min-width: 1280px) {
+  .ws-app-surface--store .ws-side-nav { display: none; }
+  .ws-app-surface--store .ws-main-layout--utility { padding-left: 0 !important; }
+}
+
+/* ── The Garden ──────────────────────────────────────────────────────────── */
+.ws-app-surface--garden,
+.ws-app-surface--achievements,
+.ws-app-surface--about,
+.ws-app-surface--store { background-image: linear-gradient(#03150dcc, #03150ee0), var(--garden-landscape) !important; background-size: cover !important; background-position: center !important; }
+.ws-garden { padding: clamp(12px, 2vw, 24px); border-radius: 28px; background: linear-gradient(#061b13aa, #061b13dd); }
+.ws-garden__summary { border: 2px solid #d8b44f99 !important; background: linear-gradient(145deg, #123e30f2, #071f18f2) !important; box-shadow: 0 12px 36px #0008 !important; }
+.ws-garden__grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; }
+.ws-garden-card { border: 2px solid #c99e44 !important; background: linear-gradient(180deg, #173d2e 0%, #08241c 100%) !important; box-shadow: inset 0 0 0 2px #6e4c2055, 0 12px 28px #0009 !important; }
+.ws-garden-card > div:first-child { background: radial-gradient(circle at 50% 56%, #2c6a4366, #061710 78%) !important; }
+.ws-garden-card .ws-plant-art { filter: drop-shadow(0 12px 12px #0009) drop-shadow(0 0 12px #d8ff7277) !important; }
+.ws-garden-filter { min-height: 38px; padding: 7px 16px !important; border: 2px solid #b8913f !important; border-radius: 999px !important; background: linear-gradient(#16513f, #092f26) !important; color: #fff3d0 !important; box-shadow: inset 0 1px 0 #ffffff55, 0 3px 0 #5e421b, 0 6px 12px #0007; }
+.ws-garden-filter.is-selected { border-color: #e8cf69 !important; background: linear-gradient(#bce95e, #67a934) !important; color: #17351d !important; box-shadow: 0 0 14px #b8f34c99, 0 3px 0 #6b4b1e; }
+.ws-trophies { padding: clamp(12px, 2vw, 24px); border-radius: 28px; background: linear-gradient(#061b13aa, #061b13dd); }
+.ws-trophies__summary { border: 2px solid #d8b44f99 !important; background: linear-gradient(145deg, #123e30f2, #071f18f2) !important; box-shadow: 0 12px 36px #0008 !important; }
+.ws-trophies__grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; }
+.ws-trophy-card { border: 2px solid #c99e44 !important; border-left-width: 4px !important; background: linear-gradient(180deg, #173d2ef2 0%, #08241cf5 100%) !important; box-shadow: inset 0 0 0 2px #6e4c2055, 0 12px 28px #0009 !important; }
+.ws-trophies-filter { min-height: 38px; padding: 7px 16px !important; border: 2px solid #b8913f !important; border-radius: 999px !important; background: linear-gradient(#16513f, #092f26) !important; color: #fff3d0 !important; box-shadow: inset 0 1px 0 #ffffff55, 0 3px 0 #5e421b, 0 6px 12px #0007; }
+.ws-trophies-filter.is-selected { border-color: #e8cf69 !important; background: linear-gradient(#bce95e, #67a934) !important; color: #17351d !important; box-shadow: 0 0 14px #b8f34c99, 0 3px 0 #6b4b1e; }
+.MuiToggleButton-root { border-color: #b8913f !important; background: linear-gradient(#174a3b, #0a3027) !important; color: #f8efd2 !important; font-weight: 800 !important; }
+.MuiToggleButton-root.Mui-selected { background: linear-gradient(#bce95e, #67a934) !important; color: #17351d !important; box-shadow: inset 0 1px 0 #fff8, 0 0 12px #b8f34c77; }
+
+/* ── About branding ──────────────────────────────────────────────────────── */
+.ws-about-hero { position: relative; text-align: center; }
+.ws-about-logo { display: block; width: min(520px, 86%); max-height: 180px; object-fit: contain; margin: 0 auto 18px; filter: drop-shadow(0 8px 16px #0008); }
+.ws-about-back { position: absolute; top: 16px; left: 16px; }
+
+/* ── Bootstrap splash ────────────────────────────────────────────────────── */
+.ws-splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 28px; overflow: hidden; color: #fff7dc; text-align: center; background: radial-gradient(circle at 50% 30%, #19553b, #061e17 55%, #020d0a); }
+.ws-splash__glow { position: absolute; inset: 0; pointer-events: none; background-position: center; background-size: cover; opacity: .2; }
+.ws-splash__logo { position: relative; width: min(680px, 86vw); max-height: 260px; object-fit: contain; filter: drop-shadow(0 14px 24px #000a); }
+.ws-splash p, .ws-splash strong, .ws-splash__track { position: relative; }
+.ws-splash p { margin: 8px 0 0; font: italic 1.05rem Georgia, serif; color: #d8e9bc; }
+.ws-splash__track { width: min(480px, 78vw); height: 18px; padding: 3px; overflow: hidden; border: 2px solid #e4c35d; border-radius: 999px; background: #031710; box-shadow: inset 0 2px 6px #000c, 0 5px 14px #0008; }
+.ws-splash__track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #65ad37, #c9f568); box-shadow: 0 0 12px #bfff5f; transition: width .2s ease; }
+.ws-splash strong { color: #ffe68a; font: 800 1rem Georgia, serif; }
+
+@media (max-width: 767px) {
+  .ws-app-surface--garden,
+  .ws-app-surface--achievements,
+  .ws-app-surface--about,
+  .ws-app-surface--store { background-image: linear-gradient(#03150dcc, #03150ee0), var(--garden-portrait) !important; }
+  .ws-main-layout--utility { inset: 72px 0 0 !important; padding: 0 0 calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
+  .ws-screen-view { min-height: calc(100dvh - 152px); padding: 10px 10px 100px; }
+  .ws-screen-view__header { position: sticky; top: 0; z-index: 5; border-radius: 16px; }
+  .ws-screen-view__content { border-radius: 18px; padding: 16px 12px; }
+  .ws-field-kit-view__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .ws-field-kit-view__grid button { grid-template-columns: 52px 1fr; min-height: 78px; padding: 8px; }
+  .ws-field-kit-view__grid button img, .ws-field-kit-view__grid button > svg { width: 48px; height: 48px; }
+  .ws-store-view__header > img { width: 44px; height: 44px; }
+  .ws-garden { padding: 8px; }
+  .ws-garden__grid { grid-template-columns: 1fr !important; }
+  .ws-trophies { padding: 8px; }
+  .ws-trophies__grid { grid-template-columns: 1fr !important; }
+  .ws-about-logo { width: min(390px, 92%); margin-top: 34px; }
+}
 @media (min-width: 900px) and (prefers-reduced-motion: reduce) {
   .ws-achievement-banner { transform: none; }
 }
@@ -2132,18 +2261,18 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 }
 
 /* ── About & How to Play ──────────────────────────────────────────────────── */
-.ws-main-layout--about { padding-right: 0; }
-.ws-about-view { width: 100%; min-width: 0; padding: 24px clamp(18px, 4vw, 64px) 72px; color: var(--color-on-surface); }
-.ws-about-hero { width: min(1180px, 100%); margin: 0 auto 30px; padding: clamp(26px, 5vw, 58px); border: 1px solid var(--glass-border); border-radius: 28px; background: radial-gradient(circle at 78% 22%, rgba(var(--color-primary-rgb),.18), transparent 36%), color-mix(in srgb, var(--color-surface-container) 78%, transparent); box-shadow: var(--glass-shadow); backdrop-filter: var(--glass-blur); }
+.ws-main-layout--about { height: 100dvh; padding: 78px 0 76px !important; overflow-x: hidden; overflow-y: auto; }
+.ws-about-view { width: 100%; min-width: 0; padding: 24px clamp(18px, 4vw, 64px) 72px; color: #f8f1d8; }
+.ws-about-hero { width: min(1180px, 100%); margin: 0 auto 30px; padding: clamp(26px, 5vw, 58px); overflow: hidden; border: 2px solid #d8b44f99; border-radius: 28px; background: radial-gradient(circle at 78% 22%, #6dab482e, transparent 36%), linear-gradient(145deg, #123e30f2, #071f18f2); box-shadow: 0 16px 42px #0009; backdrop-filter: var(--glass-blur); }
 .ws-about-eyebrow { color: var(--color-primary); font-size: .78rem; font-weight: 850; letter-spacing: .18em; text-transform: uppercase; }
-.ws-about-hero h1 { margin: 8px 0 12px; font: 800 clamp(2.2rem, 5vw, 4.6rem)/.98 var(--font-headline); letter-spacing: -.045em; }
-.ws-about-hero p { max-width: 730px; margin: 0; color: var(--color-on-surface-variant); font-size: clamp(1rem, 1.7vw, 1.25rem); line-height: 1.55; }
+.ws-about-hero h1 { max-width: 100%; margin: 8px auto 12px; font: 800 clamp(2rem, 4vw, 3.7rem)/1.04 var(--font-headline); letter-spacing: -.035em; overflow-wrap: anywhere; text-wrap: balance; }
+.ws-about-hero p { max-width: 730px; margin: 0 auto; color: #d5e3c7; font-size: clamp(1rem, 1.7vw, 1.25rem); line-height: 1.55; }
 .ws-about-layout { display: grid; grid-template-columns: 190px minmax(0, 900px); justify-content: center; gap: clamp(28px, 5vw, 72px); width: min(1180px, 100%); margin: 0 auto; }
-.ws-about-rail { position: sticky; top: 104px; align-self: start; display: flex; flex-direction: column; gap: 4px; padding: 12px; border-left: 1px solid var(--glass-border); }
+.ws-about-rail { position: sticky; top: 12px; align-self: start; display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid #d8b44f66; border-radius: 18px; background: linear-gradient(160deg, #123e30ee, #071f18ee); box-shadow: 0 12px 28px #0007; }
 .ws-about-rail a { padding: 9px 12px; border-radius: 10px; color: var(--color-on-surface-variant); font-size: .83rem; font-weight: 750; text-decoration: none; transition: color .2s, background .2s; }
 .ws-about-rail a:hover, .ws-about-rail a:focus-visible { background: rgba(var(--color-primary-rgb),.12); color: var(--color-primary); outline: none; }
 .ws-about-content { min-width: 0; }
-.ws-about-section { position: relative; scroll-margin-top: 100px; margin: 0 0 28px; padding: clamp(22px, 4vw, 38px); border: 1px solid var(--glass-border); border-radius: 24px; background: color-mix(in srgb, var(--color-surface-container) 84%, transparent); box-shadow: 0 14px 38px rgba(0,0,0,.16); backdrop-filter: var(--glass-blur); overflow: hidden; }
+.ws-about-section { position: relative; scroll-margin-top: 100px; margin: 0 0 28px; padding: clamp(22px, 4vw, 38px); border: 2px solid #c99e4477; border-radius: 24px; background: linear-gradient(155deg, #123e30f2, #071f18f5); box-shadow: inset 0 0 0 1px #6e4c2044, 0 14px 38px #0008; backdrop-filter: var(--glass-blur); overflow: hidden; }
 .ws-about-section__number { position: absolute; top: 18px; right: 22px; color: color-mix(in srgb, var(--color-primary) 38%, transparent); font: 800 2rem/1 var(--font-headline); }
 .ws-about-section h2 { margin: 0 52px 12px 0; color: var(--color-primary); font: 800 clamp(1.5rem, 3vw, 2.15rem)/1.1 var(--font-headline); }
 .ws-about-section h3 { margin: 26px 0 8px; color: var(--color-on-surface); font: 800 1.08rem/1.2 var(--font-headline); }
@@ -2168,6 +2297,10 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 .ws-about-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 22px; }
 .ws-about-actions a { text-decoration: none; }
 
+@media (min-width: 1280px) {
+  .ws-main-layout--about { padding-left: var(--desktop-sidebar-width) !important; }
+}
+
 @media (max-width: 900px) {
   .ws-about-layout { grid-template-columns: 1fr; gap: 14px; }
   .ws-about-rail { position: sticky; z-index: 4; top: 72px; flex-direction: row; overflow-x: auto; border: 1px solid var(--glass-border); border-radius: 16px; background: color-mix(in srgb, var(--color-surface) 90%, transparent); backdrop-filter: blur(20px); scrollbar-width: none; }
@@ -2175,7 +2308,7 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   .ws-about-rail a { flex: 0 0 auto; }
 }
 @media (max-width: 600px) {
-  .ws-main-layout--about { padding-left: 0; padding-right: 0; }
+  .ws-main-layout--about { padding: 66px 0 calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
   .ws-about-view { padding: 14px 10px 100px; }
   .ws-about-hero { padding: 24px 20px; border-radius: 20px; }
   .ws-about-section { padding: 22px 16px; border-radius: 18px; }
@@ -2316,3 +2449,9 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   .ws-field-notes:not(.ws-field-notes--compact) { display: none; }
   .ws-field-notes--compact { margin: 8px 0 12px; }
 }
+
+/* Final specificity pass for approved navigation controls. */
+.ws-top-nav__icon-btn { border: 2px solid #d9b653; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #f4f4ef, #95a29f 58%, #44514f); box-shadow: inset 0 2px 0 #fff, 0 3px 0 #78551f, 0 6px 12px #0008; }
+.ws-bottom-nav__item { color: #e8ead7; font-family: Georgia, var(--font-headline); font-weight: 700; }
+.ws-bottom-nav__item--active { border-radius: 16px; background: linear-gradient(180deg, #285d40aa, #123a29dd); color: #fffbe7; }
+.ws-bottom-nav__item--active .ws-navigation-art { filter: drop-shadow(0 0 9px #dfff79) drop-shadow(0 4px 3px #0009); transform: translateY(-2px); }

@@ -239,11 +239,9 @@ export const PLANTS_CATALOG: PlantDef[] = [
     },
 ];
 
-export function getStageImage(growth: number, bloomImage: string): string {
-    if (growth >= 100) return bloomImage;
-    if (growth >= 50) return STAGE_ASSETS.young;
-    if (growth >= 25) return STAGE_ASSETS.sprout;
-    return STAGE_ASSETS.seed;
+export function getStageImage(growth: number, plantId: string): string {
+    const stage = growth >= 100 ? "bloom" : growth >= 50 ? "young" : growth >= 25 ? "sprout" : "vessel";
+    return `/plants/lifecycle/${plantId}-${stage}.webp`;
 }
 
 export function getStageName(growth: number): string {

@@ -11,7 +11,7 @@ import type { AchievementStats } from "../../achievements";
 import FieldNotesPanel from "../FieldNotesPanel";
 import type { FieldNoteId, FieldNotesState } from "../../fieldNotes";
 
-type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings" | "about";
+type ActiveTab = "play" | "levels" | "garden" | "achievements" | "field-kit" | "settings" | "about" | "store";
 type Props = {
     activeTab: ActiveTab;
     highestUnlockedLevel: number;

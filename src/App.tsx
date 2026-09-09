@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from "react";
-import { ThemeProvider, CssBaseline, Snackbar, Alert } from "@mui/material";
+import { ThemeProvider, CssBaseline, Snackbar, Alert, useMediaQuery } from "@mui/material";
 
 import { sproutLightTheme, sproutDarkTheme, sproutAutumnTheme, sproutOceanTheme } from "./theme";
 import { useWordSearchGame } from "./hooks/useWordSearchGame";
@@ -15,12 +15,13 @@ import AchievementBanner from "./components/AchievementBanner";
 import PlayerProfileSheet from "./components/PlayerProfileSheet";
 import ContextSidebar from "./components/sidebar/ContextSidebar";
 import ResponsiveContextStrip from "./components/sidebar/ResponsiveContextStrip";
-import MobilePowerupDrawer from "./components/sidebar/MobilePowerupDrawer";
 import DestinationSkeleton from "./components/DestinationSkeleton";
 const SettingsDialog = lazy(() => import("./components/SettingsDialog"));
+const SettingsView = lazy(() => import("./components/SettingsView"));
+const FieldKitView = lazy(() => import("./components/FieldKitView"));
 const AboutView = lazy(() => import("./components/AboutView"));
 const LevelsView = lazy(() => import("./components/LevelsView"));
-const SeedStoreDialog = lazy(() => import("./components/SeedStoreDialog"));
+const SeedStoreView = lazy(() => import("./components/SeedStoreDialog"));
 const AchievementsView = lazy(() => import("./components/AchievementsView"));
 const GardenView = lazy(() => import("./components/GardenView"));
 const DebugPanel = import.meta.env.DEV ? lazy(() => import("./components/DebugPanel")) : null;
@@ -45,7 +46,7 @@ const THEME_STORAGE_KEY = "wordsearch.themeMode";
 const debugRequested = isDebugModeRequested();
 
 type ThemeMode = "sprout" | "midnight" | "autumn" | "ocean";
-type ActiveTab = "play" | "levels" | "garden" | "achievements" | "settings" | "about";
+type ActiveTab = "play" | "levels" | "garden" | "achievements" | "field-kit" | "settings" | "about" | "store";
 
 export default function App() {
     const {
@@ -83,7 +84,23 @@ export default function App() {
     });
 
     const [activeTab, setActiveTab] = useState<ActiveTab>("play");
-    const [fieldKitOpen, setFieldKitOpen] = useState(false);
+    const [, setViewStack] = useState<ActiveTab[]>([]);
+    const isMobile = useMediaQuery("(max-width: 767px)");
+    const selectPrimaryView = (view: ActiveTab) => {
+        setViewStack([]);
+        setActiveTab(view);
+    };
+    const openUtilityView = (view: ActiveTab) => {
+        setViewStack(stack => [...stack, activeTab]);
+        setActiveTab(view);
+    };
+    const closeUtilityView = () => {
+        setViewStack(stack => {
+            const destination = stack[stack.length - 1] ?? "play";
+            setActiveTab(destination);
+            return stack.slice(0, -1);
+        });
+    };
 
     // ── Debug panel (dev only -- see debugMode.ts) ──────────────────────────
     const [debugPanelOpen, setDebugPanelOpen] = useState(debugRequested);
@@ -103,7 +120,6 @@ export default function App() {
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
     }, []);
-    const fieldKitButtonRef = useRef<HTMLButtonElement>(null);
     const onboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
     const botanistRank = getBotanistRank(highestUnlockedLevel);
     const avatarColumnPositions = ["0%", "24.8%", "49.5%", "74.3%", "99%"];
@@ -133,7 +149,6 @@ export default function App() {
 
     // ── Dialog & Celebration states ────────────────────────────────────────────
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [seedStoreOpen, setSeedStoreOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     // Shared toast, replacing alert() across the Garden and Seed Store --
     // one Snackbar mounted here, fed by a callback threaded down the same
@@ -217,7 +232,10 @@ export default function App() {
             <CssBaseline />
 
             <div
+                className={`ws-app-surface ws-app-surface--${activeTab}`}
                 style={{
+                    "--garden-landscape": `url("${assetUrl("backgrounds/garden-landscape.webp")}")`,
+                    "--garden-portrait": `url("${assetUrl("backgrounds/garden-portrait.webp")}")`,
                     minHeight: "100vh",
                     backgroundImage: buildBackground(),
                     backgroundSize: (bgTheme as { backgroundSize?: string }).backgroundSize ?? "cover",
@@ -225,7 +243,7 @@ export default function App() {
                     backgroundRepeat: (bgTheme as { backgroundRepeat?: string }).backgroundRepeat ?? "no-repeat",
                     backgroundAttachment: "fixed",
                     transition: "background-image 0.4s ease",
-                }}
+                } as CSSProperties}
             >
                 {activeTab === "play" && <div className="ws-playing-backdrop" aria-hidden="true"><picture>
                     <source media="(orientation: landscape)" srcSet={assetUrl("backgrounds/playing-landscape.webp")} />
@@ -234,7 +252,7 @@ export default function App() {
                 {/* ── Top Navigation Header (TopNavBar) ────────────────────────── */}
                 <header className="ws-top-nav">
                     <div className="ws-top-nav__inner">
-                        <div className="ws-top-nav__brand" onClick={() => setActiveTab("play")}>
+                        <div className="ws-top-nav__brand" onClick={() => selectPrimaryView("play")}>
                             <button
                                 className="ws-mobile-brand-avatar ws-botanist-avatar"
                                 style={{ "--avatar-position": avatarBackgroundPosition } as CSSProperties}
@@ -253,28 +271,28 @@ export default function App() {
                         <nav className="ws-top-nav__menu">
                             <button
                                 className={`ws-top-nav__link ${activeTab === "play" ? "ws-top-nav__link--active" : ""}`}
-                                onClick={() => { playSfx("click"); setActiveTab("play"); }}
+                                onClick={() => { playSfx("click"); selectPrimaryView("play"); }}
                             >
                                 <NavigationArt name="play" />
                                 Play
                             </button>
                             <button
                                 className={`ws-top-nav__link ${activeTab === "levels" ? "ws-top-nav__link--active" : ""}`}
-                                onClick={() => { playSfx("click"); setActiveTab("levels"); }}
+                                onClick={() => { playSfx("click"); selectPrimaryView("levels"); }}
                             >
                                 <NavigationArt name="levels" />
                                 Levels
                             </button>
                             <button
                                 className={`ws-top-nav__link ${activeTab === "garden" ? "ws-top-nav__link--active" : ""}`}
-                                onClick={() => { playSfx("click"); setActiveTab("garden"); }}
+                                onClick={() => { playSfx("click"); selectPrimaryView("garden"); }}
                             >
                                 <NavigationArt name="garden" />
                                 Garden
                             </button>
                             <button
                                 className={`ws-top-nav__link ${activeTab === "achievements" ? "ws-top-nav__link--active" : ""}`}
-                                onClick={() => { playSfx("click"); setActiveTab("achievements"); }}
+                                onClick={() => { playSfx("click"); selectPrimaryView("achievements"); }}
                             >
                                 <NavigationArt name="trophies" />
                                 Trophies
@@ -285,7 +303,7 @@ export default function App() {
                         <div className="ws-top-nav__actions">
                             <div
                                 className="ws-top-nav__stat-pill"
-                                onClick={() => { playSfx("click"); setSeedStoreOpen(true); }}
+                                onClick={() => { playSfx("click"); openUtilityView("store"); }}
                                 title="Click to open Seed Redemption Store"
                                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 9999, background: "rgba(0, 228, 121, 0.12)", border: "1px solid rgba(0, 228, 121, 0.3)", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
                             >
@@ -298,7 +316,7 @@ export default function App() {
                             {/* Settings Quick Toggle — theme and help live in their dedicated surfaces. */}
                             <button
                                 className="ws-top-nav__icon-btn"
-                                onClick={() => { playSfx("click"); setSettingsOpen(true); }}
+                                onClick={() => { playSfx("click"); isMobile ? openUtilityView("settings") : setSettingsOpen(true); }}
                                 aria-label="Settings"
                                 title="Settings"
                             >
@@ -334,7 +352,7 @@ export default function App() {
                     musicMuted={musicMuted}
                     onToggleSfx={toggleSfxMuted}
                     onToggleMusic={toggleMusicMuted}
-                    onHelp={() => setActiveTab("about")}
+                    onHelp={() => openUtilityView("about")}
                     ownedPlants={ownedPlants}
                     wateredTimestamps={wateredTimestamps}
                     growthByPlant={growthByPlant}
@@ -350,7 +368,7 @@ export default function App() {
 
                 {/* ── Main Content Container ───────────────────────────────────── */}
                 <main
-                    className={`ws-main-layout${activeTab === "levels" ? " ws-main-layout--levels" : ""}${activeTab === "about" ? " ws-main-layout--about" : ""}`}
+                    className={`ws-main-layout${activeTab === "levels" ? " ws-main-layout--levels" : ""}${activeTab === "about" ? " ws-main-layout--about" : ""}${activeTab === "settings" || activeTab === "field-kit" || activeTab === "store" ? " ws-main-layout--utility" : ""}`}
                     style={{ "--found-words-width": `${192 + MAX_TARGET_WORD_LENGTH * 10}px` } as CSSProperties}
                 >
                     <ResponsiveContextStrip
@@ -369,9 +387,70 @@ export default function App() {
                         fieldNotes={fieldNotes}
                         onCollectFieldNote={claimFieldNote}
                     />
-                    {activeTab === "about" ? (
+                    {activeTab === "store" ? (
+                        <Suspense fallback={<DestinationSkeleton destination="store" />}>
+                            <SeedStoreView
+                                onBack={closeUtilityView}
+                                seeds={seeds}
+                                ownedPlants={ownedPlants}
+                                onBuyPlantSeed={buyPlantSeed}
+                                onSpendSeeds={spendSeeds}
+                                doubleSeedsActive={doubleSeedsActive}
+                                powerupInventory={powerupInventory}
+                                onPurchasePowerupCharge={purchasePowerupCharge}
+                                unlockedThemes={unlockedThemes}
+                                onUnlockTheme={unlockTheme}
+                                hasGoldenCrest={hasGoldenCrest}
+                                onUnlockGoldenCrest={unlockGoldenCrest}
+                                showToast={showToast}
+                            />
+                        </Suspense>
+                    ) : activeTab === "settings" ? (
+                        <Suspense fallback={<DestinationSkeleton destination="settings" />}>
+                            <SettingsView
+                                onBack={closeUtilityView}
+                                difficultyMode={difficultyMode}
+                                onDifficultyModeChange={setDifficultyMode}
+                                favoriteCategories={favoriteCategories}
+                                onFavoriteCategoriesChange={setFavoriteCategories}
+                                useFavorites={useFavorites}
+                                onUseFavoritesChange={setUseFavorites}
+                                musicMuted={musicMuted}
+                                onToggleMusicMuted={toggleMusicMuted}
+                                musicVolume={musicVolume}
+                                onMusicVolumeChange={setMusicVolume}
+                                sfxMuted={sfxMuted}
+                                onToggleSfxMuted={toggleSfxMuted}
+                                sfxVolume={sfxVolume}
+                                onSfxVolumeChange={setSfxVolume}
+                                themeMode={themeMode}
+                                onThemeModeChange={handleThemeModeChange}
+                                unlockedThemes={unlockedThemes}
+                                onOpenAbout={() => openUtilityView("about")}
+                            />
+                        </Suspense>
+                    ) : activeTab === "field-kit" ? (
+                        <Suspense fallback={<DestinationSkeleton destination="field-kit" />}>
+                            <FieldKitView
+                                onBack={closeUtilityView}
+                                hintAvailable={hintAvailable}
+                                freeHintUsesRemaining={freeHintUsesRemaining}
+                                powerupInventory={powerupInventory}
+                                doubleSeedsActive={doubleSeedsActive}
+                                onRevealHint={() => { handleRevealHint(); selectPrimaryView("play"); }}
+                                onShuffle={() => { reshuffle(); selectPrimaryView("play"); }}
+                                onRetry={() => { retryLevel(); selectPrimaryView("play"); }}
+                                onSuperRoot={() => { activateSuperRoot(); selectPrimaryView("play"); }}
+                                onCompass={() => { activateCompass(); selectPrimaryView("play"); }}
+                                onSpectrometer={() => { activateSpectrometer(); selectPrimaryView("play"); }}
+                                onDoubleSeeds={() => { activateDoubleSeeds(); selectPrimaryView("play"); }}
+                                fieldNotes={fieldNotes}
+                                onCollectFieldNote={claimFieldNote}
+                            />
+                        </Suspense>
+                    ) : activeTab === "about" ? (
                         <Suspense fallback={<DestinationSkeleton destination="about" />}>
-                            <AboutView onReplayOnboarding={() => { replayOnboarding(); setActiveTab("play"); }} />
+                            <AboutView onBack={isMobile ? closeUtilityView : undefined} onReplayOnboarding={() => { replayOnboarding(); selectPrimaryView("play"); }} />
                         </Suspense>
                     ) : activeTab === "levels" ? (
                         <Suspense fallback={<DestinationSkeleton destination="levels" />}>
@@ -379,7 +458,7 @@ export default function App() {
                             currentLevel={level}
                             onSelectLevel={(lvl) => {
                                 goToLevel(lvl);
-                                setActiveTab("play");
+                                selectPrimaryView("play");
                             }}
                             />
                         </Suspense>
@@ -411,7 +490,7 @@ export default function App() {
                             ownedPlants={ownedPlants}
                             wateredTimestamps={wateredTimestamps}
                             growthByPlant={growthByPlant}
-                            onOpenStore={() => setSeedStoreOpen(true)}
+                            onOpenStore={() => openUtilityView("store")}
                             addSeeds={addSeeds}
                             spendSeeds={spendSeeds}
                             updateWateredTimestamp={updateWateredTimestamp}
@@ -524,25 +603,6 @@ export default function App() {
                                     )}
                                 </div>
 
-                                <MobilePowerupDrawer
-                                    open={fieldKitOpen}
-                                    onClose={() => setFieldKitOpen(false)}
-                                    returnFocusRef={fieldKitButtonRef}
-                                    hintAvailable={hintAvailable}
-                                    freeHintUsesRemaining={freeHintUsesRemaining}
-                                    powerupInventory={powerupInventory}
-                                    doubleSeedsActive={doubleSeedsActive}
-                                    onRevealHint={() => { playSfx("click"); handleRevealHint(); }}
-                                    onShuffle={() => { playSfx("click"); reshuffle(); }}
-                                    onRetry={() => { playSfx("click"); retryLevel(); }}
-                                    onSuperRoot={() => { playSfx("click"); activateSuperRoot(); }}
-                                    onCompass={() => { playSfx("click"); activateCompass(); }}
-                                    onSpectrometer={() => { playSfx("click"); activateSpectrometer(); }}
-                                    onDoubleSeeds={() => { playSfx("click"); activateDoubleSeeds(); }}
-                                    fieldNotes={fieldNotes}
-                                    onCollectFieldNote={claimFieldNote}
-                                />
-
                                 {/* Right: Found Words List Panel */}
                                 <div className="glass-panel ws-found-words-panel">
                                     <div className="ws-found-words-header">
@@ -585,8 +645,8 @@ export default function App() {
                 <PlayerProfileSheet
                     open={profileOpen}
                     onClose={() => setProfileOpen(false)}
-                    onOpenAchievements={() => { setProfileOpen(false); setActiveTab("achievements"); }}
-                    onOpenSettings={() => { setProfileOpen(false); setSettingsOpen(true); }}
+                    onOpenAchievements={() => { setProfileOpen(false); selectPrimaryView("achievements"); }}
+                    onOpenSettings={() => { setProfileOpen(false); isMobile ? openUtilityView("settings") : setSettingsOpen(true); }}
                     botanistTitle={botanistRank.title}
                     level={highestUnlockedLevel}
                     seeds={seeds}
@@ -610,7 +670,7 @@ export default function App() {
                 <nav className="ws-bottom-nav">
                     <button
                         className={`ws-bottom-nav__item ${activeTab === "play" ? "ws-bottom-nav__item--active" : ""}`}
-                        onClick={() => { playSfx("click"); setActiveTab("play"); }}
+                        onClick={() => { playSfx("click"); selectPrimaryView("play"); }}
                     >
                         <NavigationArt name="play" />
                         <span>Play</span>
@@ -618,7 +678,7 @@ export default function App() {
 
                     <button
                         className={`ws-bottom-nav__item ${activeTab === "levels" ? "ws-bottom-nav__item--active" : ""}`}
-                        onClick={() => { playSfx("click"); setActiveTab("levels"); }}
+                        onClick={() => { playSfx("click"); selectPrimaryView("levels"); }}
                     >
                         <NavigationArt name="levels" />
                         <span>Levels</span>
@@ -626,7 +686,7 @@ export default function App() {
 
                     <button
                         className={`ws-bottom-nav__item ${activeTab === "garden" ? "ws-bottom-nav__item--active" : ""}`}
-                        onClick={() => { playSfx("click"); setActiveTab("garden"); }}
+                        onClick={() => { playSfx("click"); selectPrimaryView("garden"); }}
                     >
                         <NavigationArt name="garden" />
                         <span>Garden</span>
@@ -634,17 +694,14 @@ export default function App() {
 
                     <button
                         className={`ws-bottom-nav__item ${activeTab === "achievements" ? "ws-bottom-nav__item--active" : ""}`}
-                        onClick={() => { playSfx("click"); setActiveTab("achievements"); }}
+                        onClick={() => { playSfx("click"); selectPrimaryView("achievements"); }}
                     >
                         <NavigationArt name="trophies" />
                         <span>Trophies</span>
                     </button>
                     <button
-                        ref={fieldKitButtonRef}
-                        className={`ws-bottom-nav__item ${fieldKitOpen ? "ws-bottom-nav__item--active" : ""}`}
-                        aria-expanded={fieldKitOpen}
-                        aria-controls="mobile-field-kit"
-                        onClick={() => { playSfx("click"); setFieldKitOpen(open => !open); }}
+                        className={`ws-bottom-nav__item ${activeTab === "field-kit" ? "ws-bottom-nav__item--active" : ""}`}
+                        onClick={() => { playSfx("click"); openUtilityView("field-kit"); }}
                     >
                         <NavigationArt name="field-kit" />
                         <span>Field Kit</span>
@@ -693,27 +750,6 @@ export default function App() {
                         onThemeModeChange={handleThemeModeChange}
                         unlockedThemes={unlockedThemes}
                         onOpenAbout={() => { setSettingsOpen(false); setActiveTab("about"); }}
-                    />
-                </Suspense>
-            )}
-
-            {seedStoreOpen && (
-                <Suspense fallback={<div className="ws-lazy-dialog-fallback"><DestinationSkeleton destination="store" /></div>}>
-                    <SeedStoreDialog
-                        open={seedStoreOpen}
-                        onClose={() => setSeedStoreOpen(false)}
-                        seeds={seeds}
-                        ownedPlants={ownedPlants}
-                        onBuyPlantSeed={buyPlantSeed}
-                        onSpendSeeds={spendSeeds}
-                        doubleSeedsActive={doubleSeedsActive}
-                        powerupInventory={powerupInventory}
-                        onPurchasePowerupCharge={purchasePowerupCharge}
-                        unlockedThemes={unlockedThemes}
-                        onUnlockTheme={unlockTheme}
-                        hasGoldenCrest={hasGoldenCrest}
-                        onUnlockGoldenCrest={unlockGoldenCrest}
-                        showToast={showToast}
                     />
                 </Suspense>
             )}

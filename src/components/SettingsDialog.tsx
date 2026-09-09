@@ -18,7 +18,7 @@ import CategoryPickerDialog from "./CategoryPickerDialog";
 
 type ThemeMode = "sprout" | "midnight" | "autumn" | "ocean";
 
-type Props = {
+export type SettingsProps = {
     open: boolean;
     onClose: () => void;
     difficultyMode: Tier;
@@ -79,13 +79,13 @@ function SoundRow({
 }
 
 // ── Shared inner content ──────────────────────────────────────────────────────
-function SettingsContent({
+export function SettingsContent({
     difficultyMode, onDifficultyModeChange,
     favoriteCategories, onFavoriteCategoriesChange, useFavorites, onUseFavoritesChange,
     musicMuted, onToggleMusicMuted, musicVolume, onMusicVolumeChange,
     sfxMuted, onToggleSfxMuted, sfxVolume, onSfxVolumeChange,
     themeMode, onThemeModeChange, unlockedThemes, onOpenAbout,
-}: Omit<Props, "open" | "onClose">) {
+}: Omit<SettingsProps, "open" | "onClose">) {
     const [pickerOpen, setPickerOpen] = useState(false);
     const canUseFavorites = favoriteCategories.length >= MIN_FAVORITE_CATEGORIES;
     const autumnUnlocked = unlockedThemes.includes("autumn");
@@ -203,7 +203,7 @@ function SettingsContent({
 }
 
 // ── Main component — fullScreen dialog on mobile, modal on desktop ───────────
-export default function SettingsDialog(props: Props) {
+export default function SettingsDialog(props: SettingsProps) {
     const { open, onClose } = props;
     const isMobile = useMediaQuery("(max-width: 767px)");
 

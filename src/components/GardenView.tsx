@@ -54,6 +54,7 @@ function WaterButton({
 
     return (
         <button
+            className="ws-garden-action ws-garden-action--water"
             onClick={onWater}
             disabled={cooldownActive || fullyBloomed}
             style={{
@@ -193,15 +194,15 @@ export default function GardenView({
     const unownedPlants = PLANTS_CATALOG.filter(plant => !ownedPlants.includes(plant.id));
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 24, width: "100%" }}>
-            {/* Header Sanctuary Banner Card */}
-            <div className="glass-panel" style={{ padding: 24, borderRadius: "1.25rem", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="ws-garden" style={{ display: "flex", flexDirection: "column", gap: 24, width: "100%" }}>
+            {/* Garden summary */}
+            <div className="glass-panel ws-garden__summary" style={{ padding: 24, borderRadius: "1.25rem", display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
                     <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                             <EcoLeaf style={{ fontSize: 32, color: "var(--color-primary)" }} />
                             <h2 className="glow-text-emerald" style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.75rem", fontWeight: 800, color: "var(--color-primary)" }}>
-                                Moonlit Conservatory
+                                The Garden
                             </h2>
                         </div>
                         <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--color-on-surface-variant)", maxWidth: 680, lineHeight: 1.5 }}>
@@ -227,7 +228,7 @@ export default function GardenView({
                 {/* Vitality Progress Meter */}
                 <div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", color: "var(--color-on-surface-variant)", marginBottom: 6, fontWeight: 700 }}>
-                        <span>Conservatory Collection: {userOwnedPlantDefs.length} / {PLANTS_CATALOG.length} Seeds Acquired</span>
+                        <span>Garden Collection: {userOwnedPlantDefs.length} / {PLANTS_CATALOG.length} Seeds Acquired</span>
                         <span>{bloomedCount} Bloomed ({userOwnedPlantDefs.length ? Math.round((bloomedCount / userOwnedPlantDefs.length) * 100) : 0}%)</span>
                     </div>
                     <div style={{ height: 12, width: "100%", background: "var(--color-surface-container-high)", borderRadius: 6, overflow: "hidden", border: "1px solid var(--glass-border)" }}>
@@ -248,6 +249,7 @@ export default function GardenView({
                     <div style={{ display: "flex", gap: 12 }}>
                         {(["all", "bloomed", "seedlings"] as FilterTab[]).map(tab => (
                             <button
+                                className={`ws-garden-filter${filter === tab ? " is-selected" : ""}`}
                                 key={tab}
                                 onClick={() => setFilter(tab)}
                                 style={{
@@ -271,6 +273,7 @@ export default function GardenView({
                     </div>
 
                     <button
+                        className="ws-garden-action ws-garden-action--primary"
                         onClick={onOpenStore}
                         style={{
                             padding: "8px 18px",
@@ -296,17 +299,17 @@ export default function GardenView({
 
             {/* Plants Grid with Large Bioluminescent Terrarium Tile Cards */}
             {filteredPlants.length > 0 ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 24 }}>
+                <div className="ws-garden__grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 24 }}>
                     {filteredPlants.map(plant => {
                         const growth = getPlantGrowth(plant.id);
                         const lastWatered = wateredTimestamps[plant.id] || 0;
-                        const rawStageImage = getStageImage(growth, plant.bloomImage);
+                        const rawStageImage = getStageImage(growth, plant.id);
                         const plantImage = assetUrl(rawStageImage.startsWith("/") ? rawStageImage.slice(1) : rawStageImage);
 
                         return (
                             <div
                                 key={plant.id}
-                                className="glass-panel"
+                                className="glass-panel ws-garden-card"
                                 style={{
                                     borderRadius: "1.5rem",
                                     overflow: "hidden",
@@ -414,6 +417,7 @@ export default function GardenView({
                                             {/* Fertilizer Button */}
                                             {growth < 100 && (
                                                 <button
+                                                    className="ws-garden-action ws-garden-action--fertilize"
                                                     onClick={() => handleFertilizePlant(plant.id, plant.name)}
                                                     style={{
                                                         width: "100%",
@@ -459,12 +463,13 @@ export default function GardenView({
                 >
                     <div style={{ fontSize: "3.5rem" }}>🪴</div>
                     <h3 style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.4rem", fontWeight: 800, color: "var(--color-primary)" }}>
-                        Your Conservatory is Ready for Planting
+                                        Your Garden is Ready for Planting
                     </h3>
                     <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--color-on-surface-variant)", maxWidth: 500 }}>
                         Head over to the Seed Store to purchase your first botanical plant seeds and watch them grow inside geometric terrariums!
                     </p>
                     <button
+                        className="ws-garden-action ws-garden-action--primary"
                         onClick={onOpenStore}
                         style={{
                             padding: "12px 24px",

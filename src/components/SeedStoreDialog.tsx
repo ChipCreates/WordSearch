@@ -1,17 +1,15 @@
 import { useState } from "react";
 import {
-    Dialog, DialogTitle, DialogContent, IconButton, Box, Typography,
-    Button, Card, CardContent, useMediaQuery, Chip, Tab, Tabs,
+    Box, Typography, Button, Card, CardContent, Chip, Tab, Tabs,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { PLANTS_CATALOG } from "../plantsCatalog";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
+import { PLANTS_CATALOG, getStageImage } from "../plantsCatalog";
 import { assetUrl } from "../categoryThemes";
 import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../powerups";
 import { getPlantEconomy } from "../economy";
 
 type Props = {
-    open: boolean;
-    onClose: () => void;
+    onBack: () => void;
     seeds: number;
     ownedPlants: string[];
     onBuyPlantSeed: (plantId: string, cost: number) => boolean;
@@ -27,8 +25,7 @@ type Props = {
 };
 
 export default function SeedStoreDialog({
-    open,
-    onClose,
+    onBack,
     seeds,
     ownedPlants,
     onBuyPlantSeed,
@@ -42,7 +39,6 @@ export default function SeedStoreDialog({
     onUnlockGoldenCrest,
     showToast,
 }: Props) {
-    const isMobile = useMediaQuery("(max-width: 767px)");
     const [tabIndex, setTabIndex] = useState(0);
 
     const handleRedeem = (cost: number, onSuccess: () => void) => {
@@ -161,44 +157,13 @@ export default function SeedStoreDialog({
     ];
 
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            fullScreen={isMobile}
-            maxWidth="md"
-            fullWidth
-            sx={{
-                "& .MuiDialog-paper": {
-                    borderRadius: isMobile ? 0 : "1.25rem",
-                    background: "var(--glass-bg)",
-                    backdropFilter: "var(--glass-blur, blur(12px))",
-                    border: isMobile ? "none" : "1px solid var(--glass-border)",
-                    boxShadow: "var(--glass-shadow)",
-                    color: "var(--color-on-surface)",
-                },
-            }}
-        >
-            <DialogTitle
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    fontFamily: "var(--font-headline)",
-                    fontWeight: 700,
-                    fontSize: "1.25rem",
-                    pb: 1,
-                }}
-            >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <img src={assetUrl("seed.png")} alt="Seed" style={{ width: 24, height: 24, objectFit: "contain" }} />
-                    Botanical & Seed Store
-                </Box>
-                <IconButton onClick={onClose} size="small" sx={{ color: "var(--color-on-surface)" }}>
-                    <CloseIcon />
-                </IconButton>
-            </DialogTitle>
-
-            <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
+        <section className="ws-screen-view ws-store-view" aria-label="Botanical and Seed Store">
+            <header className="ws-screen-view__header ws-store-view__header">
+                <button className="ws-round-icon-btn" onClick={onBack} aria-label="Back"><ArrowBackRounded /></button>
+                <img src={assetUrl("seed.png")} alt="" />
+                <div><span className="ws-screen-view__eyebrow">Harvest Exchange</span><h1>Botanical &amp; Seed Store</h1></div>
+            </header>
+            <div className="ws-screen-view__content ws-store-view__content">
                 {/* Seed balance banner */}
                 <Box
                     sx={{
@@ -255,7 +220,8 @@ export default function SeedStoreDialog({
                             const isOwned = ownedPlants.includes(plant.id);
                             const plantEconomy = getPlantEconomy(plant);
                             const canAfford = seeds >= plantEconomy.purchaseCost;
-                            const imagePath = assetUrl(plant.bloomImage.startsWith("/") ? plant.bloomImage.slice(1) : plant.bloomImage);
+                            const bloomImage = getStageImage(100, plant.id);
+                            const imagePath = assetUrl(bloomImage.slice(1));
 
                             return (
                                 <Box key={plant.id}>
@@ -356,7 +322,7 @@ export default function SeedStoreDialog({
                                                         onClick={() => {
                                                             const success = onBuyPlantSeed(plant.id, plantEconomy.purchaseCost);
                                                             if (success) {
-                                                                showToast(`🎉 Plant Seed Acquired! ${plant.name} is now planted in your Conservatory!`);
+                                                                showToast(`🎉 Plant Seed Acquired! ${plant.name} is now planted in The Garden!`);
                                                             } else {
                                                                 showToast("Not enough seeds to purchase this plant seed!");
                                                             }
@@ -468,7 +434,7 @@ export default function SeedStoreDialog({
                         })}
                     </Box>
                 )}
-            </DialogContent>
-        </Dialog>
+            </div>
+        </section>
     );
 }

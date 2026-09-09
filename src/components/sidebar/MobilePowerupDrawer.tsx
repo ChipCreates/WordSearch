@@ -5,7 +5,7 @@ import { assetUrl } from "../../categoryThemes";
 import FieldNotesPanel from "../FieldNotesPanel";
 import type { FieldNoteId, FieldNotesState } from "../../fieldNotes";
 
-type Props = {
+export type MobilePowerupDrawerProps = {
     hintAvailable: boolean;
     freeHintUsesRemaining: number;
     powerupInventory: PowerupInventory;
@@ -24,7 +24,7 @@ type Props = {
     returnFocusRef: RefObject<HTMLButtonElement | null>;
 };
 
-export default function MobilePowerupDrawer(props: Props) {
+export default function MobilePowerupDrawer(props: MobilePowerupDrawerProps) {
     const closeRef = useRef<HTMLButtonElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
     useEffect(() => {

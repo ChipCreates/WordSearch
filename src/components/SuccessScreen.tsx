@@ -117,7 +117,7 @@ export default function SuccessScreen({ category, level, seeds, bonusWords, bonu
                 <DialogContent>
                     <Typography variant="body2">
                         This resets everything back to Level 1 with 0 Seeds — including your unlocked
-                        achievements, categories seen, and your entire Moonlit Conservatory garden.
+                        achievements, categories seen, and your entire Garden collection.
                         This can't be undone.
                     </Typography>
                 </DialogContent>

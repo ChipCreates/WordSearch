@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import LevelsView from "./LevelsView";
 
 const orientation = vi.hoisted(() => ({ landscape: false }));
@@ -24,22 +24,18 @@ describe.each([false, true])("continuous trail, landscape=%s", landscape => {
         expect(screen.getByRole("button", { name: "Level 21, locked" })).toBeTruthy();
     });
 
-    it("extends the same scrolling surface near its end without resetting position", () => {
+    it("composes all approved regions into one orientation-aware scrolling surface", () => {
         orientation.landscape = landscape;
         const { container } = render(<LevelsView currentLevel={1} onSelectLevel={() => {}} />);
-        const scroller = screen.getByLabelText("Scroll through levels");
         const map = container.querySelector<HTMLElement>(".ws-trail__map")!;
         const dimension = landscape ? "width" : "height";
-        const axis = landscape ? "scrollLeft" : "scrollTop";
-        const initialLength = parseFloat(map.style[dimension]);
-        scroller[axis] = initialLength - 800;
-        fireEvent.scroll(scroller);
-        expect(parseFloat(map.style[dimension])).toBeGreaterThan(initialLength);
-        expect(scroller[axis]).toBe(initialLength - 800);
-        // Rendering stays bounded even while the trail grows.
-        expect(container.querySelectorAll(".ws-trail__node").length).toBeLessThan(50);
-        scroller[axis] = 0;
-        fireEvent.scroll(scroller);
+        const regions = [...container.querySelectorAll<HTMLElement>(".ws-trail__region")];
+        expect(parseFloat(map.style[dimension])).toBeGreaterThan(800);
+        expect(regions).toHaveLength(6);
+        const firstTile = regions[0].querySelector<HTMLElement>(".ws-trail__tile");
+        expect(firstTile?.style.backgroundImage).toContain(landscape ? "-landscape.webp" : "-portrait.webp");
+        expect(regions[0].querySelectorAll(".ws-trail__tile").length).toBeGreaterThan(1);
         expect(screen.getByRole("button", { name: "Level 2, locked" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Level 100, locked" })).toBeTruthy();
     });
 });
