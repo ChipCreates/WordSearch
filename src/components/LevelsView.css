@@ -11,16 +11,121 @@
 .ws-trail__map { position: relative; isolation: isolate; background-position: 0 0; background-repeat: repeat-y; }
 .ws-trail__region { position: absolute; z-index: 0; overflow: hidden; }
 .ws-trail__tile { position: absolute; background-position: center; background-repeat: no-repeat; background-size: 100% 100%; }
+
+/* Seamless biome transition blend */
+.ws-trail__seam-blend {
+  overflow: hidden;
+  pointer-events: none;
+}
+.ws-trail__seam-mist {
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Translucent bezier curves */
 .ws-trail__route { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .ws-trail__route path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.ws-trail__route-shadow { stroke: #10241baa; stroke-width: 20; }
-.ws-trail__route-stone { stroke: #b99b62b8; stroke-width: 14; stroke-dasharray: 9 6; }
-.ws-trail__route-light { stroke: #ffe58bd8; stroke-width: 3; stroke-dasharray: 2 14; filter: drop-shadow(0 0 7px #fff2a6); }
+
+/* Incomplete / locked route: translucent gray stone */
+.ws-trail__route-shadow--locked { stroke: rgba(12, 28, 22, 0.45); stroke-width: 18; }
+.ws-trail__route-stone--locked { stroke: rgba(160, 180, 172, 0.38); stroke-width: 11; }
+.ws-trail__route-light--locked { stroke: rgba(220, 235, 230, 0.22); stroke-width: 2.5; }
+
+/* Completed / active route: vibrant translucent botanical glow */
+.ws-trail__route-shadow--active {
+  stroke: rgba(0, 228, 121, 0.28);
+  stroke-width: 22;
+  filter: drop-shadow(0 0 10px rgba(0, 228, 121, 0.6));
+}
+.ws-trail__route-stone--active {
+  stroke: url(#ws-trail-glow-active);
+  stroke-width: 11;
+  opacity: 0.88;
+}
+.ws-trail__route-light--active {
+  stroke: url(#ws-trail-core-active);
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 6px #fff4a8);
+}
+
 .ws-trail__stop { position: absolute; transform: translate(-50%,-50%); z-index: 2; text-align: center; }
-.ws-trail__node { position: relative; width: 70px; height: 70px; border-radius: 50%; border: 3px solid #839287; background: linear-gradient(145deg,#657b72,#344c46); box-shadow: inset 0 3px 2px #ffffff55,inset 0 -5px 0 #0003,0 6px 0 #152823,0 9px 12px #0007; color: #edf2eb; font-size: 25px; font-weight: 800; transition: transform .16s, box-shadow .16s; }
-.ws-trail__node:before { content: ''; position: absolute; width: 16px; height: 7px; border-radius: 50%; top: 8px; left: 12px; transform: rotate(-35deg); background: #ffffff65; }
-.ws-trail__node.is-complete { background: linear-gradient(145deg,#90be57,#3c783c); border-color: #c1dc8a; }
-.ws-trail__node.is-current { width: 82px; height: 82px; background: linear-gradient(145deg,#ffe87e,#e89e19); color: #342607; border-color: #fff6b2; box-shadow: inset 0 3px 2px #fff9,inset 0 -5px 0 #8b510744,0 6px 0 #77572c,0 0 30px #e4ff7288; }
+
+/* Stepping stones: default & locked are weathered gray stone */
+.ws-trail__node {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 3px solid #6c7d75;
+  background: linear-gradient(145deg, #515e58, #303b36);
+  box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.15), inset 0 -4px 0 rgba(0, 0, 0, 0.35), 0 4px 0 #152823, 0 8px 12px rgba(0, 0, 0, 0.4);
+  color: #9ab0a6;
+  font-size: 25px;
+  font-weight: 800;
+  transition: transform .16s, box-shadow .16s;
+}
+.ws-trail__node:before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 7px;
+  border-radius: 50%;
+  top: 8px;
+  left: 12px;
+  transform: rotate(-35deg);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Incomplete / locked stones */
+.ws-trail__node.is-locked {
+  background: linear-gradient(145deg, #4d5953, #2d3833);
+  border-color: #63736b;
+  color: #8c9e95;
+  box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.1), inset 0 -4px 0 rgba(0, 0, 0, 0.35), 0 4px 0 #152823, 0 6px 10px rgba(0, 0, 0, 0.35);
+}
+.ws-trail__node.is-locked .ws-trail__status {
+  background: #202b26;
+  color: #72827a;
+}
+
+/* Completed stones: illuminated vibrant botanical emerald */
+.ws-trail__node.is-complete {
+  background: linear-gradient(145deg, #81c744, #317835);
+  border-color: #c4ec88;
+  color: #ffffff;
+  box-shadow: inset 0 3px 3px rgba(255, 255, 255, 0.65), inset 0 -5px 0 rgba(0, 0, 0, 0.25), 0 4px 0 #1c4224, 0 0 20px rgba(0, 228, 121, 0.55), 0 8px 14px rgba(0, 0, 0, 0.4);
+}
+.ws-trail__node.is-complete:before {
+  background: rgba(255, 255, 255, 0.75);
+}
+.ws-trail__node.is-complete .ws-trail__status {
+  background: #194635;
+  color: #d8f5a2;
+}
+
+/* Current stone: radiant illuminated golden beacon */
+.ws-trail__node.is-current {
+  width: 82px;
+  height: 82px;
+  background: linear-gradient(145deg, #ffe570, #e89e19);
+  color: #342607;
+  border-color: #fff8bf;
+  box-shadow: inset 0 3px 3px #fff, inset 0 -5px 0 rgba(139, 81, 7, 0.3), 0 6px 0 #77572c, 0 0 34px rgba(244, 201, 93, 0.85), 0 8px 16px rgba(0, 0, 0, 0.45);
+  animation: ws-node-pulse 2.2s ease-in-out infinite alternate;
+}
+.ws-trail__node.is-current:before {
+  background: #ffffff;
+}
+
+@keyframes ws-node-pulse {
+  0% {
+    box-shadow: inset 0 3px 3px #fff, inset 0 -5px 0 rgba(139, 81, 7, 0.3), 0 6px 0 #77572c, 0 0 24px rgba(244, 201, 93, 0.6), 0 8px 16px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    box-shadow: inset 0 3px 3px #fff, inset 0 -5px 0 rgba(139, 81, 7, 0.3), 0 6px 0 #77572c, 0 0 42px rgba(244, 201, 93, 0.95), 0 10px 20px rgba(0, 0, 0, 0.5);
+  }
+}
+
 .ws-trail__node.is-selected { outline: 3px solid #eaffab; outline-offset: 7px; }
 .ws-trail__node:not(:disabled):hover { transform: translateY(-3px) scale(1.04); }
 .ws-trail__node:disabled { cursor: default; }
