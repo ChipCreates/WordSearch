@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { isDebugBuild, isDebugModeRequested } from "./debugMode";
+import { isDebugBuild, isDebugModeRequested, isTrailEditorRequested } from "./debugMode";
 
 describe("debugMode", () => {
     afterEach(() => {
@@ -22,5 +22,16 @@ describe("debugMode", () => {
 
         window.history.pushState(null, "", "/");
         expect(isDebugModeRequested()).toBe(false);
+    });
+
+    it("requires the exact trailEditor=true query flag", () => {
+        window.history.pushState(null, "", "/?trailEditor=true");
+        expect(isTrailEditorRequested()).toBe(true);
+
+        window.history.pushState(null, "", "/?trailEditor=false");
+        expect(isTrailEditorRequested()).toBe(false);
+
+        window.history.pushState(null, "", "/");
+        expect(isTrailEditorRequested()).toBe(false);
     });
 });

@@ -11,3 +11,13 @@ export const isDebugModeRequested = (): boolean =>
     isDebugBuild()
     && typeof window !== "undefined"
     && new URLSearchParams(window.location.search).get("debug") === "true";
+
+/**
+ * `?trailEditor=true` turns on the drag-to-place editor overlay in
+ * LevelsView. Gated on the same `isDebugBuild()` check as debug mode, so
+ * it's dead-code-eliminated from production builds the same way.
+ */
+export const isTrailEditorRequested = (): boolean =>
+    isDebugBuild()
+    && typeof window !== "undefined"
+    && new URLSearchParams(window.location.search).get("trailEditor") === "true";

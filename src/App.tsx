@@ -31,7 +31,7 @@ import EcoLeaf from "./components/icons/EcoLeaf";
 import NavigationArt from "./components/NavigationArt";
 import { getBotanistRank } from "./botanistRanks";
 import { ACHIEVEMENTS } from "./achievements";
-import { isDebugModeRequested } from "./debug/debugMode";
+import { isDebugModeRequested, isTrailEditorRequested } from "./debug/debugMode";
 import { loadScreenshotHotkey, comboMatches } from "./debug/screenshotMode";
 import {
     CheckCircleOutlined,
@@ -44,6 +44,7 @@ const THEME_STORAGE_KEY = "wordsearch.themeMode";
 // `?debug=true` is only ever true in a dev build (see debugMode.ts) -- this
 // constant, and every branch it gates below, is dead code in production.
 const debugRequested = isDebugModeRequested();
+const trailEditorRequested = isTrailEditorRequested();
 
 type ThemeMode = "sprout" | "midnight" | "autumn" | "ocean";
 type ActiveTab = "play" | "levels" | "garden" | "achievements" | "field-kit" | "settings" | "about" | "store";
@@ -83,7 +84,7 @@ export default function App() {
         return stored === "sprout" || stored === "autumn" || stored === "ocean" ? stored : "midnight";
     });
 
-    const [activeTab, setActiveTab] = useState<ActiveTab>("play");
+    const [activeTab, setActiveTab] = useState<ActiveTab>(trailEditorRequested ? "levels" : "play");
     const [, setViewStack] = useState<ActiveTab[]>([]);
     const isMobile = useMediaQuery("(max-width: 767px)");
     const selectPrimaryView = (view: ActiveTab) => {

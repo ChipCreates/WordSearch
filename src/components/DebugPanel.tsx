@@ -156,6 +156,25 @@ export default function DebugPanel(props: Props) {
                     )}
                 </Section>
 
+                <Section title="Trail editor">
+                    <p style={{ fontSize: 12, opacity: 0.7, marginTop: 0 }}>
+                        Opens the Levels map with drag handles for every stone, path curve, and
+                        biome-transition seam. Edits save straight to src/data/trailLayout.json
+                        via the dev server -- review the diff and commit when you're happy.
+                    </p>
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => {
+                            const url = new URL(window.location.href);
+                            url.searchParams.set("trailEditor", "true");
+                            window.location.href = url.toString();
+                        }}
+                    >
+                        Open Trail Editor
+                    </Button>
+                </Section>
+
                 <Section title={`Achievements (${props.unlockedAchievements.size}/${ACHIEVEMENTS.length})`}>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                         <Button size="small" variant="outlined" onClick={() => debugApi.setUnlockedAchievements(ACHIEVEMENTS.map(a => a.id))}>Unlock all</Button>

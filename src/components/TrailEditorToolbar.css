@@ -1,0 +1,45 @@
+.ws-trail-editor {
+  position: absolute;
+  left: 16px;
+  top: 78px;
+  z-index: 10;
+  width: 260px;
+  max-height: calc(100% - 100px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid #78916b88;
+  border-radius: 14px;
+  background: rgba(16, 45, 44, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #eaf4d9;
+  font-size: 12px;
+}
+.ws-trail-editor__row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ws-trail-editor__row--title { justify-content: space-between; font-size: 13px; cursor: move; touch-action: none; user-select: none; margin: -4px -6px 0; padding: 4px 6px; border-radius: 8px; }
+.ws-trail-editor__row--title:active { background: #ffffff14; }
+.ws-trail-editor__label { color: #b7cf9c; white-space: nowrap; }
+.ws-trail-editor__hint { color: #9ab0a6; font-size: 11px; }
+.ws-trail-editor__divider { height: 1px; background: #45634c; margin: 2px 0; }
+.ws-trail-editor__seg { display: flex; gap: 4px; }
+.ws-trail-editor button, .ws-trail-editor select, .ws-trail-editor input[type="number"] {
+  font: inherit;
+  border-radius: 8px;
+  border: 1px solid #758e59;
+  background: #1c3a30;
+  color: #eaf4d9;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.ws-trail-editor input[type="color"] { width: 32px; height: 24px; padding: 0; border-radius: 6px; cursor: pointer; }
+.ws-trail-editor button.is-active { background: #4a7a4f; border-color: #a5c98a; }
+.ws-trail-editor button:hover { filter: brightness(1.15); }
+.ws-trail-editor__save { background: #6b9c3f; border-color: #a5c98a; font-weight: 700; }
+.ws-trail-editor__status { font-size: 11px; }
+.ws-trail-editor__status--saved { color: #a4e786; }
+.ws-trail-editor__status--error { color: #f19a9a; }
+.ws-trail-editor__status--saving { color: #f4d97e; }
+.ws-trail-editor__selection { display: flex; flex-direction: column; gap: 4px; }

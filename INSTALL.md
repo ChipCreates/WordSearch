@@ -61,6 +61,15 @@ string, or reachable code path in `dist`/`dist-web` at all. `scripts/check-build
 greps every production build's output for that marker and fails the build if it's ever present;
 `.github/workflows/deploy-web.yml` runs it on every deploy.
 
+### Trail editor
+
+Also dev-only: `?trailEditor=true` (or **Open Trail Editor** in the debug panel above) turns the
+real Levels map into a drag-to-place editor for every stone, curve handle, and biome-transition
+seam -- no more hand-tuned `[x%, y%]` tuples. See
+[`docs/dev-tools/trail-editor.md`](docs/dev-tools/trail-editor.md) for how it works, its data
+model, and a heads-up that -- unlike the debug panel above -- it isn't fully dead-code-eliminated
+from production yet.
+
 ### Desktop
 
 ```bash
