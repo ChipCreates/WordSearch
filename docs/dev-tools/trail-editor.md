@@ -88,25 +88,29 @@ or export format to keep in sync.
 
 ## Production footprint
 
-Unlike the [debug panel](../../INSTALL.md#debug-panel), the trail editor is
-**not** currently dead-code-eliminated from production builds. The debug
-panel achieves that via a top-level `import.meta.env.DEV ? lazy(...) : null`
-so Rollup never even generates its chunk; the trail editor's interaction
-code (drag handlers, the toolbar, handle-marker rendering) lives inline in
-`LevelsView.tsx` and `TrailEditorToolbar.tsx`, gated only by a runtime
-`isTrailEditorRequested()` check — real players' bundles carry it, unused.
-Measured impact is modest (the `LevelsView` chunk, lazy-loaded only when a
-player opens the Levels tab, grew from ~9KB to ~27KB minified / ~4KB to
-~9KB gzipped), but it doesn't meet the zero-leakage bar
-`scripts/check-build-budget.mjs` enforces for the debug panel, and that
-script doesn't currently check for this tool's marker string either.
+Like the [debug panel](../../INSTALL.md#debug-panel), the trail editor is
+fully dead-code-eliminated from production builds — `LevelsView.tsx` only
+ever holds the always-needed read-only rendering path (stones, handles,
+path-points, and transitions all still flow through it, since edits there
+affect what every player sees); the entire interaction layer (drag state,
+`TrailEditorToolbar`, every handle marker) lives in `TrailEditorOverlay.tsx`,
+lazily imported behind the same `import.meta.env.DEV ? lazy(...) : null`
+shape the debug panel uses. That's what lets Rollup drop the chunk
+outright rather than just skip rendering it: `npm run build:web` produces
+no `TrailEditorOverlay`-anything file at all, and grepping every production
+JS/CSS chunk for `TrailEditor`, `__ws-trail-editor`, or any editor-only
+class name comes back empty. `LevelsView`'s own chunk actually shrank
+slightly versus its pre-editor baseline (data-driven rendering plus a tiny
+`Suspense` mount point is less code than the original hardcoded constants).
 
-Fixing this means splitting LevelsView into an always-shipped read-only
-rendering path (stones/handles/path-points/transitions data flow, needed for
-every player since edits here affect real gameplay) and a lazily-imported,
-dev-only interaction layer (drag state, the toolbar, handle markers) that
-talks back to it through a small callback surface. Worth doing before this
-becomes a template for more editors — see below.
+`TrailEditorOverlay` talks back to `LevelsView` through a portal: the two
+components share the same `stones`/`stoneHandles`/`pathPoints`/`transitions`
+state (owned by `LevelsView`, passed down with its setters) and the same
+computed `waypoints`, but the overlay's actual DOM — drag handles, curve
+guides, seam controls — is portaled into `LevelsView`'s own `.ws-trail__map`
+node (via a ref) so it shares that element's exact scroll-relative
+coordinate space. Only `TrailEditorToolbar` (a fixed-position panel, not
+map content) renders directly in the overlay's own React position.
 
 ## Future: a general game editor
 
@@ -128,9 +132,14 @@ place. The reusable shape, if you're building the next one:
    `trailEditorSavePlugin`'s single-purpose middleware into one generic
    `POST /__ws-editor/save/:target` in `vite.config.ts` rather than
    hand-rolling a new route per tool.
-5. Solve the [production footprint](#production-footprint) split *before*
-   copying this pattern a second time — better to fix it once here than
-   carry the leak into every future editor.
+5. The always-shipped/lazy-overlay split from [Production
+   footprint](#production-footprint): keep the read-only data flow (the
+   part every player's bundle needs) in the host component, and put the
+   entire interaction layer — drag state, toolbar, handle markers — behind
+   its own `import.meta.env.DEV ? lazy(...) : null` component, portaled
+   back into the host's DOM node where it needs to render. `LevelsView` /
+   `TrailEditorOverlay` is the reference example; copy that shape rather
+   than re-deriving it.
 
 A single **Editor** entry point that lists every registered `?xEditor`
 module (this one included) is the natural next step once there's a second

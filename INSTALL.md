@@ -65,10 +65,10 @@ greps every production build's output for that marker and fails the build if it'
 
 Also dev-only: `?trailEditor=true` (or **Open Trail Editor** in the debug panel above) turns the
 real Levels map into a drag-to-place editor for every stone, curve handle, and biome-transition
-seam -- no more hand-tuned `[x%, y%]` tuples. See
-[`docs/dev-tools/trail-editor.md`](docs/dev-tools/trail-editor.md) for how it works, its data
-model, and a heads-up that -- unlike the debug panel above -- it isn't fully dead-code-eliminated
-from production yet.
+seam -- no more hand-tuned `[x%, y%]` tuples. Dead-code-eliminated from production the same way
+as the debug panel above. See
+[`docs/dev-tools/trail-editor.md`](docs/dev-tools/trail-editor.md) for how it works and its data
+model.
 
 ### Desktop
 
