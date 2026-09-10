@@ -1,14 +1,27 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type { OnboardingStep } from "../onboarding";
+import type { OnboardingStep, OnboardingStepId } from "../onboarding";
 
-type Props = { step: OnboardingStep | null; onDismiss: () => void };
+type Props = { steps: OnboardingStep[]; onDismiss: (stepId: OnboardingStepId) => void };
 
 type AnchorRect = { top: number; left: number; width: number; height: number };
+type ActiveStep = { step: OnboardingStep; anchor: AnchorRect };
 
 function rectOf(el: Element): AnchorRect {
     const rect = el.getBoundingClientRect();
     return { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
+}
+
+// jsdom has no layout engine and reports an all-zero rect for literally
+// every element regardless of real visibility -- vs. a real browser, where
+// zero-size only ever means genuinely hidden (display:none, not mounted
+// yet). jsdom sets this marker in its default user agent string, which is
+// the standard way to tell the two apart from within page code. Evaluated
+// fresh on every call (not cached at module load) so it reflects whatever
+// navigator is live right now rather than whatever it was when this module
+// first happened to be imported.
+function isJsdomEnvironment(): boolean {
+    return typeof navigator !== "undefined" && navigator.userAgent.includes("jsdom");
 }
 
 function resolveVisibleAnchor(selector: string): AnchorRect | null {
@@ -26,28 +39,36 @@ function resolveVisibleAnchor(selector: string): AnchorRect | null {
         const rect = rectOf(candidate);
         if (rect.width > 0 && rect.height > 0) return rect;
     }
-    // Every candidate reported zero size. In a real browser this can only
-    // mean every match is hidden right now (nothing to anchor to yet).
-    // jsdom has no layout engine at all, though, so it reports an all-zero
-    // rect for *everything* regardless of real visibility -- falling back
-    // to the first match keeps the coachmark's presence/dismissal testable
-    // there instead of silently vanishing in every test that renders it.
-    return rectOf(candidates[0]);
+    // Every candidate reported zero size. In a real browser this means
+    // every match is genuinely hidden right now (e.g. the mobile layout's
+    // ".ws-level-goal-card { display: none }" swallowing "bonus"'s anchor
+    // entirely) -- null here is what lets the caller move on to the next
+    // candidate step instead of rendering a coachmark pinned to nowhere.
+    // Only jsdom's tests get the old "pretend the first match is fine"
+    // fallback, since jsdom can never report a real, positive-size rect at all.
+    return isJsdomEnvironment() ? rectOf(candidates[0]) : null;
 }
 
-/**
- * Tracks the live position of `selector`'s first visible match, re-checking
- * on resize/scroll and whenever the anchor's own size changes. Returns null
- * both when the step has no anchor yet (e.g. this puzzle has no bonus goal)
- * and after the anchor genuinely disappears mid-display -- the coachmark
- * itself is what decides those two cases mean the same thing: don't show.
- */
-function useAnchorRect(selector: string | null): AnchorRect | null {
-    const [rect, setRect] = useState<AnchorRect | null>(null);
+// Tries each pending step in order and settles on the first whose anchor
+// actually resolves right now, re-checking on resize/scroll/poll like the
+// single-step version this replaced. Steps earlier in the queue whose
+// anchor never appears (e.g. "bonus" on a puzzle with no bonus goal at all)
+// no longer block later ones from ever being shown -- see onboarding.ts's
+// eligibleOnboardingSteps for why the caller hands over a list instead of
+// a single pre-picked step.
+function useActiveStep(steps: OnboardingStep[]): ActiveStep | null {
+    const [active, setActive] = useState<ActiveStep | null>(null);
+    const stepsKey = steps.map(step => step.id).join(",");
 
     useLayoutEffect(() => {
-        if (!selector) { setRect(null); return; }
-        const measure = () => setRect(resolveVisibleAnchor(selector));
+        if (steps.length === 0) { setActive(null); return; }
+        const measure = () => {
+            for (const step of steps) {
+                const anchor = resolveVisibleAnchor(step.anchorSelector);
+                if (anchor) { setActive({ step, anchor }); return; }
+            }
+            setActive(null);
+        };
         measure();
 
         window.addEventListener("resize", measure);
@@ -65,25 +86,27 @@ function useAnchorRect(selector: string | null): AnchorRect | null {
             window.removeEventListener("scroll", measure, true);
             window.clearInterval(interval);
         };
-    }, [selector]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [stepsKey]);
 
-    return rect;
+    return active;
 }
 
 const BUBBLE_MARGIN = 12;
 const BUBBLE_WIDTH = 280;
 
-export default function OnboardingCoachmark({ step, onDismiss }: Props) {
-    const anchor = useAnchorRect(step?.anchorSelector ?? null);
+export default function OnboardingCoachmark({ steps, onDismiss }: Props) {
+    const active = useActiveStep(steps);
 
     useEffect(() => {
-        if (!step || !anchor) return;
-        const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") onDismiss(); };
+        if (!active) return;
+        const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") onDismiss(active.step.id); };
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [step, anchor, onDismiss]);
+    }, [active, onDismiss]);
 
-    if (!step || !anchor) return null;
+    if (!active) return null;
+    const { step, anchor } = active;
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -117,7 +140,7 @@ export default function OnboardingCoachmark({ step, onDismiss }: Props) {
                 <div className="ws-coachmark__arrow" style={{ left: arrowLeft }} aria-hidden="true" />
                 <h3 className="ws-coachmark__title">{step.title}</h3>
                 <p className="ws-coachmark__body">{step.body}</p>
-                <button type="button" className="ws-coachmark__dismiss" onClick={onDismiss} autoFocus>
+                <button type="button" className="ws-coachmark__dismiss" onClick={() => onDismiss(step.id)} autoFocus>
                     Got it
                 </button>
             </div>

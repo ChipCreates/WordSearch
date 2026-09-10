@@ -73,8 +73,20 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     },
 ];
 
+// Every step that's "due" (threshold met, not yet dismissed), in display
+// order -- NOT just the first one. A step's anchor can be legitimately
+// absent on any given puzzle (e.g. "bonus" before this puzzle has a bonus
+// goal at all), and the caller needs the option to try the next candidate
+// down the list rather than getting permanently wedged on one step whose
+// target may never appear on this particular puzzle. See
+// OnboardingCoachmark's own resolution logic, which is what actually picks
+// among these based on which anchor is live right now.
+export function eligibleOnboardingSteps(levelsCompleted: number, seen: OnboardingSeen): OnboardingStep[] {
+    return ONBOARDING_STEPS.filter(step => step.unlockAfterLevels <= levelsCompleted && !seen.dismissed[step.id]);
+}
+
 export function nextOnboardingStep(levelsCompleted: number, seen: OnboardingSeen): OnboardingStep | null {
-    return ONBOARDING_STEPS.find(step => step.unlockAfterLevels <= levelsCompleted && !seen.dismissed[step.id]) ?? null;
+    return eligibleOnboardingSteps(levelsCompleted, seen)[0] ?? null;
 }
 
 /**

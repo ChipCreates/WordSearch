@@ -29,7 +29,7 @@ const AchievementsView = lazy(() => import("./components/AchievementsView"));
 const GardenView = lazy(() => import("./components/GardenView"));
 const DebugPanel = import.meta.env.DEV ? lazy(() => import("./components/DebugPanel")) : null;
 import OnboardingCoachmark from "./components/OnboardingCoachmark";
-import { GARDEN_UNLOCK_LEVEL, ONBOARDING_STEPS, STORE_AND_TROPHIES_UNLOCK_LEVEL, nextOnboardingStep, type OnboardingStepId } from "./onboarding";
+import { GARDEN_UNLOCK_LEVEL, ONBOARDING_STEPS, STORE_AND_TROPHIES_UNLOCK_LEVEL, eligibleOnboardingSteps, type OnboardingStepId } from "./onboarding";
 import EcoLeaf from "./components/icons/EcoLeaf";
 import NavigationArt from "./components/NavigationArt";
 import { getBotanistRank } from "./botanistRanks";
@@ -171,7 +171,6 @@ export default function App() {
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
     }, []);
-    const realOnboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
     // levelsCompleted increments the instant a level finishes -- well before
     // the celebration animation and SuccessScreen overlay actually show
     // (both are gated behind their own delayed timers). Without this guard,
@@ -180,9 +179,14 @@ export default function App() {
     // Seed pill, would cut out a blank box wherever that anchor sits behind
     // the success overlay's backdrop. Debug preview intentionally bypasses
     // this -- it's meant to show on demand regardless of game state.
-    const onboardingStep = debugOnboardingPreview
-        ? ONBOARDING_STEPS.find(step => step.id === debugOnboardingPreview) ?? null
-        : (levelComplete ? null : realOnboardingStep);
+    //
+    // Hands OnboardingCoachmark every pending step (not just the first) so
+    // it can skip past one whose anchor isn't live on this puzzle (e.g.
+    // "bonus" before this puzzle has a bonus goal at all) instead of
+    // getting permanently wedged there -- see eligibleOnboardingSteps.
+    const coachmarkSteps = debugOnboardingPreview
+        ? ONBOARDING_STEPS.filter(step => step.id === debugOnboardingPreview)
+        : (levelComplete ? [] : eligibleOnboardingSteps(levelsCompleted, onboardingSeen));
     // Real navigation gating (WSP-1.1), not just coachmark sequencing --
     // enforced centrally in selectPrimaryView/openUtilityView below so
     // every entry point (top nav, bottom nav, the player profile sheet's
@@ -868,10 +872,10 @@ export default function App() {
             />
 
             <OnboardingCoachmark
-                step={onboardingStep}
-                onDismiss={() => {
+                steps={coachmarkSteps}
+                onDismiss={(stepId) => {
                     if (debugOnboardingPreview) { setDebugOnboardingPreview(null); return; }
-                    if (onboardingStep) dismissOnboardingStep(onboardingStep.id);
+                    dismissOnboardingStep(stepId);
                 }}
             />
 
