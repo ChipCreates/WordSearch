@@ -690,7 +690,14 @@ export default function App() {
                                 >
                                     <div className="ws-mobile-board-header">
                                         <strong>{category || "Botanical"}</strong>
-                                        <span>{foundCount}/{wordsToFind.length}</span>
+                                        <div className="ws-mobile-board-header__counts">
+                                            <span className="ws-mobile-board-header__count">Found {foundCount}/{wordsToFind.length}</span>
+                                            {bonusGoalCount > 0 && (
+                                                <span className="ws-mobile-board-header__count ws-mobile-board-header__count--bonus" data-onboarding-anchor="bonus">
+                                                    Bonus {bonusGoalProgress}/{bonusGoalCount}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     <GameCanvas
                                         gridSize={gridSize}
