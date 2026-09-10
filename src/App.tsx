@@ -6,7 +6,8 @@ import { useWordSearchGame } from "./hooks/useWordSearchGame";
 import { useAudio } from "./hooks/useAudio";
 import { CATEGORY_THEMES, DEFAULT_THEME, assetUrl } from "./categoryThemes";
 import { CATEGORY_NAMES, MAX_TARGET_WORD_LENGTH } from "./backend";
-import { CELEBRATE_FADE_DELAY_MS } from "./constants";
+import { CELEBRATE_FADE_DELAY_MS, GARDEN_CARE_CHECK_INTERVAL_MS } from "./constants";
+import { gardenNeedsTending } from "./gardenCare";
 import { findWordPlacement } from "./gameMechanics";
 
 import { getLoadIssue, resetSaveAfterLoadIssue } from "./persistence";
@@ -227,6 +228,31 @@ export default function App() {
     // way spendSeeds/addSeeds already are.
     const [toast, setToast] = useState<string | null>(null);
     const showToast = (message: string) => setToast(message);
+
+    // Passive, generic "your garden needs tending" nudge -- purely
+    // informational, never names a plant or navigates anywhere; the player
+    // decides entirely on their own whether and where to act. Checked on a
+    // fixed real-time cadence (not tied to level completions or garden
+    // size) so it can never fire more often, or say more, just because the
+    // player owns a lot of plants -- see gardenCare.ts. The ref keeps the
+    // interval itself stable across re-renders (so play doesn't keep
+    // resetting its own 15-minute clock) while still reading fresh state
+    // each time it fires.
+    const gardenCareStateRef = useRef({ ownedPlants, growthByPlant, wateredTimestamps, afflictions, seeds });
+    useEffect(() => {
+        gardenCareStateRef.current = { ownedPlants, growthByPlant, wateredTimestamps, afflictions, seeds };
+    }, [ownedPlants, growthByPlant, wateredTimestamps, afflictions, seeds]);
+    useEffect(() => {
+        const check = () => {
+            if (gardenNeedsTending({ ...gardenCareStateRef.current, now: Date.now() })) {
+                showToast("🌱 Your garden needs tending.");
+            }
+        };
+        const interval = window.setInterval(check, GARDEN_CARE_CHECK_INTERVAL_MS);
+        return () => window.clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const [hintCell, setHintCell] = useState<{ r: number; c: number } | null>(null);
     const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 

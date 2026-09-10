@@ -53,3 +53,9 @@ export const CELEBRATE_BUTTONS_MOVE_DURATION_MS = 400;
 // clears the underlying state) and the toast itself (whose CSS animation
 // timings derive from the same number) so the two can never drift apart.
 export const BONUS_DISCOVERY_DURATION_MS = 1500;
+
+// How often to check whether the garden needs a generic "needs tending"
+// nudge (see gardenCare.ts). Time-based rather than tied to level
+// completions or garden size, so the reminder never gets more frequent (or
+// more crowded) just because the player owns a lot of plants.
+export const GARDEN_CARE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
