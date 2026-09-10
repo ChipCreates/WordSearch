@@ -172,9 +172,17 @@ export default function App() {
         return () => window.removeEventListener("keydown", onKeyDown);
     }, []);
     const realOnboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
+    // levelsCompleted increments the instant a level finishes -- well before
+    // the celebration animation and SuccessScreen overlay actually show
+    // (both are gated behind their own delayed timers). Without this guard,
+    // a newly-eligible coachmark would render immediately on top of that
+    // whole sequence: its spotlight, positioned at a real anchor like the
+    // Seed pill, would cut out a blank box wherever that anchor sits behind
+    // the success overlay's backdrop. Debug preview intentionally bypasses
+    // this -- it's meant to show on demand regardless of game state.
     const onboardingStep = debugOnboardingPreview
         ? ONBOARDING_STEPS.find(step => step.id === debugOnboardingPreview) ?? null
-        : realOnboardingStep;
+        : (levelComplete ? null : realOnboardingStep);
     // Real navigation gating (WSP-1.1), not just coachmark sequencing --
     // enforced centrally in selectPrimaryView/openUtilityView below so
     // every entry point (top nav, bottom nav, the player profile sheet's
