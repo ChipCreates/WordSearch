@@ -27,6 +27,12 @@ if (hasKeystore) {
 
 android {
     compileSdk = 36
+    // AGP's implicit default NDK version isn't installed on every machine
+    // (this one only has 27.x/29.x, not the version AGP 8.11 defaults to) --
+    // pin explicitly to what's actually installed instead of failing the
+    // buildSrc configuration step trying to resolve a side-by-side NDK that
+    // was never downloaded.
+    ndkVersion = "29.0.14206865"
     namespace = "com.chip.wordsprout"
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"

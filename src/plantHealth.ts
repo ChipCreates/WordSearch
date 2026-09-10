@@ -1,6 +1,6 @@
 import { getStageImage } from "./plantsCatalog";
 
-export type PlantVisualState = "healthy" | "sick";
+export type PlantVisualState = "healthy" | "sick" | "dead";
 
 export const SICK_PLANT_ORDER = [
     "moss-sprout",
@@ -35,7 +35,22 @@ export const SICK_PLANT_SPRITESHEET = {
     cellHeight: 512,
 } as const;
 
+// Dead sprites deliberately mirror the catalog/sick-sheet order so callers can
+// opt into the artwork without introducing any plant-death game state yet.
+export const DEAD_PLANT_ORDER = SICK_PLANT_ORDER;
+
+export const DEAD_PLANT_SPRITESHEET = {
+    src: "/plants/dead-plants-spritesheet.webp",
+    width: 2560,
+    height: 2048,
+    columns: 5,
+    rows: 4,
+    cellWidth: 512,
+    cellHeight: 512,
+} as const;
+
 export type SickPlantId = (typeof SICK_PLANT_ORDER)[number];
+export type DeadPlantId = (typeof DEAD_PLANT_ORDER)[number];
 
 export type PlantArtwork =
     | { kind: "image"; src: string }
@@ -51,6 +66,10 @@ export type PlantArtwork =
 
 const sickPlantIndexes = new Map<string, number>(
     SICK_PLANT_ORDER.map((plantId, index) => [plantId, index]),
+);
+
+const deadPlantIndexes = new Map<string, number>(
+    DEAD_PLANT_ORDER.map((plantId, index) => [plantId, index]),
 );
 
 function backgroundAxisPosition(cell: number, cellCount: number): string {
@@ -84,15 +103,40 @@ export function getSickPlantSprite(plantId: string): Extract<PlantArtwork, { kin
 }
 
 /**
+ * Returns CSS background coordinates for a plant's 512px cell in the dead-state
+ * sheet. This is presentation-only and does not create or persist plant death.
+ */
+export function getDeadPlantSprite(plantId: string): Extract<PlantArtwork, { kind: "sprite" }> {
+    const index = deadPlantIndexes.get(plantId);
+    if (index === undefined) {
+        throw new Error(`No dead plant sprite is registered for "${plantId}".`);
+    }
+
+    const column = index % DEAD_PLANT_SPRITESHEET.columns;
+    const row = Math.floor(index / DEAD_PLANT_SPRITESHEET.columns);
+
+    return {
+        kind: "sprite",
+        src: DEAD_PLANT_SPRITESHEET.src,
+        index,
+        column,
+        row,
+        backgroundSize: `${DEAD_PLANT_SPRITESHEET.columns * 100}% ${DEAD_PLANT_SPRITESHEET.rows * 100}%`,
+        backgroundPosition: `${backgroundAxisPosition(column, DEAD_PLANT_SPRITESHEET.columns)} ${backgroundAxisPosition(row, DEAD_PLANT_SPRITESHEET.rows)}`,
+    };
+}
+
+/**
  * Future-facing artwork resolver. Existing callers can keep using getStageImage;
- * sickness remains opt-in and has no gameplay or persistence behavior yet.
+ * alternate health artwork remains opt-in and has no gameplay or persistence
+ * behavior here.
  */
 export function getPlantArtwork(
     growth: number,
     plantId: string,
     visualState: PlantVisualState = "healthy",
 ): PlantArtwork {
-    return visualState === "sick"
-        ? getSickPlantSprite(plantId)
-        : { kind: "image", src: getStageImage(growth, plantId) };
+    if (visualState === "sick") return getSickPlantSprite(plantId);
+    if (visualState === "dead") return getDeadPlantSprite(plantId);
+    return { kind: "image", src: getStageImage(growth, plantId) };
 }
