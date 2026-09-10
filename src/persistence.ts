@@ -3,6 +3,7 @@ import { DEFAULT_POWERUP_INVENTORY, normalizePowerupInventory, type PowerupInven
 import { COMPLETED_ONBOARDING_SEEN, DEFAULT_ONBOARDING_SEEN, type OnboardingSeen } from "./onboarding";
 import { invoke } from "@tauri-apps/api/core";
 import { createFieldNotesState, normalizeFieldNotesState, type FieldNotesState } from "./fieldNotes";
+import { createAfflictionState, normalizeAfflictionState, type AfflictionState } from "./plantAffliction";
 
 export type SaveData = {
     version: number;
@@ -41,6 +42,8 @@ export type SaveData = {
     powerupsUsed: number;
     fieldNotes: FieldNotesState;
     onboardingSeen: OnboardingSeen;
+    afflictions: AfflictionState;
+    remedyCharges: number;
 };
 
 export const CURRENT_SCHEMA_VERSION = 4;
@@ -81,6 +84,8 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     powerupsUsed: 0,
     fieldNotes: createFieldNotesState(),
     onboardingSeen: DEFAULT_ONBOARDING_SEEN,
+    afflictions: createAfflictionState(),
+    remedyCharges: 0,
 };
 
 const PRIMARY_KEY = "word_sprout_save_v1";
@@ -163,6 +168,8 @@ export function normalizeSaveData(raw: Partial<SaveData> & { stars?: number }): 
         powerupInventory: normalizePowerupInventory(raw.powerupInventory),
         fieldNotes: normalizeFieldNotesState(raw.fieldNotes),
         onboardingSeen: raw.onboardingSeen ?? COMPLETED_ONBOARDING_SEEN,
+        afflictions: normalizeAfflictionState(raw.afflictions),
+        remedyCharges: Math.max(0, Math.floor(Number(raw.remedyCharges) || 0)),
         version: CURRENT_SCHEMA_VERSION,
     };
 }

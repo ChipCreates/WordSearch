@@ -7,11 +7,12 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import WbSunnyIcon from "@mui/icons-material/WbSunny";
-import NightlightIcon from "@mui/icons-material/Nightlight";
-import ParkOutlinedIcon from "@mui/icons-material/ParkOutlined";
-import WavesOutlinedIcon from "@mui/icons-material/WavesOutlined";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+// Only used by the Appearance section, currently disabled below -- re-add when it's restored.
+// import WbSunnyIcon from "@mui/icons-material/WbSunny";
+// import NightlightIcon from "@mui/icons-material/Nightlight";
+// import ParkOutlinedIcon from "@mui/icons-material/ParkOutlined";
+// import WavesOutlinedIcon from "@mui/icons-material/WavesOutlined";
+// import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import type { Tier } from "../backend";
 import { MIN_FAVORITE_CATEGORIES } from "../gameMechanics";
 import CategoryPickerDialog from "./CategoryPickerDialog";
@@ -38,7 +39,6 @@ export type SettingsProps = {
     themeMode: ThemeMode;
     onThemeModeChange: (mode: ThemeMode) => void;
     unlockedThemes: string[];
-    onOpenAbout?: () => void;
 };
 
 function SoundRow({
@@ -84,16 +84,16 @@ export function SettingsContent({
     favoriteCategories, onFavoriteCategoriesChange, useFavorites, onUseFavoritesChange,
     musicMuted, onToggleMusicMuted, musicVolume, onMusicVolumeChange,
     sfxMuted, onToggleSfxMuted, sfxVolume, onSfxVolumeChange,
-    themeMode, onThemeModeChange, unlockedThemes, onOpenAbout,
+    // themeMode, onThemeModeChange, unlockedThemes, -- re-add to destructure when the Appearance section below is restored
 }: Omit<SettingsProps, "open" | "onClose">) {
     const [pickerOpen, setPickerOpen] = useState(false);
     const canUseFavorites = favoriteCategories.length >= MIN_FAVORITE_CATEGORIES;
-    const autumnUnlocked = unlockedThemes.includes("autumn");
-    const oceanUnlocked = unlockedThemes.includes("ocean");
+    // const autumnUnlocked = unlockedThemes.includes("autumn");
+    // const oceanUnlocked = unlockedThemes.includes("ocean");
 
     return (
         <>
-            {/* Theme toggle */}
+            {/* Theme toggle -- disabled for the time being, revisit later.
             <div className="ws-settings-section">
                 <div className="ws-settings-section__label">Appearance</div>
                 <ToggleButtonGroup
@@ -126,6 +126,7 @@ export function SettingsContent({
                     </Typography>
                 )}
             </div>
+            */}
 
             {/* Difficulty */}
             <div className="ws-settings-section">
@@ -193,11 +194,6 @@ export function SettingsContent({
                     volume={sfxVolume} onVolumeChange={onSfxVolumeChange}
                 />
             </div>
-
-            {onOpenAbout && <div className="ws-settings-section">
-                <div className="ws-settings-section__label">Help</div>
-                <Button variant="outlined" fullWidth onClick={onOpenAbout}>About &amp; How to Play</Button>
-            </div>}
         </>
     );
 }

@@ -10,6 +10,7 @@ import { getClosestMilestones } from "./achievementModels";
 import type { AchievementStats } from "../../achievements";
 import FieldNotesPanel from "../FieldNotesPanel";
 import type { FieldNoteId, FieldNotesState } from "../../fieldNotes";
+import type { AfflictionState } from "../../plantAffliction";
 
 type ActiveTab = "play" | "levels" | "garden" | "achievements" | "field-kit" | "settings" | "about" | "store";
 type Props = {
@@ -41,6 +42,7 @@ type Props = {
     ownedPlants: string[];
     wateredTimestamps: Record<string, number>;
     growthByPlant: Record<string, number>;
+    afflictions: AfflictionState;
     onWaterAllReady: () => void;
     achievementStats: AchievementStats;
     unlockedAchievements: Set<string>;
@@ -65,7 +67,7 @@ export default function ContextSidebar(props: Props) {
     }, []);
     const model = getSidebarProfileModel(props.highestUnlockedLevel);
     const inv = props.powerupInventory;
-    const care = getGardenCareModel(props.ownedPlants, props.wateredTimestamps, props.growthByPlant, now);
+    const care = getGardenCareModel(props.ownedPlants, props.wateredTimestamps, props.growthByPlant, now, props.afflictions);
     const milestones = getClosestMilestones(props.achievementStats, props.unlockedAchievements);
     const missing = (id: keyof PowerupInventory, action: string) => inv[id] ? action : `Buy ${POWERUP_DEFINITIONS[id].title} in the Seed Store`;
 
@@ -96,7 +98,7 @@ export default function ContextSidebar(props: Props) {
                 {props.doubleSeedsActive && <div role="status" className="ws-sidebar-booster-status">⚡ 2× Seeds active for this puzzle</div>}
             </>}
             {props.activeTab === "levels" && <div className="ws-sidebar-summary"><strong>Journey Progress</strong><span>Level {props.playingLevel} selected</span><span>Frontier: Level {props.highestUnlockedLevel}</span><button className="ws-control-btn" onClick={props.onNextLevel}>Return to current level</button></div>}
-            {props.activeTab === "garden" && <div className="ws-sidebar-summary"><strong>Garden Care</strong><span>{care.readyCount ? `${care.readyCount} plant${care.readyCount === 1 ? " is" : "s are"} ready to water.` : `Next watering in ${formatCareCountdown(care.nextReadyAt, now)}.`}</span>{care.closestPlant && <span>Closest bloom: {care.closestPlant.name} ({care.closestPlant.growth}%).</span>}<span>{care.bloomCount} bloomed · {care.collectionCount} collected</span><button className="ws-primary-action-btn" disabled={!care.readyCount} onClick={props.onWaterAllReady}>{care.readyCount ? `Water all ready (${care.readyCount})` : "Nothing ready to water"}</button></div>}
+            {props.activeTab === "garden" && <div className="ws-sidebar-summary"><strong>Garden Care</strong><span>{care.readyCount ? `${care.readyCount} plant${care.readyCount === 1 ? " is" : "s are"} ready to water.` : `Next watering in ${formatCareCountdown(care.nextReadyAt, now)}.`}</span>{care.closestPlant && <span>Closest bloom: {care.closestPlant.name} ({care.closestPlant.growth}%).</span>}<span>{care.bloomCount} bloomed · {care.collectionCount} collected</span>{care.sickCount > 0 && <span className="ws-sidebar-sick-warning">🐛 {care.sickCount} plant{care.sickCount === 1 ? " needs" : "s need"} treatment</span>}<button className="ws-primary-action-btn" disabled={!care.readyCount} onClick={props.onWaterAllReady}>{care.readyCount ? `Water all ready (${care.readyCount})` : "Nothing ready to water"}</button></div>}
             {props.activeTab === "achievements" && <div className="ws-sidebar-summary"><strong>Closest Milestones</strong>{milestones.map(item => <span key={item.achievement.id}>{item.achievement.icon} {item.achievement.description} · {item.remaining} to go</span>)}</div>}
         </div>
 

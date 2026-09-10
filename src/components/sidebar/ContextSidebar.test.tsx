@@ -53,6 +53,7 @@ function makeProps(overrides: Partial<SidebarProps> = {}): SidebarProps {
         ownedPlants: [],
         wateredTimestamps: {},
         growthByPlant: {},
+        afflictions: {},
         onWaterAllReady: vi.fn(),
         achievementStats: stats,
         unlockedAchievements: new Set(),

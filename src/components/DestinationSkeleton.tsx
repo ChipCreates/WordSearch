@@ -2,6 +2,15 @@ type Destination = "levels" | "garden" | "achievements" | "field-kit" | "setting
 
 type DestinationSkeletonProps = {
     destination: Destination;
+    // Settings, About, and the Seed Store are all full-page destinations now
+    // (same as Garden or Levels) -- this only needs to be true for the one
+    // remaining call site that actually renders inside a centered MUI Dialog
+    // (the desktop Settings modal). Inferring "dialog-shaped" from the
+    // destination name alone made every other call site (the mobile
+    // full-page Settings route included) show a small centered card
+    // fallback that didn't match the full-width page it was about to become
+    // -- the layout jump reads as a flash of missing content.
+    dialog?: boolean;
 };
 
 const destinationLabels: Record<Destination, string> = {
@@ -14,13 +23,12 @@ const destinationLabels: Record<Destination, string> = {
     store: "seed store",
 };
 
-export default function DestinationSkeleton({ destination }: DestinationSkeletonProps) {
+export default function DestinationSkeleton({ destination, dialog = false }: DestinationSkeletonProps) {
     const label = destinationLabels[destination];
-    const isDialog = destination === "settings" || destination === "about" || destination === "store";
 
     return (
         <section
-            className={`ws-destination-skeleton ws-destination-skeleton--${destination}${isDialog ? " ws-destination-skeleton--dialog" : ""}`}
+            className={`ws-destination-skeleton ws-destination-skeleton--${destination}${dialog ? " ws-destination-skeleton--dialog" : ""}`}
             role="status"
             aria-label={`Loading ${label}`}
         >

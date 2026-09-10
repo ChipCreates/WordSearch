@@ -617,6 +617,16 @@ body {
   font-weight: 800;
 }
 
+.ws-sidebar-sick-warning {
+  display: inline-block;
+  padding: 4px 9px;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  border-radius: 8px;
+  background: rgba(255, 107, 107, 0.14);
+  color: #ff8a8a;
+  font-weight: 700;
+}
+
 .ws-sidebar-summary {
   display: flex;
   flex-direction: column;
@@ -1142,6 +1152,22 @@ button:disabled { filter: grayscale(.55); opacity: .58; }
 .ws-screen-view__eyebrow { color: #bfe78d; font-size: .72rem; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
 .ws-screen-view__content { padding: clamp(18px, 4vw, 34px); border: 1px solid #d4b34f66; border-radius: 24px; background: linear-gradient(155deg, #123f31f2, #071f19f2); box-shadow: 0 18px 45px #0007; }
 .ws-settings-view__content { max-width: 680px; margin: 0 auto; }
+.ws-settings-section {
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.ws-settings-section + .ws-settings-section { margin-top: 24px; }
+.ws-settings-section__label {
+  margin-bottom: 12px;
+  color: var(--color-primary);
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 .ws-field-kit-view__intro { margin: 0 0 18px; color: #cfe1c4; }
 .ws-field-kit-view__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .ws-field-kit-view__grid button { display: grid; grid-template-columns: 72px 1fr; grid-template-rows: auto auto; align-items: center; min-height: 92px; padding: 10px 14px; text-align: left; }
@@ -2303,9 +2329,12 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 
 @media (max-width: 900px) {
   .ws-about-layout { grid-template-columns: 1fr; gap: 14px; }
-  .ws-about-rail { position: sticky; z-index: 4; top: 72px; flex-direction: row; overflow-x: auto; border: 1px solid var(--glass-border); border-radius: 16px; background: color-mix(in srgb, var(--color-surface) 90%, transparent); backdrop-filter: blur(20px); scrollbar-width: none; }
-  .ws-about-rail::-webkit-scrollbar { display: none; }
-  .ws-about-rail a { flex: 0 0 auto; }
+  /* The jump-to-section rail doesn't translate well to mobile -- a row of
+     seven pills either wraps into a wall of chrome or, worse, becomes a
+     horizontally-scrolling strip with no affordance showing there's more.
+     Below the desktop breakpoint the numbered sections (01-07) carry
+     wayfinding on their own instead. */
+  .ws-about-rail { display: none; }
 }
 @media (max-width: 600px) {
   .ws-main-layout--about { padding: 66px 0 calc(80px + env(safe-area-inset-bottom, 0px)) !important; }

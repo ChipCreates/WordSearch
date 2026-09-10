@@ -101,6 +101,8 @@ export default function AboutView({ onReplayOnboarding, onBack }: { onReplayOnbo
                     <h2>Cultivate your garden</h2>
                     <p>Spend Seeds to acquire plants, then return to water them when they are ready. Every species has its own four-stage artwork—empty vessel, new sprout, young plant, and full bloom—and mature plants add to your collection progress.</p>
                     <GuideImage src={gardenImage} alt="The Garden showing a fully bloomed plant collection" caption={`The Garden contains ${PLANTS_CATALOG.length} plants, each with its own rarity, watering rhythm, and bloom reward.`} callouts={[{ x: "22%", y: "47%", label: "Bloomed specimen" }, { x: "73%", y: "15%", label: "Collection progress", direction: "left" }]} />
+                    <h3>Watch for sick plants</h3>
+                    <p>A neglected plant can fall sick with blight, mildew, aphids, or slugs. This only ever advances while you're actively playing—nothing decays while the app is closed, and it never gets worse than "critical." The cure is a Garden Remedy charge, earned by finding a gardening-related word as a bonus find in <em>any</em> puzzle's category, not only a Gardening-themed one. Spend a charge on the Treat button in the Garden to cure a sick plant, or, once it's critical, Compost it for a Seed refund and a fresh start—both are always your call, never automatic.</p>
                 </section>
 
                 <section id="trophies" className="ws-about-section">

@@ -14,6 +14,10 @@ import { getBotanistPromotion, type BotanistPromotion } from "../botanistRanks";
 import { applyFieldNoteEvent, claimFieldNote as claimFieldNoteState, type FieldNoteEvent, type FieldNotesState } from "../fieldNotes";
 import { isDebugModeRequested } from "../debug/debugMode";
 import { DEBUG_CATEGORY, DEBUG_WORDS_BY_SIZE } from "../debug/debugContent";
+import {
+    advanceAfflictionsOnPuzzleComplete, AFFLICTION_DEFINITIONS, clearAffliction, COMPOST_REFUND_SEEDS,
+    isGardenVocabulary, isNeglected, type AfflictionState, type AfflictionType,
+} from "../plantAffliction";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -47,6 +51,8 @@ export function useWordSearchGame() {
     const [ownedPlants, setOwnedPlants] = useState<string[]>(initialSave.ownedPlants);
     const [wateredTimestamps, setWateredTimestamps] = useState<Record<string, number>>(initialSave.wateredTimestamps);
     const [growthByPlant, setGrowthByPlant] = useState<Record<string, number>>(initialSave.growthByPlant);
+    const [afflictions, setAfflictions] = useState<AfflictionState>(initialSave.afflictions);
+    const [remedyCharges, setRemedyCharges] = useState(initialSave.remedyCharges);
 
     // Lifetime stat feeding the "found a word that wasn't on the list" achievement
     const [bonusWordsFound, setBonusWordsFound] = useState(initialSave.bonusWordsFound);
@@ -137,6 +143,8 @@ export function useWordSearchGame() {
             setPowerupsUsed(native.powerupsUsed);
             setFieldNotes(native.fieldNotes);
             setOnboardingSeen(native.onboardingSeen);
+            setAfflictions(native.afflictions);
+            setRemedyCharges(native.remedyCharges);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -183,6 +191,8 @@ export function useWordSearchGame() {
                 powerupsUsed,
                 fieldNotes,
                 onboardingSeen,
+                afflictions,
+                remedyCharges,
             });
         }, 400);
         return () => {
@@ -215,6 +225,8 @@ export function useWordSearchGame() {
         powerupsUsed,
         fieldNotes,
         onboardingSeen,
+        afflictions,
+        remedyCharges,
     ]);
 
     // Re-evaluate achievements on stat updates
@@ -251,6 +263,28 @@ export function useWordSearchGame() {
         const promotion = getBotanistPromotion(highestUnlockedLevel, completedLevel + 1);
         if (promotion) {
             setPromotionQueue(prev => prev.some(item => item.level === promotion.level) ? prev : [...prev, promotion]);
+        }
+    };
+
+    // Runs once per puzzle completion (never on elapsed real time): escalates
+    // any already-sick plant and rolls fresh onset for owned, growing,
+    // unafflicted plants that have gone unwatered for a while. Shared by both
+    // completion paths (a found word finishing the level, and the Super Root
+    // instant-solve path) exactly like queueFrontierPromotion above.
+    const advancePuzzleCompletionAfflictions = () => {
+        const now = Date.now();
+        const eligibleForOnset = ownedPlants.filter(plantId => {
+            if ((growthByPlant[plantId] ?? 0) >= 100) return false;
+            if (afflictions[plantId]) return false;
+            return isNeglected(wateredTimestamps[plantId] ?? 0, now, GARDEN_WATERING_COOLDOWN_MS);
+        });
+        const next = advanceAfflictionsOnPuzzleComplete(afflictions, eligibleForOnset);
+        const newlyAfflictedId = Object.keys(next).find(id => !afflictions[id]);
+        setAfflictions(next);
+        if (newlyAfflictedId) {
+            const plantDef = PLANTS_CATALOG.find(p => p.id === newlyAfflictedId);
+            const afflictionName = AFFLICTION_DEFINITIONS[next[newlyAfflictedId].type].name;
+            setStatus(`🐛 ${afflictionName} has appeared on your ${plantDef?.name ?? "plant"}!`);
         }
     };
 
@@ -377,7 +411,15 @@ export function useWordSearchGame() {
                 recordFieldNoteEvent({ kind: "bonus_word_found" });
                 setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length + 1));
                 setBonusDiscovery({ word: matchedWord, seeds: bonusSeeds });
-                setStatus(`Bonus sprout! ${matchedWord} +${bonusSeeds} Seeds`);
+                // Any gardening-related word earns a Garden Remedy charge, in
+                // ANY category's puzzle -- not just a Gardening-category one.
+                // Bonus words are already validated against the full
+                // dictionary regardless of category, so this is the one hook
+                // that can fire on every puzzle instead of the ~1-in-62
+                // chance of the category cycle landing on Gardening.
+                const earnedRemedy = isGardenVocabulary(matchedWord);
+                if (earnedRemedy) setRemedyCharges(n => n + 1);
+                setStatus(`Bonus sprout! ${matchedWord} +${bonusSeeds} Seeds${earnedRemedy ? " · 🌿 +1 Garden Remedy" : ""}`);
             } else {
                 const foundMainCount = wordsToFind.filter(w => nextFoundWords[w]).length;
                 if (foundMainCount === wordsToFind.length) {
@@ -391,6 +433,7 @@ export function useWordSearchGame() {
                     if (!hintUsedThisLevel) setLevelsCompletedWithoutHint(count => count + 1);
                     setUniqueCategoriesCompleted(count => Math.max(count, categoriesSeen.size + (categoriesSeen.has(category) ? 0 : 1)));
                     setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length));
+                    advancePuzzleCompletionAfflictions();
                     const completionReward = completedLevels.includes(playingLevel)
                         ? REWARDS.REPLAY_COMPLETE_SEEDS
                         : REWARDS.LEVEL_COMPLETE_SEEDS;
@@ -437,6 +480,7 @@ export function useWordSearchGame() {
             queueFrontierPromotion(playingLevel);
             setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
             recordFieldNoteEvent({ kind: "puzzle_completed", isFrontier: playingLevel === highestUnlockedLevel, hintUsed: true, category });
+            advancePuzzleCompletionAfflictions();
             const completionReward = completedLevels.includes(playingLevel)
                 ? REWARDS.REPLAY_COMPLETE_SEEDS
                 : REWARDS.LEVEL_COMPLETE_SEEDS;
@@ -559,6 +603,8 @@ export function useWordSearchGame() {
         setPowerupsUsed(DEFAULT_SAVE_DATA.powerupsUsed);
         setHintUsedThisLevel(false);
         setOnboardingSeen(DEFAULT_ONBOARDING_SEEN);
+        setAfflictions(DEFAULT_SAVE_DATA.afflictions);
+        setRemedyCharges(DEFAULT_SAVE_DATA.remedyCharges);
     };
 
     const spendSeeds = useCallback((cost: number): boolean => {
@@ -641,6 +687,28 @@ export function useWordSearchGame() {
     const updatePlantGrowth = useCallback((plantId: string, newGrowth: number) => {
         setGrowthByPlant(prev => ({ ...prev, [plantId]: newGrowth }));
     }, []);
+
+    // Cures are never Seed-purchasable -- the only way to earn a charge is
+    // finding a gardening-related bonus word during play (see submitSelection).
+    // Treating and composting are both deliberate player actions; neither
+    // ever happens automatically.
+    const treatPlant = useCallback((plantId: string): boolean => {
+        if (remedyCharges <= 0 || !afflictions[plantId]) return false;
+        setRemedyCharges(n => Math.max(0, n - 1));
+        setAfflictions(prev => clearAffliction(prev, plantId));
+        setStatus("Treated! The plant is recovering. 🌿");
+        return true;
+    }, [remedyCharges, afflictions]);
+
+    const compostAfflictedPlant = useCallback((plantId: string): boolean => {
+        const affliction = afflictions[plantId];
+        if (!affliction || affliction.severity < 3) return false;
+        setAfflictions(prev => clearAffliction(prev, plantId));
+        setGrowthByPlant(prev => ({ ...prev, [plantId]: 0 }));
+        setSeeds(prev => prev + COMPOST_REFUND_SEEDS);
+        setStatus(`Composted. Starting fresh — +${COMPOST_REFUND_SEEDS} Seeds.`);
+        return true;
+    }, [afflictions]);
 
     const recordPlantBloom = useCallback(() => {
         setPlantsBloomed(count => count + 1);
@@ -816,6 +884,10 @@ export function useWordSearchGame() {
         setUnlockedAchievements: (ids: string[]) => setUnlockedAchievements(new Set(ids)),
         setOwnedPlants: (ids: string[]) => setOwnedPlants(ids),
         setGrowthByPlant: (plantId: string, value: number) => setGrowthByPlant(prev => ({ ...prev, [plantId]: value })),
+        setAffliction: (plantId: string, type: AfflictionType | null, severity: 1 | 2 | 3 = 1) => {
+            setAfflictions(prev => type === null ? clearAffliction(prev, plantId) : { ...prev, [plantId]: { type, severity, puzzlesSinceOnset: 0 } });
+        },
+        setRemedyCharges: (value: number) => setRemedyCharges(Math.max(0, Math.floor(value))),
         setPowerupInventory: (id: PowerupId, value: number) => setPowerupInventory(prev => ({ ...prev, [id]: value })),
         setHighestUnlockedLevel: (level: number) => {
             setHighestUnlockedLevel(level);
@@ -849,6 +921,7 @@ export function useWordSearchGame() {
         // Botanical Sanctuary state & handlers
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom, waterAllReady,
+        afflictions, remedyCharges, treatPlant, compostAfflictedPlant,
         // Store power-ups
         doubleSeedsActive, activateDoubleSeeds, activateSuperRoot, activateCompass, activateSpectrometer,
         spectrometerCells, compassDirection,

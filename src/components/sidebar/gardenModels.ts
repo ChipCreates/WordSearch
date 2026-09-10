@@ -1,5 +1,6 @@
 import { GARDEN_WATERING_COOLDOWN_MS } from "../../gameMechanics";
 import { PLANTS_CATALOG } from "../../plantsCatalog";
+import type { AfflictionState } from "../../plantAffliction";
 
 export type GardenCareModel = {
     readyCount: number;
@@ -7,6 +8,7 @@ export type GardenCareModel = {
     closestPlant: { name: string; growth: number } | null;
     collectionCount: number;
     bloomCount: number;
+    sickCount: number;
 };
 
 export function getGardenCareModel(
@@ -14,6 +16,7 @@ export function getGardenCareModel(
     wateredTimestamps: Record<string, number>,
     growthByPlant: Record<string, number>,
     now: number,
+    afflictions: AfflictionState = {},
 ): GardenCareModel {
     const plants = PLANTS_CATALOG.filter(plant => ownedPlants.includes(plant.id));
     const ready = plants.filter(plant => {
@@ -34,6 +37,7 @@ export function getGardenCareModel(
         closestPlant: closest ? { name: closest.name, growth: growthByPlant[closest.id] ?? 0 } : null,
         collectionCount: plants.length,
         bloomCount: plants.filter(plant => (growthByPlant[plant.id] ?? 0) >= 100).length,
+        sickCount: plants.filter(plant => afflictions[plant.id]).length,
     };
 }
 

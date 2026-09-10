@@ -3,20 +3,26 @@ import { ShowerOutlined, WaterDropOutlined, StorefrontOutlined } from "@mui/icon
 import { assetUrl } from "../categoryThemes";
 import EcoLeaf from "./icons/EcoLeaf";
 import { PLANTS_CATALOG, getStageImage, getStageName } from "../plantsCatalog";
+import { getPlantArtwork } from "../plantHealth";
 import { GARDEN_WATERING_COOLDOWN_MS } from "../gameMechanics";
 import { getPlantEconomy } from "../economy";
+import { AFFLICTION_DEFINITIONS, COMPOST_REFUND_SEEDS, SEVERITY_LABELS, type AfflictionState } from "../plantAffliction";
 
 type Props = {
     seeds: number;
     ownedPlants: string[];
     wateredTimestamps: Record<string, number>;
     growthByPlant: Record<string, number>;
+    afflictions: AfflictionState;
+    remedyCharges: number;
     onOpenStore: () => void;
     addSeeds: (amount: number) => void;
     spendSeeds: (cost: number) => boolean;
     updateWateredTimestamp: (plantId: string, timestamp: number) => void;
     updatePlantGrowth: (plantId: string, newGrowth: number) => void;
     recordPlantBloom: (tier: string) => void;
+    onTreatPlant: (plantId: string) => boolean;
+    onCompostPlant: (plantId: string) => boolean;
     showToast: (message: string) => void;
 };
 
@@ -106,18 +112,36 @@ export default function GardenView({
     ownedPlants,
     wateredTimestamps,
     growthByPlant,
+    afflictions,
+    remedyCharges,
     onOpenStore,
     addSeeds,
     spendSeeds,
     updateWateredTimestamp,
     updatePlantGrowth,
     recordPlantBloom,
+    onTreatPlant,
+    onCompostPlant,
     showToast,
 }: Props) {
     const [filter, setFilter] = useState<FilterTab>("all");
 
     const getPlantGrowth = (plantId: string) => {
         return growthByPlant[plantId] !== undefined ? growthByPlant[plantId] : 0;
+    };
+
+    const handleTreatPlant = (plantId: string, plantName: string) => {
+        if (onTreatPlant(plantId)) {
+            showToast(`🌿 ${plantName} treated! It's recovering.`);
+        } else {
+            showToast("No Garden Remedy charges — find gardening-related bonus words to earn one.");
+        }
+    };
+
+    const handleCompostPlant = (plantId: string, plantName: string) => {
+        if (onCompostPlant(plantId)) {
+            showToast(`🍂 Composted ${plantName}. Starting fresh with a Seed refund.`);
+        }
     };
 
     const handleWaterPlant = (plantId: string, plantName: string) => {
@@ -206,11 +230,22 @@ export default function GardenView({
                             </h2>
                         </div>
                         <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--color-on-surface-variant)", maxWidth: 680, lineHeight: 1.5 }}>
-                            Acquire rare plant seeds from the store and nurture them inside terrarium vessels. Water every 2 hours and bloom plants to grow your collection!
+                            Acquire rare plant seeds from the store and nurture them inside terrarium vessels. Water every 2 hours and bloom plants to grow your collection! Neglected plants can fall sick — find gardening-related bonus words in any puzzle to earn a Garden Remedy and treat them.
                         </p>
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                        <div style={{ textAlign: "right" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end" }}>
+                                <span aria-hidden="true" style={{ fontSize: "1.6rem" }}>🌿</span>
+                                <span style={{ fontFamily: "var(--font-headline)", fontSize: "1.6rem", fontWeight: 800, color: "var(--color-primary)" }}>
+                                    {remedyCharges}
+                                </span>
+                            </div>
+                            <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>
+                                GARDEN REMEDIES
+                            </div>
+                        </div>
                         <div style={{ textAlign: "right" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end" }}>
                                 <img src={assetUrl("seed.png")} alt="Seed" style={{ width: 36, height: 36, objectFit: "contain", filter: "drop-shadow(0 0 8px rgba(0,228,121,0.6))" }} />
@@ -305,6 +340,8 @@ export default function GardenView({
                         const lastWatered = wateredTimestamps[plant.id] || 0;
                         const rawStageImage = getStageImage(growth, plant.id);
                         const plantImage = assetUrl(rawStageImage.startsWith("/") ? rawStageImage.slice(1) : rawStageImage);
+                        const affliction = afflictions[plant.id];
+                        const sickArtwork = affliction ? getPlantArtwork(growth, plant.id, "sick") : null;
 
                         return (
                             <div
@@ -336,18 +373,57 @@ export default function GardenView({
                                         overflow: "hidden",
                                     }}
                                 >
-                                    <img
-                                        className="ws-plant-art"
-                                        src={plantImage}
-                                        alt={plant.name}
-                                        style={{
-                                            maxHeight: "100%",
-                                            maxWidth: "100%",
-                                            objectFit: "contain",
-                                            filter: "drop-shadow(0 0 20px rgba(0, 228, 121, 0.45))",
-                                            transition: "transform 0.4s ease",
-                                        }}
-                                    />
+                                    {sickArtwork && sickArtwork.kind === "sprite" ? (
+                                        <div
+                                            className="ws-plant-art ws-plant-art--sick"
+                                            role="img"
+                                            aria-label={`${plant.name} (sick)`}
+                                            style={{
+                                                width: 180,
+                                                height: 180,
+                                                backgroundImage: `url(${assetUrl(sickArtwork.src.startsWith("/") ? sickArtwork.src.slice(1) : sickArtwork.src)})`,
+                                                backgroundSize: sickArtwork.backgroundSize,
+                                                backgroundPosition: sickArtwork.backgroundPosition,
+                                                backgroundRepeat: "no-repeat",
+                                                filter: "drop-shadow(0 0 20px rgba(255, 107, 107, 0.4)) saturate(0.7)",
+                                            }}
+                                        />
+                                    ) : (
+                                        <img
+                                            className="ws-plant-art"
+                                            src={plantImage}
+                                            alt={plant.name}
+                                            style={{
+                                                maxHeight: "100%",
+                                                maxWidth: "100%",
+                                                objectFit: "contain",
+                                                filter: "drop-shadow(0 0 20px rgba(0, 228, 121, 0.45))",
+                                                transition: "transform 0.4s ease",
+                                            }}
+                                        />
+                                    )}
+
+                                    {/* Affliction Badge Tag */}
+                                    {affliction && (
+                                        <div
+                                            style={{
+                                                position: "absolute",
+                                                top: 14,
+                                                left: 14,
+                                                padding: "4px 12px",
+                                                borderRadius: "9999px",
+                                                background: "rgba(255, 107, 107, 0.22)",
+                                                border: "1px solid rgba(255, 107, 107, 0.5)",
+                                                backdropFilter: "var(--glass-blur, blur(12px))",
+                                                color: "#ff8a8a",
+                                                fontSize: "0.75rem",
+                                                fontWeight: 800,
+                                                fontFamily: "var(--font-headline)",
+                                            }}
+                                        >
+                                            🐛 {AFFLICTION_DEFINITIONS[affliction.type].name} · {SEVERITY_LABELS[affliction.severity]}
+                                        </div>
+                                    )}
 
                                     {/* Stage Badge Tag */}
                                     <div
@@ -387,6 +463,11 @@ export default function GardenView({
                                         <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--color-on-surface-variant)", lineHeight: 1.4 }}>
                                             {plant.description}
                                         </p>
+                                        {affliction && (
+                                            <p style={{ margin: "8px 0 0 0", fontSize: "0.8rem", color: "#ff8a8a", lineHeight: 1.4 }}>
+                                                {AFFLICTION_DEFINITIONS[affliction.type].description}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Growth progress & Water/Fertilize buttons */}
@@ -407,6 +488,59 @@ export default function GardenView({
                                         </div>
 
                                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                            {/* Treat/Compost -- only ever player-initiated, never automatic */}
+                                            {affliction && (
+                                                <button
+                                                    className="ws-garden-action ws-garden-action--treat"
+                                                    onClick={() => handleTreatPlant(plant.id, plant.name)}
+                                                    disabled={remedyCharges <= 0}
+                                                    style={{
+                                                        width: "100%",
+                                                        padding: "8px 16px",
+                                                        borderRadius: "0.85rem",
+                                                        border: "1px solid rgba(0, 228, 121, 0.4)",
+                                                        background: remedyCharges > 0 ? "rgba(0, 228, 121, 0.15)" : "rgba(255,255,255,0.05)",
+                                                        color: remedyCharges > 0 ? "var(--color-primary)" : "var(--color-on-surface-variant)",
+                                                        fontFamily: "var(--font-headline)",
+                                                        fontWeight: 700,
+                                                        fontSize: "0.85rem",
+                                                        cursor: remedyCharges > 0 ? "pointer" : "default",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        gap: 6,
+                                                        transition: "all 0.2s ease",
+                                                    }}
+                                                >
+                                                    <span>🌿 {remedyCharges > 0 ? `Treat (×${remedyCharges} Remedy available)` : "Treat (find a gardening bonus word first)"}</span>
+                                                </button>
+                                            )}
+                                            {affliction && affliction.severity === 3 && (
+                                                <button
+                                                    className="ws-garden-action ws-garden-action--compost"
+                                                    onClick={() => handleCompostPlant(plant.id, plant.name)}
+                                                    style={{
+                                                        width: "100%",
+                                                        padding: "8px 16px",
+                                                        borderRadius: "0.85rem",
+                                                        border: "1px solid rgba(255,255,255,0.2)",
+                                                        background: "rgba(255,255,255,0.05)",
+                                                        color: "var(--color-on-surface-variant)",
+                                                        fontFamily: "var(--font-headline)",
+                                                        fontWeight: 700,
+                                                        fontSize: "0.85rem",
+                                                        cursor: "pointer",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        gap: 6,
+                                                        transition: "all 0.2s ease",
+                                                    }}
+                                                >
+                                                    <span>🍂 Compost &amp; start fresh (+{COMPOST_REFUND_SEEDS} Seeds)</span>
+                                                </button>
+                                            )}
+
                                             {/* Water Button -- owns its own ticker, isolated from the rest of the card */}
                                             <WaterButton
                                                 lastWatered={lastWatered}

@@ -16,7 +16,10 @@ describe("Icon System Migration", () => {
         expect(container.querySelectorAll('.ws-bottom-nav__item').length).toBe(5);
         expect(container.querySelector('.ws-bottom-nav__item span:last-child')?.textContent).not.toBe("Settings");
         expect(container.querySelector('[aria-label="Toggle Theme Mode"]')).toBeNull();
-        expect(container.querySelector('[aria-label="About & How to Play"]')).toBeNull();
+        // The header's Help icon is a deliberate second entry point (alongside the
+        // desktop sidebar's own "About & How to Play" button) so it's reachable on
+        // mobile too -- Settings no longer embeds a redundant copy of it.
+        expect(container.querySelector('.ws-top-nav__icon-btn[aria-label="About & How to Play"]')).toBeTruthy();
     });
 
     it("describes the current puzzle as a level goal, not a daily goal or streak", () => {

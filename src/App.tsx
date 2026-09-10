@@ -63,6 +63,7 @@ export default function App() {
         onboardingSeen, dismissOnboardingStep, replayOnboarding,
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom, waterAllReady,
+        afflictions, remedyCharges, treatPlant, compostAfflictedPlant,
         doubleSeedsActive,
         unlockedThemes, unlockTheme,
         hasGoldenCrest, unlockGoldenCrest,
@@ -314,7 +315,17 @@ export default function App() {
                                 </span>
                             </div>
 
-                            {/* Settings Quick Toggle — theme and help live in their dedicated surfaces. */}
+                            {/* Help — reachable from the header on both mobile and desktop, in addition to the desktop sidebar's own entry. */}
+                            <button
+                                className="ws-top-nav__icon-btn"
+                                onClick={() => { playSfx("click"); openUtilityView("about"); }}
+                                aria-label="About & How to Play"
+                                title="About & How to Play"
+                            >
+                                <NavigationArt name="help" />
+                            </button>
+
+                            {/* Settings Quick Toggle — theme lives in its own dedicated surface. */}
                             <button
                                 className="ws-top-nav__icon-btn"
                                 onClick={() => { playSfx("click"); isMobile ? openUtilityView("settings") : setSettingsOpen(true); }}
@@ -357,6 +368,7 @@ export default function App() {
                     ownedPlants={ownedPlants}
                     wateredTimestamps={wateredTimestamps}
                     growthByPlant={growthByPlant}
+                    afflictions={afflictions}
                     onWaterAllReady={() => {
                         const result = waterAllReady();
                         if (result.watered) showToast(`💧 Watered ${result.watered} plants${result.bloomed ? ` · ${result.bloomed} bloomed · +${result.seeds} Seeds` : ""}.`);
@@ -379,6 +391,7 @@ export default function App() {
                         ownedPlants={ownedPlants}
                         wateredTimestamps={wateredTimestamps}
                         growthByPlant={growthByPlant}
+                        afflictions={afflictions}
                         onWaterAllReady={() => {
                             const result = waterAllReady();
                             if (result.watered) showToast(`💧 Watered ${result.watered} plants${result.bloomed ? ` · ${result.bloomed} bloomed · +${result.seeds} Seeds` : ""}.`);
@@ -427,7 +440,6 @@ export default function App() {
                                 themeMode={themeMode}
                                 onThemeModeChange={handleThemeModeChange}
                                 unlockedThemes={unlockedThemes}
-                                onOpenAbout={() => openUtilityView("about")}
                             />
                         </Suspense>
                     ) : activeTab === "field-kit" ? (
@@ -491,12 +503,16 @@ export default function App() {
                             ownedPlants={ownedPlants}
                             wateredTimestamps={wateredTimestamps}
                             growthByPlant={growthByPlant}
+                            afflictions={afflictions}
+                            remedyCharges={remedyCharges}
                             onOpenStore={() => openUtilityView("store")}
                             addSeeds={addSeeds}
                             spendSeeds={spendSeeds}
                             updateWateredTimestamp={updateWateredTimestamp}
                             updatePlantGrowth={updatePlantGrowth}
                             recordPlantBloom={recordPlantBloom}
+                            onTreatPlant={treatPlant}
+                            onCompostPlant={compostAfflictedPlant}
                             showToast={showToast}
                             />
                         </Suspense>
@@ -729,7 +745,7 @@ export default function App() {
 
             {/* ── Dialogs ───────────────────────────────────────────────────── */}
             {settingsOpen && (
-                <Suspense fallback={<div className="ws-lazy-dialog-fallback"><DestinationSkeleton destination="settings" /></div>}>
+                <Suspense fallback={<div className="ws-lazy-dialog-fallback"><DestinationSkeleton destination="settings" dialog /></div>}>
                     <SettingsDialog
                         open={settingsOpen}
                         onClose={() => setSettingsOpen(false)}
@@ -750,7 +766,6 @@ export default function App() {
                         themeMode={themeMode}
                         onThemeModeChange={handleThemeModeChange}
                         unlockedThemes={unlockedThemes}
-                        onOpenAbout={() => { setSettingsOpen(false); setActiveTab("about"); }}
                     />
                 </Suspense>
             )}
@@ -798,6 +813,8 @@ export default function App() {
                                 unlockedAchievements={unlockedAchievements}
                                 ownedPlants={ownedPlants}
                                 growthByPlant={growthByPlant}
+                                afflictions={afflictions}
+                                remedyCharges={remedyCharges}
                                 powerupInventory={powerupInventory}
                                 unlockedThemes={unlockedThemes}
                                 hasGoldenCrest={hasGoldenCrest}

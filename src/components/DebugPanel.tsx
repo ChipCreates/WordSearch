@@ -5,6 +5,7 @@ import { ACHIEVEMENTS } from "../achievements";
 import { PLANTS_CATALOG } from "../plantsCatalog";
 import { BOTANIST_RANKS, getBotanistRank } from "../botanistRanks";
 import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../powerups";
+import { AFFLICTION_DEFINITIONS, AFFLICTION_TYPES, type AfflictionState } from "../plantAffliction";
 import type { DebugApi } from "../hooks/useWordSearchGame";
 import {
     describeCombo, loadScreenshotHotkey, saveScreenshotHotkey,
@@ -28,6 +29,8 @@ type Props = {
     unlockedAchievements: Set<string>;
     ownedPlants: string[];
     growthByPlant: Record<string, number>;
+    afflictions: AfflictionState;
+    remedyCharges: number;
     powerupInventory: PowerupInventory;
     unlockedThemes: string[];
     hasGoldenCrest: boolean;
@@ -293,6 +296,53 @@ export default function DebugPanel(props: Props) {
                                             </Button>
                                         ))}
                                     </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </Section>
+
+                <Section title={`Garden Afflictions (${Object.keys(props.afflictions).length} sick · ${props.remedyCharges} remedies)`}>
+                    <p style={{ fontSize: 12, opacity: 0.7, marginTop: 0 }}>
+                        Forces onset/severity/cures without waiting out real onset rolls or
+                        grinding gardening-related bonus words.
+                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                        <span style={{ fontSize: 13, minWidth: 90 }}>Remedies: {props.remedyCharges}</span>
+                        <Button size="small" variant="outlined" onClick={() => debugApi.setRemedyCharges(Math.max(0, props.remedyCharges - 1))}>-1</Button>
+                        <Button size="small" variant="outlined" onClick={() => debugApi.setRemedyCharges(props.remedyCharges + 1)}>+1</Button>
+                        <Button size="small" variant="outlined" onClick={() => debugApi.setRemedyCharges(5)}>Set 5</Button>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto" }}>
+                        {props.ownedPlants.map(plantId => {
+                            const plant = PLANTS_CATALOG.find(p => p.id === plantId);
+                            if (!plant) return null;
+                            const affliction = props.afflictions[plantId];
+                            return (
+                                <div key={plantId} style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 4, fontSize: 13 }}>
+                                    <span style={{ minWidth: 150 }}>{plant.icon} {plant.name}</span>
+                                    {AFFLICTION_TYPES.map(type => (
+                                        <Button
+                                            key={type}
+                                            size="small"
+                                            variant={affliction?.type === type ? "contained" : "outlined"}
+                                            onClick={() => debugApi.setAffliction(plantId, type, affliction?.severity ?? 1)}
+                                        >
+                                            {AFFLICTION_DEFINITIONS[type].name}
+                                        </Button>
+                                    ))}
+                                    {affliction && ([1, 2, 3] as const).map(sev => (
+                                        <Button
+                                            key={sev}
+                                            size="small"
+                                            variant={affliction.severity === sev ? "contained" : "outlined"}
+                                            sx={{ minWidth: 30, px: 0.5 }}
+                                            onClick={() => debugApi.setAffliction(plantId, affliction.type, sev)}
+                                        >
+                                            {sev}
+                                        </Button>
+                                    ))}
+                                    {affliction && <Button size="small" color="success" variant="outlined" onClick={() => debugApi.setAffliction(plantId, null)}>Cure</Button>}
                                 </div>
                             );
                         })}

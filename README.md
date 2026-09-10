@@ -77,6 +77,8 @@ From quick themed puzzles to a thriving collection of exotic plants, Word Sprout
 
 **The Moonlit Conservatory grows while you play.** Spend Seeds on any of **20 plants**, spanning seven rarity tiers from *Common* moss up to a single *Cosmic* Ficus that'll run you 20,000 Seeds. Water each one every two hours to advance growth, or pay a scaled fertilizer cost to skip the wait — once a plant hits full bloom it pays a partial rebate, from 50 Seeds for the free starter Moss Sprout to half the purchase cost for purchased plants. It's a collection goal running quietly underneath the word search.
 
+**Neglect a plant and it can fall sick.** Blight, mildew, aphids, and slugs are a real threat, but only ever while you're actually playing — nothing in the garden decays while the app is closed, and severity always caps at "critical," never automatic loss. The only cure is a Garden Remedy charge, and the only way to earn one is finding a gardening-related word as a *bonus* find in **any** puzzle's category, not just a Gardening-themed one — so a sharp eye for off-list words during an unrelated puzzle pays off back home in the greenhouse. Treating a plant is always a deliberate choice, and so is composting one that's gotten critical, which refunds Seeds instead of just losing it for nothing.
+
 **The Seed Store is worth saving up for.** Beyond power-ups and plants, Seeds unlock two full cosmetic environment themes — the amber **Autumn Canopy** and the deep-sea **Ocean Trench** — plus an exclusive glowing **Golden Sprout Crest** for your botanist profile, for players willing to grind to the top.
 
 ### 🧘 Relax & focus, anywhere
