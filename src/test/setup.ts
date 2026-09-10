@@ -18,6 +18,13 @@ if (typeof window !== "undefined") {
             disconnect() {}
         };
     }
+    if (typeof HTMLMediaElement !== "undefined") {
+        // jsdom has no real media pipeline: play() returns undefined instead
+        // of a Promise, which breaks any caller (like sfx playback) that
+        // chains .then()/.catch() off it the way every real browser allows.
+        HTMLMediaElement.prototype.play = () => Promise.resolve();
+        HTMLMediaElement.prototype.pause = () => {};
+    }
     if (typeof HTMLCanvasElement !== "undefined") {
         // jsdom defines getContext(), but its implementation intentionally
         // logs a warning and returns null unless the optional native canvas

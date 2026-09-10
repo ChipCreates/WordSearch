@@ -357,6 +357,19 @@ body {
   padding-bottom: 2px;
 }
 
+/* WSP-1.1: a locked destination stays visible (so it doesn't look like the
+   nav randomly grew an item later) but reads as clearly inert -- dimmed,
+   no hover highlight, cursor communicates it isn't clickable right now. */
+.ws-top-nav__link--locked,
+.ws-bottom-nav__item--locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ws-top-nav__link--locked:hover {
+  color: var(--color-on-surface-variant);
+  background: transparent;
+}
+
 .ws-top-nav__actions {
   display: flex;
   align-items: center;
@@ -2483,4 +2496,83 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
 .ws-top-nav__icon-btn { border: 0; border-radius: 50%; background: transparent; box-shadow: none; }
 .ws-bottom-nav__item { color: #e8ead7; font-family: Georgia, var(--font-headline); font-weight: 700; }
 .ws-bottom-nav__item--active { border-radius: 16px; background: linear-gradient(180deg, #285d40aa, #123a29dd); color: #fffbe7; }
+
+/* ── Onboarding coachmark (WSP-1.1) ───────────────────────────────────────
+   An anchored, non-modal popover -- never a full-screen dialog. It never
+   traps focus or dims the rest of the page; the player can keep exploring
+   while it's up, and it disappears entirely (see OnboardingCoachmark.tsx)
+   rather than floating adrift whenever its target isn't currently visible. */
+.ws-coachmark-layer { position: fixed; inset: 0; z-index: 1450; pointer-events: none; }
+
+.ws-coachmark-spotlight {
+  position: fixed;
+  border-radius: 14px;
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 0 0 4000px rgba(4, 15, 10, 0.35), 0 0 18px rgba(0, 228, 121, 0.55);
+  animation: ws-coachmark-pulse 1.8s ease-in-out infinite;
+}
+
+.ws-coachmark {
+  position: fixed;
+  pointer-events: auto;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #123e30f5, #071f18f5);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 45%, var(--glass-border));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 228, 121, 0.2);
+  animation: ws-coachmark-enter 0.28s ease-out;
+}
+
+.ws-coachmark__arrow {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  background: inherit;
+  border: inherit;
+  border-radius: 3px;
+}
+.ws-coachmark--below .ws-coachmark__arrow { top: -7px; border-right: none; border-bottom: none; transform: rotate(45deg); }
+.ws-coachmark--above .ws-coachmark__arrow { bottom: -7px; border-left: none; border-top: none; transform: rotate(45deg); }
+
+.ws-coachmark__title { margin: 0 0 4px; font-family: var(--font-headline); font-size: 1rem; font-weight: 800; color: var(--color-primary); }
+.ws-coachmark__body { margin: 0 0 12px; font-size: 0.85rem; line-height: 1.45; color: var(--color-on-surface, #effbdc); }
+.ws-coachmark__dismiss {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  color: var(--color-on-primary, #05170f);
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(0, 228, 121, 0.35);
+}
+.ws-coachmark__dismiss:hover, .ws-coachmark__dismiss:focus-visible { filter: brightness(1.08); outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+@keyframes ws-coachmark-enter {
+  from { opacity: 0; transform: translateY(var(--coachmark-enter-offset, 6px)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ws-coachmark--above { --coachmark-enter-offset: 6px; }
+.ws-coachmark--below { --coachmark-enter-offset: -6px; }
+/* The bubble's resting transform for the "above" placement already
+   translates it up by its own height (see the inline style) -- layer the
+   entrance slide on top of that rather than replacing it. */
+.ws-coachmark--above { animation-name: ws-coachmark-enter-above; }
+@keyframes ws-coachmark-enter-above {
+  from { opacity: 0; transform: translateY(-100%) translateY(6px); }
+  to { opacity: 1; transform: translateY(-100%) translateY(0); }
+}
+
+@keyframes ws-coachmark-pulse {
+  0%, 100% { box-shadow: 0 0 0 4000px rgba(4, 15, 10, 0.35), 0 0 12px rgba(0, 228, 121, 0.45); }
+  50% { box-shadow: 0 0 0 4000px rgba(4, 15, 10, 0.35), 0 0 24px rgba(0, 228, 121, 0.85); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-coachmark-spotlight { animation: none; box-shadow: 0 0 0 4000px rgba(4, 15, 10, 0.35), 0 0 16px rgba(0, 228, 121, 0.6); }
+  .ws-coachmark, .ws-coachmark--above { animation: none; }
+}
 .ws-bottom-nav__item--active .ws-navigation-art { filter: drop-shadow(0 0 9px #dfff79) drop-shadow(0 4px 3px #0009); transform: translateY(-2px); }

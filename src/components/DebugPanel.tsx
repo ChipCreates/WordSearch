@@ -6,6 +6,7 @@ import { PLANTS_CATALOG } from "../plantsCatalog";
 import { BOTANIST_RANKS, getBotanistRank } from "../botanistRanks";
 import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../powerups";
 import { AFFLICTION_DEFINITIONS, AFFLICTION_TYPES, type AfflictionState } from "../plantAffliction";
+import { ONBOARDING_STEPS, type OnboardingStepId } from "../onboarding";
 import type { DebugApi } from "../hooks/useWordSearchGame";
 import {
     describeCombo, loadScreenshotHotkey, saveScreenshotHotkey,
@@ -48,6 +49,8 @@ type Props = {
     onSetStaticPreview: (active: boolean) => void;
     persistAchievementBanner: boolean;
     onSetPersistAchievementBanner: (active: boolean) => void;
+    onboardingPreview: OnboardingStepId | null;
+    onSetOnboardingPreview: (id: OnboardingStepId | null) => void;
 };
 
 function Section({ title, defaultOpen, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
@@ -176,6 +179,35 @@ export default function DebugPanel(props: Props) {
                     >
                         Open Trail Editor
                     </Button>
+                </Section>
+
+                <Section title={`Onboarding${props.onboardingPreview ? ` (previewing "${props.onboardingPreview}")` : ""}`}>
+                    <p style={{ fontSize: 12, opacity: 0.7, marginTop: 0 }}>
+                        Force-shows one onboarding coachmark on the Play screen, anchored to its
+                        real target element -- independent of real level/dismissal progress, and
+                        never written to the save. Jumps to Play first since a couple of these
+                        anchor to elements that only render there (the board, the bonus goal row).
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {ONBOARDING_STEPS.map(step => (
+                            <Button
+                                key={step.id}
+                                size="small"
+                                variant={props.onboardingPreview === step.id ? "contained" : "outlined"}
+                                onClick={() => {
+                                    props.onNavigate("play");
+                                    props.onSetOnboardingPreview(step.id);
+                                }}
+                            >
+                                {step.title}
+                            </Button>
+                        ))}
+                        {props.onboardingPreview && (
+                            <Button size="small" color="error" variant="outlined" onClick={() => props.onSetOnboardingPreview(null)}>
+                                Clear preview
+                            </Button>
+                        )}
+                    </div>
                 </Section>
 
                 <Section title={`Achievements (${props.unlockedAchievements.size}/${ACHIEVEMENTS.length})`}>

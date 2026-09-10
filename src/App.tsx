@@ -28,7 +28,7 @@ const AchievementsView = lazy(() => import("./components/AchievementsView"));
 const GardenView = lazy(() => import("./components/GardenView"));
 const DebugPanel = import.meta.env.DEV ? lazy(() => import("./components/DebugPanel")) : null;
 import OnboardingCoachmark from "./components/OnboardingCoachmark";
-import { nextOnboardingStep } from "./onboarding";
+import { GARDEN_UNLOCK_LEVEL, ONBOARDING_STEPS, STORE_AND_TROPHIES_UNLOCK_LEVEL, nextOnboardingStep, type OnboardingStepId } from "./onboarding";
 import EcoLeaf from "./components/icons/EcoLeaf";
 import NavigationArt from "./components/NavigationArt";
 import { getBotanistRank } from "./botanistRanks";
@@ -97,11 +97,31 @@ export default function App() {
     const [activeTab, setActiveTab] = useState<ActiveTab>(trailEditorRequested ? "levels" : "play");
     const [, setViewStack] = useState<ActiveTab[]>([]);
     const isMobile = useMediaQuery("(max-width: 767px)");
+    // Real gating (WSP-1.1): a locked destination is a no-op with an
+    // explanatory toast, not just a visually-disabled button -- this is the
+    // single choke point every navigation entry point (top nav, bottom nav,
+    // the player profile sheet, GardenView's own "open store" button, etc.)
+    // goes through, so a future new entry point can't accidentally bypass
+    // it. Debug-mode's own "Jump to ..." buttons call setActiveTab directly
+    // and intentionally skip this -- debug tooling needs unrestricted nav.
+    const lockedViewMessage = (view: ActiveTab): string | null => {
+        if (view === "garden" && highestUnlockedLevel < GARDEN_UNLOCK_LEVEL) {
+            return `The Garden unlocks at Level ${GARDEN_UNLOCK_LEVEL}.`;
+        }
+        if ((view === "achievements" || view === "store") && highestUnlockedLevel < STORE_AND_TROPHIES_UNLOCK_LEVEL) {
+            return `${view === "store" ? "The Seed Store" : "Trophies"} unlocks at Level ${STORE_AND_TROPHIES_UNLOCK_LEVEL}.`;
+        }
+        return null;
+    };
     const selectPrimaryView = (view: ActiveTab) => {
+        const lockedMessage = lockedViewMessage(view);
+        if (lockedMessage) { showToast(lockedMessage); return; }
         setViewStack([]);
         setActiveTab(view);
     };
     const openUtilityView = (view: ActiveTab) => {
+        const lockedMessage = lockedViewMessage(view);
+        if (lockedMessage) { showToast(lockedMessage); return; }
         setViewStack(stack => [...stack, activeTab]);
         setActiveTab(view);
     };
@@ -121,6 +141,11 @@ export default function App() {
     // timeline -- suppresses the SuccessScreen popup below accordingly.
     const [debugStaticCelebration, setDebugStaticCelebration] = useState(false);
     const [debugPersistAchievementBanner, setDebugPersistAchievementBanner] = useState(false);
+    // Transient, never-persisted override for previewing any onboarding
+    // coachmark on demand (see DebugPanel's "Onboarding" section) --
+    // mirrors queueAchievementPreview/queuePromotionPreview's pattern of
+    // overlaying a preview without touching real save data.
+    const [debugOnboardingPreview, setDebugOnboardingPreview] = useState<OnboardingStepId | null>(null);
     useEffect(() => {
         if (!debugRequested) return;
         const onKeyDown = (e: KeyboardEvent) => {
@@ -131,7 +156,16 @@ export default function App() {
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
     }, []);
-    const onboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
+    const realOnboardingStep = nextOnboardingStep(levelsCompleted, onboardingSeen);
+    const onboardingStep = debugOnboardingPreview
+        ? ONBOARDING_STEPS.find(step => step.id === debugOnboardingPreview) ?? null
+        : realOnboardingStep;
+    // Real navigation gating (WSP-1.1), not just coachmark sequencing --
+    // enforced centrally in selectPrimaryView/openUtilityView below so
+    // every entry point (top nav, bottom nav, the player profile sheet's
+    // "Trophies" shortcut, etc.) is covered by one check.
+    const isGardenLocked = highestUnlockedLevel < GARDEN_UNLOCK_LEVEL;
+    const isStoreOrTrophiesLocked = highestUnlockedLevel < STORE_AND_TROPHIES_UNLOCK_LEVEL;
     const botanistRank = getBotanistRank(highestUnlockedLevel);
     const avatarColumnPositions = ["0%", "24.8%", "49.5%", "74.3%", "99%"];
     const getAvatarBackgroundPosition = (avatarIndex: number) => `${avatarColumnPositions[avatarIndex % 5]} ${Math.floor(avatarIndex / 5) * 100}%`;
@@ -307,18 +341,23 @@ export default function App() {
                                 Levels
                             </button>
                             <button
-                                className={`ws-top-nav__link ${activeTab === "garden" ? "ws-top-nav__link--active" : ""}`}
+                                className={`ws-top-nav__link ${activeTab === "garden" ? "ws-top-nav__link--active" : ""}${isGardenLocked ? " ws-top-nav__link--locked" : ""}`}
                                 onClick={() => { playSfx("click"); selectPrimaryView("garden"); }}
+                                data-onboarding-anchor="garden"
+                                aria-label={isGardenLocked ? `Garden (unlocks at Level ${GARDEN_UNLOCK_LEVEL})` : "Garden"}
                             >
                                 <NavigationArt name="garden" />
                                 Garden
+                                {isGardenLocked && <LockOutlined style={{ fontSize: 14 }} />}
                             </button>
                             <button
-                                className={`ws-top-nav__link ${activeTab === "achievements" ? "ws-top-nav__link--active" : ""}`}
+                                className={`ws-top-nav__link ${activeTab === "achievements" ? "ws-top-nav__link--active" : ""}${isStoreOrTrophiesLocked ? " ws-top-nav__link--locked" : ""}`}
                                 onClick={() => { playSfx("click"); selectPrimaryView("achievements"); }}
+                                aria-label={isStoreOrTrophiesLocked ? `Trophies (unlocks at Level ${STORE_AND_TROPHIES_UNLOCK_LEVEL})` : "Trophies"}
                             >
                                 <NavigationArt name="trophies" />
                                 Trophies
+                                {isStoreOrTrophiesLocked && <LockOutlined style={{ fontSize: 14 }} />}
                             </button>
                         </nav>
 
@@ -328,6 +367,7 @@ export default function App() {
                                 className="ws-top-nav__stat-pill"
                                 onClick={() => { playSfx("click"); openUtilityView("store"); }}
                                 title="Click to open Seed Redemption Store"
+                                data-onboarding-anchor="seeds store"
                                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 9999, background: "rgba(0, 228, 121, 0.12)", border: "1px solid rgba(0, 228, 121, 0.3)", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
                             >
                                 <img src={assetUrl("seed.png")} alt="Seed" style={{ width: 26, height: 26, objectFit: "contain", flexShrink: 0, filter: "drop-shadow(0 0 6px rgba(0,228,121,0.5))" }} />
@@ -600,7 +640,7 @@ export default function App() {
                                             <div className="bioluminescent-line" style={{ width: `${Math.min(100, (foundCount / (wordsToFind.length || 1)) * 100)}%` }} />
                                         </div>
                                         {bonusGoalCount > 0 && (
-                                            <div className="ws-level-goal-card__bonus-goal">
+                                            <div className="ws-level-goal-card__bonus-goal" data-onboarding-anchor="bonus">
                                                 <div className="ws-level-goal-card__bonus-copy">
                                                     <span aria-hidden="true">✨</span>
                                                     <span className="ws-level-goal-card__goal-label">Bonus Goal</span>
@@ -616,7 +656,11 @@ export default function App() {
                             {/* Gameplay Grid & Found Words Side Panel */}
                             <div className="ws-gameplay-grid">
                                 {/* Left: Canvas Word Grid Panel */}
-                                <div className={`glass-panel ws-game-board-panel ws-game-board-panel--grid-${gridSize}${gridSize <= 4 ? " ws-game-board-panel--compact" : ""}`} style={{ flexDirection: "column" }}>
+                                <div
+                                    className={`glass-panel ws-game-board-panel ws-game-board-panel--grid-${gridSize}${gridSize <= 4 ? " ws-game-board-panel--compact" : ""}`}
+                                    style={{ flexDirection: "column" }}
+                                    data-onboarding-anchor="play-basics"
+                                >
                                     <div className="ws-mobile-board-header">
                                         <strong>{category || "Botanical"}</strong>
                                         <span>{foundCount}/{wordsToFind.length}</span>
@@ -723,19 +767,22 @@ export default function App() {
                     </button>
 
                     <button
-                        className={`ws-bottom-nav__item ${activeTab === "garden" ? "ws-bottom-nav__item--active" : ""}`}
+                        className={`ws-bottom-nav__item ${activeTab === "garden" ? "ws-bottom-nav__item--active" : ""}${isGardenLocked ? " ws-bottom-nav__item--locked" : ""}`}
                         onClick={() => { playSfx("click"); selectPrimaryView("garden"); }}
+                        data-onboarding-anchor="garden"
+                        aria-label={isGardenLocked ? `Garden (unlocks at Level ${GARDEN_UNLOCK_LEVEL})` : "Garden"}
                     >
                         <NavigationArt name="garden" />
-                        <span>Garden</span>
+                        <span>Garden{isGardenLocked && <LockOutlined style={{ fontSize: 12, marginLeft: 4, verticalAlign: "text-bottom" }} />}</span>
                     </button>
 
                     <button
-                        className={`ws-bottom-nav__item ${activeTab === "achievements" ? "ws-bottom-nav__item--active" : ""}`}
+                        className={`ws-bottom-nav__item ${activeTab === "achievements" ? "ws-bottom-nav__item--active" : ""}${isStoreOrTrophiesLocked ? " ws-bottom-nav__item--locked" : ""}`}
                         onClick={() => { playSfx("click"); selectPrimaryView("achievements"); }}
+                        aria-label={isStoreOrTrophiesLocked ? `Trophies (unlocks at Level ${STORE_AND_TROPHIES_UNLOCK_LEVEL})` : "Trophies"}
                     >
                         <NavigationArt name="trophies" />
-                        <span>Trophies</span>
+                        <span>Trophies{isStoreOrTrophiesLocked && <LockOutlined style={{ fontSize: 12, marginLeft: 4, verticalAlign: "text-bottom" }} />}</span>
                     </button>
                     <button
                         className={`ws-bottom-nav__item ${activeTab === "field-kit" ? "ws-bottom-nav__item--active" : ""}`}
@@ -797,7 +844,13 @@ export default function App() {
                 persist={debugRequested && debugPersistAchievementBanner}
             />
 
-            <OnboardingCoachmark step={onboardingStep} onDismiss={() => onboardingStep && dismissOnboardingStep(onboardingStep.id)} />
+            <OnboardingCoachmark
+                step={onboardingStep}
+                onDismiss={() => {
+                    if (debugOnboardingPreview) { setDebugOnboardingPreview(null); return; }
+                    if (onboardingStep) dismissOnboardingStep(onboardingStep.id);
+                }}
+            />
 
             <Snackbar
                 open={!!toast}
@@ -853,6 +906,8 @@ export default function App() {
                                 onSetStaticPreview={setDebugStaticCelebration}
                                 persistAchievementBanner={debugPersistAchievementBanner}
                                 onSetPersistAchievementBanner={setDebugPersistAchievementBanner}
+                                onboardingPreview={debugOnboardingPreview}
+                                onSetOnboardingPreview={setDebugOnboardingPreview}
                             />
                         </Suspense>
                     )}

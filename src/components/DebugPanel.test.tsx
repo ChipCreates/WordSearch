@@ -50,6 +50,8 @@ function baseProps() {
         onSetStaticPreview: vi.fn(),
         persistAchievementBanner: false,
         onSetPersistAchievementBanner: vi.fn(),
+        onboardingPreview: null,
+        onSetOnboardingPreview: vi.fn(),
     };
 }
 
