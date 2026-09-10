@@ -5,6 +5,11 @@ import type { Achievement } from "../achievements";
 import { assetUrl } from "../categoryThemes";
 
 const TOTAL_MS = 6000;
+// Mobile's version dims/blurs the whole screen behind the banner (see the
+// scrim below) rather than desktop's small, easily-ignored corner toast --
+// that makes the same 6s hang time read as noticeably longer/more
+// intrusive on mobile, hence the separate, shorter duration.
+const MOBILE_TOTAL_MS = 3500;
 const mobileEntrance = keyframes`
   0% { transform: translate(-50%, -110%); opacity: 0; }
   10%, 85% { transform: translate(-50%, 0); opacity: 1; }
@@ -21,14 +26,15 @@ const overlayFade = keyframes`
   100% { opacity: 0; }
 `;
 
-type Props = { achievement: Achievement | null; onDismiss: () => void; persist?: boolean };
+type Props = { achievement: Achievement | null; onDismiss: () => void; persist?: boolean; isMobile?: boolean };
 
-export default function AchievementBanner({ achievement, onDismiss, persist }: Props) {
+export default function AchievementBanner({ achievement, onDismiss, persist, isMobile }: Props) {
+    const duration = isMobile ? MOBILE_TOTAL_MS : TOTAL_MS;
     useEffect(() => {
         if (!achievement || persist) return;
-        const timer = setTimeout(onDismiss, TOTAL_MS);
+        const timer = setTimeout(onDismiss, duration);
         return () => clearTimeout(timer);
-    }, [achievement, onDismiss, persist]);
+    }, [achievement, onDismiss, persist, duration]);
 
     if (!achievement) return null;
     const badge = achievement.image;
@@ -43,7 +49,7 @@ export default function AchievementBanner({ achievement, onDismiss, persist }: P
                     position: "fixed", inset: 0, zIndex: 1999, pointerEvents: "none",
                     backgroundColor: "rgba(4, 14, 8, 0.55)",
                     backdropFilter: "var(--glass-blur, blur(12px))",
-                    ...(persist ? { opacity: 1 } : { animation: `${overlayFade} ${TOTAL_MS}ms ease-in-out forwards` }),
+                    ...(persist ? { opacity: 1 } : { animation: `${overlayFade} ${MOBILE_TOTAL_MS}ms ease-in-out forwards` }),
                 }} />
             <Box key={achievement.id} className="ws-achievement-banner" role="status"
                 sx={{
@@ -56,7 +62,7 @@ export default function AchievementBanner({ achievement, onDismiss, persist }: P
                         ? { opacity: 1, transform: { xs: "translate(-50%, 0)", md: "translateY(0)" } }
                         : {
                             animation: {
-                                xs: `${mobileEntrance} ${TOTAL_MS}ms ease-in-out forwards`,
+                                xs: `${mobileEntrance} ${MOBILE_TOTAL_MS}ms ease-in-out forwards`,
                                 md: `${desktopEntrance} ${TOTAL_MS}ms ease-in-out forwards`,
                             },
                         }),

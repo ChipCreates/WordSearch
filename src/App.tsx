@@ -284,7 +284,16 @@ export default function App() {
 
     // ── Derived values ────────────────────────────────────────────────────────
     const bgTheme = CATEGORY_THEMES[category] ?? DEFAULT_THEME;
-    const currentToast = justUnlocked[0];
+    // Achievement evaluation reacts to stats (seeds, levelsCompleted, ...)
+    // that update the instant a level finishes -- well before the
+    // board-collapse celebration animation has actually played out (that's
+    // gated behind its own delayed timer, see showSuccessOverlay above).
+    // Without this guard the banner -- a full-screen dimmed overlay on
+    // mobile -- could pop up mid-celebration instead of once it's done.
+    // Nothing is lost by waiting: the entry stays queued in justUnlocked and
+    // simply renders once the gate clears. Debug mode bypasses this
+    // entirely so the "Preview banner" tool always shows immediately.
+    const currentToast = (!debugRequested && levelComplete && !showSuccessOverlay) ? undefined : justUnlocked[0];
     const foundCount = wordsToFind.filter(w => foundWords[w]).length;
     const bonusGoalCount = bonusWordsToFind.length;
     const bonusGoalProgress = Math.min(bonusWordsThisLevel.length, bonusGoalCount);
@@ -876,6 +885,7 @@ export default function App() {
                 achievement={currentToast ?? null}
                 onDismiss={dismissJustUnlocked}
                 persist={debugRequested && debugPersistAchievementBanner}
+                isMobile={isMobile}
             />
 
             <OnboardingCoachmark
