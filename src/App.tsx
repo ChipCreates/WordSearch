@@ -295,8 +295,12 @@ export default function App() {
     // entirely so the "Preview banner" tool always shows immediately.
     const currentToast = (!debugRequested && levelComplete && !showSuccessOverlay) ? undefined : justUnlocked[0];
     const foundCount = wordsToFind.filter(w => foundWords[w]).length;
+    // The generator's own placed candidates -- not a hard ceiling. Any real
+    // dictionary word not on the target list counts as a bonus find, so a
+    // player can (and regularly does) find more bonus words than this
+    // number suggests; the counters below must show the true total found,
+    // not clamp to this "goal" as if it were a cap.
     const bonusGoalCount = bonusWordsToFind.length;
-    const bonusGoalProgress = Math.min(bonusWordsThisLevel.length, bonusGoalCount);
     const muiTheme = themeMode === "midnight" ? sproutDarkTheme
         : themeMode === "autumn" ? sproutAutumnTheme
         : themeMode === "ocean" ? sproutOceanTheme
@@ -655,7 +659,7 @@ export default function App() {
                                                     </svg>
                                                 </div>
                                                 <div className="ws-level-goal-card__complete-sub">
-                                                    All target words found{bonusGoalCount ? ` · ${bonusGoalProgress}/${bonusGoalCount} bonus sprouts` : ""}. Well done, Botanist!
+                                                    All target words found{bonusGoalCount ? ` · ${bonusWordsThisLevel.length}/${bonusGoalCount} bonus sprouts` : ""}. Well done, Botanist!
                                                 </div>
                                             </div>
                                         </div>
@@ -685,7 +689,7 @@ export default function App() {
                                                         : "No bonus words this level."}
                                                 </strong>
                                             </div>
-                                            {bonusGoalCount > 0 && <span className="ws-level-goal-card__bonus-count">{bonusGoalProgress}/{bonusGoalCount}</span>}
+                                            {bonusGoalCount > 0 && <span className="ws-level-goal-card__bonus-count">{bonusWordsThisLevel.length}/{bonusGoalCount}</span>}
                                         </div>
                                     </div>
                                 )}
@@ -704,7 +708,7 @@ export default function App() {
                                         <div className="ws-mobile-board-header__counts">
                                             <span className="ws-mobile-board-header__count">Found {foundCount}/{wordsToFind.length}</span>
                                             <span className="ws-mobile-board-header__count ws-mobile-board-header__count--bonus" data-onboarding-anchor="bonus">
-                                                {bonusGoalCount > 0 ? `Bonus ${bonusGoalProgress}/${bonusGoalCount}` : "No bonus this level"}
+                                                {bonusGoalCount > 0 ? `Bonus ${bonusWordsThisLevel.length}/${bonusGoalCount}` : "No bonus this level"}
                                             </span>
                                         </div>
                                     </div>
