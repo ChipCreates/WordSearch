@@ -409,7 +409,16 @@ export function generatePuzzle(request: PuzzleGenerationRequest): PuzzleGenerati
             const placement = placeWord(grid, word, difficulty.allowedDirections, rng, difficulty);
             if (placement) { placements[word] = placement; placedBonusWords.push(word); }
         }
-        if (placedBonusWords.length < bonusGoalCount) continue;
+        // bonusGoalCount is a heuristic estimate of leftover *cell count*,
+        // not leftover *contiguous run length* -- a board with plenty of
+        // scattered empty cells can still have nowhere a 6+ letter word
+        // actually fits once the targets' overlap-seeking placement has
+        // fragmented it. Discarding an otherwise fully-valid, well-placed
+        // board over a bonus shortfall used to send ~98% of real (longer,
+        // more numerous) target-word sets straight to the emergency
+        // fallback -- bonus words are explicitly optional ("if you can"),
+        // so a shortfall belongs in the quality score's bonusDensity term
+        // below, not a hard reject here.
 
         // Filled in now (not deferred to the winning candidate only) so the
         // content-safety pass below sees the real filler. Sanitizing in

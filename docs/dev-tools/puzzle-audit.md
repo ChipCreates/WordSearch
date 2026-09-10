@@ -25,11 +25,15 @@ and asserts two hard requirements: zero validity failures and zero
 content-safety hits. Everything else is informational:
 
 - **Hard fallbacks** — boards where randomized placement couldn't legally
-  fit every target/bonus word within the retry bound, so the generator fell
-  back to its deterministic one-word-per-row layout. This should stay low;
-  a sudden jump usually means a difficulty tier is asking for more/longer
-  words than its grid size can realistically hold — a difficulty-tuning
-  question (Tier 2 in the release plan), not a generator bug.
+  fit every target word within the retry bound, so the generator fell back
+  to its deterministic one-word-per-row layout. This should stay low; a
+  sudden jump usually means a difficulty tier is asking for more/longer
+  target words than its grid size can realistically hold — a
+  difficulty-tuning question (Tier 2 in the release plan), not a generator
+  bug. (Bonus words are never the cause: a shortfall there is absorbed by
+  `scorePuzzleQuality`'s `bonusDensity` term instead of triggering a
+  fallback — see the note below on why that distinction mattered in
+  practice.)
 - **Quality misses** — boards that placed every word legally but never hit
   a board matching the difficulty's intended direction/reverse/overlap mix
   within the quality-retry bound, so the best-scoring candidate shipped
@@ -47,6 +51,33 @@ determines *both* which words get drawn from the category (via
 `generatePuzzle`'s `rng`) — reported failures are fully reproducible by
 reusing that same seed number for both, as `scripts/audit-puzzles.ts` does
 internally.
+
+## Fixed finding: bonus-word shortfalls were driving most fallbacks
+
+The first real-content audit run found a 6.4% hard-fallback rate —
+suspiciously high given the old (short, synthetic) test word lists never
+triggered it. Isolating targets from bonus words showed why: a 9-word,
+mostly-6-to-8-letter target set placed into a 10×10 grid with zero
+failures across 500 trials, but adding the difficulty's full complement of
+candidate bonus words on top pushed the fallback rate to 98.4% for that
+same board. `getBonusGoalCount` estimates how many bonus words *should*
+fit from leftover cell count, but cell count isn't the same as leftover
+*contiguous run length* — a board can have plenty of empty cells and still
+have nowhere a 6+ letter word actually fits once overlap-seeking target
+placement has fragmented it. The generator was treating "couldn't reach
+the estimated bonus goal" as a reason to discard an otherwise fully valid,
+well-placed board and retry from scratch — 20 times, then give up to the
+fallback — even though bonus words are explicitly optional content ("if
+you can" in the level-goal copy, not a promise like targets are).
+
+The fix: a bonus shortfall (down to zero) no longer discards the board.
+`scorePuzzleQuality`'s existing `bonusDensity` term already scores a
+shortfall lower, so quality-search naturally still prefers a board with
+more bonus words when one's reachable within its retry budget, without a
+hard reject blocking an otherwise-good board. Post-fix on the same
+50,000-board audit: hard fallbacks dropped from ~3,100 to ~310 (0.64%),
+and content-safety hits dropped to zero (fewer fallback boards means far
+less exposure to that path's own residual, below).
 
 ## Known accepted residual: fallback-path content safety
 

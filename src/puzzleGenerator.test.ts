@@ -36,6 +36,30 @@ describe("puzzleGenerator", () => {
         }
     });
 
+    it("ships a normal, correctly-sized board on a bonus-word shortfall instead of falling back", () => {
+        // Long target words plus a full slate of long bonus candidates on a
+        // modest grid: every target fits, but there's rarely room left for
+        // the full "wished for" bonus count. Discarding the whole board
+        // over that shortfall (rather than just accepting fewer bonus
+        // words) used to send the vast majority of requests like this
+        // straight to the emergency fallback -- see WordSprout_1.0_Plan.md's
+        // WSP-0.2 audit findings.
+        const targetWords = ["RESPONSE", "STRESS", "THERAPY", "DELUSION", "DENIAL", "DOPAMINE", "PIAGET", "SESSION", "INSOMNIA"];
+        const bonusWords = ["SUPEREGO", "THERAPIST", "AMYGDALA", "PSYCHOSIS", "MINDSET", "INTROVERT", "CORTISOL", "BEHAVIOR"];
+        let fallbacks = 0;
+        for (let seed = 1; seed <= 50; seed++) {
+            const result = generatePuzzle({
+                targetWords, bonusWords, category: "Psychology", level: 30, mode: "challenging", gridSize: 10, rng: seeded(seed),
+            });
+            if (result.fallbackReason === "random placement retries exhausted") fallbacks++;
+            expect(result.gridSize).toBe(10);
+            for (const word of result.targetWords) {
+                expect(findWordPlacement(result.grid, result.gridSize, word)).not.toBeNull();
+            }
+        }
+        expect(fallbacks).toBe(0);
+    });
+
     it("keeps the configured target count and places every target legally", () => {
         for (const mode of ["easy", "standard", "challenging"] as const) {
             for (const level of [1, 5, 12, 25]) {
