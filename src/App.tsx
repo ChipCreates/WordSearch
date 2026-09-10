@@ -9,6 +9,8 @@ import { CATEGORY_NAMES, MAX_TARGET_WORD_LENGTH } from "./backend";
 import { CELEBRATE_FADE_DELAY_MS } from "./constants";
 import { findWordPlacement } from "./gameMechanics";
 
+import { getLoadIssue, resetSaveAfterLoadIssue } from "./persistence";
+import SaveIssueDialog from "./components/SaveIssueDialog";
 import GameCanvas from "./components/GameCanvas";
 import SuccessScreen from "./components/SuccessScreen";
 import AchievementBanner from "./components/AchievementBanner";
@@ -72,6 +74,13 @@ export default function App() {
         spectrometerCells, compassDirection,
         debugApi,
     } = useWordSearchGame();
+
+    // Captured once, synchronously, right after the hook above has already
+    // run its own loadSaveDataSync() -- getLoadIssue() reflects whatever
+    // that call just found. A plain useState (not derived on every render)
+    // so the dialog doesn't flicker or re-derive if something else calls
+    // getLoadIssue() later in the session.
+    const [saveIssue, setSaveIssue] = useState(() => getLoadIssue());
 
     const {
         musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
@@ -232,6 +241,18 @@ export default function App() {
     return (
         <ThemeProvider theme={muiTheme}>
             <CssBaseline />
+
+            {saveIssue && (
+                <SaveIssueDialog
+                    issue={saveIssue}
+                    onReset={() => {
+                        resetSaveAfterLoadIssue().then(() => {
+                            restart();
+                            setSaveIssue(null);
+                        });
+                    }}
+                />
+            )}
 
             <div
                 className={`ws-app-surface ws-app-surface--${activeTab}`}

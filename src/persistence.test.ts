@@ -1,5 +1,18 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { loadSaveData, writeSaveData, DEFAULT_SAVE_DATA, type SaveData } from "./persistence";
+import {
+    loadSaveData, loadSaveDataSync, writeSaveData, normalizeSaveData,
+    getLoadIssue, resetSaveAfterLoadIssue,
+    DEFAULT_SAVE_DATA, CURRENT_SCHEMA_VERSION, type SaveData,
+} from "./persistence";
+import {
+    legacyV1Save, legacyV2Save, legacyV3Save,
+    advancedPlayerSave, level100PlayerSave, largeGardenSave,
+    unlockedThemesSave, manyAchievementsSave,
+    missingOptionalFieldsSave, malformedRecoverableSave,
+} from "./test/fixtures/saves";
+import { COMPLETED_ONBOARDING_SEEN, DEFAULT_ONBOARDING_SEEN } from "./onboarding";
+
+const PRIMARY_KEY = "word_sprout_save_v1";
 
 describe("Persistence Module", () => {
   beforeEach(() => {
@@ -143,5 +156,154 @@ describe("Persistence Module", () => {
     expect(loaded.version).toBe(4);
     expect(loaded.seeds).toBe(765);
     expect(loaded.fieldNotes.activeIds).toHaveLength(3);
+  });
+});
+
+describe("WSP-0.3 fixture library migration coverage", () => {
+  const fixtures: Record<string, Record<string, unknown>> = {
+    legacyV1Save, legacyV2Save, legacyV3Save,
+    advancedPlayerSave, level100PlayerSave, largeGardenSave,
+    unlockedThemesSave, manyAchievementsSave,
+    missingOptionalFieldsSave, malformedRecoverableSave,
+  };
+
+  for (const [name, fixture] of Object.entries(fixtures)) {
+    it(`migrates "${name}" to the current schema without throwing or dropping progress`, async () => {
+      localStorage.setItem(PRIMARY_KEY, JSON.stringify(fixture));
+      const loaded = await loadSaveData();
+
+      expect(loaded.version).toBe(CURRENT_SCHEMA_VERSION);
+      expect(getLoadIssue()).toBeNull();
+      // Every array/record field must actually be that shape -- a
+      // regression here is exactly what silently corrupted downstream
+      // consumers like `new Set(...)` or `Object.values(...)`.
+      expect(Array.isArray(loaded.unlockedAchievements)).toBe(true);
+      expect(Array.isArray(loaded.categoriesSeen)).toBe(true);
+      expect(Array.isArray(loaded.ownedPlants)).toBe(true);
+      expect(loaded.ownedPlants.length).toBeGreaterThan(0);
+      expect(typeof loaded.wateredTimestamps).toBe("object");
+      expect(typeof loaded.growthByPlant).toBe("object");
+      expect(typeof loaded.onboardingSeen).toBe("object");
+      expect(typeof loaded.onboardingSeen.dismissed).toBe("object");
+      expect(["easy", "standard", "challenging"]).toContain(loaded.difficultyMode);
+      expect(["system", "sprout", "midnight"]).toContain(loaded.themeMode);
+      expect(loaded.seeds).toBeGreaterThanOrEqual(0);
+      expect(loaded.musicVolume).toBeGreaterThanOrEqual(0);
+      expect(loaded.musicVolume).toBeLessThanOrEqual(1);
+      expect(loaded.sfxVolume).toBeGreaterThanOrEqual(0);
+      expect(loaded.sfxVolume).toBeLessThanOrEqual(1);
+    });
+  }
+
+  it("recovers malformedRecoverableSave's well-formed fields exactly, and coerces the bad ones to defaults", () => {
+    // Calls normalizeSaveData directly (not loadSaveData) to isolate
+    // field-level coercion from the separate categoriesSeen backfill pass,
+    // which legitimately repopulates categoriesSeen once coercion clears
+    // the malformed value -- that's covered by the migration-coverage test
+    // above, not this one.
+    const loaded = normalizeSaveData(malformedRecoverableSave);
+
+    // Well-formed fields survive untouched.
+    expect(loaded.seeds).toBe(2500);
+    expect(loaded.ownedPlants).toEqual(["moss-sprout", "emerald-fern"]);
+    // Wrong-typed fields fall back to their defaults instead of propagating.
+    expect(loaded.unlockedAchievements).toEqual(DEFAULT_SAVE_DATA.unlockedAchievements);
+    expect(loaded.categoriesSeen).toEqual(DEFAULT_SAVE_DATA.categoriesSeen);
+    expect(loaded.foundDiagonal).toBe(DEFAULT_SAVE_DATA.foundDiagonal);
+    expect(loaded.wateredTimestamps).toEqual({});
+    expect(loaded.growthByPlant).toEqual({});
+    expect(loaded.unlockedThemes).toEqual(DEFAULT_SAVE_DATA.unlockedThemes);
+    expect(loaded.difficultyMode).toBe(DEFAULT_SAVE_DATA.difficultyMode);
+    expect(loaded.themeMode).toBe(DEFAULT_SAVE_DATA.themeMode);
+    expect(loaded.musicVolume).toBe(1); // clamped from 5
+    expect(loaded.sfxVolume).toBe(0); // clamped from -3
+    // onboardingSeen is *present* here (just malformed: a plain string),
+    // so it's not treated as "predates onboarding entirely" -- it
+    // normalizes to a fresh, not-yet-seen state rather than "completed".
+    expect(loaded.onboardingSeen).toEqual(DEFAULT_ONBOARDING_SEEN);
+    expect(loaded.remedyCharges).toBe(DEFAULT_SAVE_DATA.remedyCharges);
+  });
+
+  for (const [name, fixture] of Object.entries(fixtures)) {
+    it(`round-trips "${name}" (save -> load -> save -> compare) without drift`, async () => {
+      localStorage.setItem(PRIMARY_KEY, JSON.stringify(fixture));
+      const first = await loadSaveData();
+      await writeSaveData(first);
+      const second = await loadSaveData();
+      expect(second).toEqual(first);
+    });
+  }
+});
+
+describe("WSP-0.3 forward-version and corruption safety", () => {
+  it("never interprets a whole-blob-corrupt save as an older schema, and preserves the raw data", async () => {
+    localStorage.setItem(PRIMARY_KEY, "{not valid json");
+    const loaded = await loadSaveData();
+
+    expect(loaded).toEqual(DEFAULT_SAVE_DATA);
+    expect(getLoadIssue()?.kind).toBe("corrupted");
+    expect(localStorage.getItem(`${PRIMARY_KEY}_corrupted_backup`)).toBe("{not valid json");
+    // The corrupted blob itself is left in place too -- nothing destructive happens automatically.
+    expect(localStorage.getItem(PRIMARY_KEY)).toBe("{not valid json");
+  });
+
+  it("treats valid JSON that isn't a plausible save object as corrupted, not as empty data", async () => {
+    localStorage.setItem(PRIMARY_KEY, JSON.stringify([1, 2, 3]));
+    await loadSaveData();
+    expect(getLoadIssue()?.kind).toBe("corrupted");
+  });
+
+  it("never downgrade-migrates or overwrites a save from a newer schema version", async () => {
+    const futureSave = JSON.stringify({ ...DEFAULT_SAVE_DATA, version: CURRENT_SCHEMA_VERSION + 1, seeds: 999_999 });
+    localStorage.setItem(PRIMARY_KEY, futureSave);
+
+    const loaded = await loadSaveData();
+    expect(loaded.seeds).not.toBe(999_999); // temporary, unpersisted defaults for this session only
+    const issue = getLoadIssue();
+    expect(issue?.kind).toBe("future-version");
+    expect(issue && "foundVersion" in issue ? issue.foundVersion : null).toBe(CURRENT_SCHEMA_VERSION + 1);
+    // The real, newer save must still be exactly as it was -- never touched.
+    expect(localStorage.getItem(PRIMARY_KEY)).toBe(futureSave);
+  });
+
+  it("refuses to write while a load issue is outstanding, and only resetSaveAfterLoadIssue lifts it", async () => {
+    const futureSave = JSON.stringify({ ...DEFAULT_SAVE_DATA, version: CURRENT_SCHEMA_VERSION + 1, seeds: 999_999 });
+    localStorage.setItem(PRIMARY_KEY, futureSave);
+    await loadSaveData();
+    expect(getLoadIssue()).not.toBeNull();
+
+    await writeSaveData({ seeds: 42 });
+    // The newer save must be completely untouched by that write attempt.
+    expect(localStorage.getItem(PRIMARY_KEY)).toBe(futureSave);
+
+    // Merely clearing the flag without resetting the underlying data would
+    // deadlock: the very next write re-parses the still-present future
+    // save and immediately re-detects the same issue. resetSaveAfterLoadIssue
+    // avoids that by replacing the primary save outright -- the only
+    // "explicit user action" this module offers.
+    await resetSaveAfterLoadIssue();
+    expect(getLoadIssue()).toBeNull();
+    await writeSaveData({ seeds: 42 });
+    expect(getLoadIssue()).toBeNull();
+    const loaded = await loadSaveData();
+    expect(loaded.seeds).toBe(42);
+    expect(loaded.version).toBe(CURRENT_SCHEMA_VERSION);
+  });
+
+  it("loadSaveDataSync applies the same corruption/future-version safety as the async loader", () => {
+    localStorage.setItem(PRIMARY_KEY, "{not valid json");
+    const loaded = loadSaveDataSync();
+    expect(loaded).toEqual(DEFAULT_SAVE_DATA);
+    expect(getLoadIssue()?.kind).toBe("corrupted");
+  });
+
+  it("normalizeSaveData({}) treats a genuinely bare object as pre-onboarding legacy data", () => {
+    // Deliberate, established behavior (see the "marks pre-onboarding
+    // saves as returning players" test above): an object with no
+    // `onboardingSeen` key at all reads as "a real save predating that
+    // field", not "no save yet" -- callers that mean the latter (a brand
+    // new player) pass DEFAULT_SAVE_DATA directly instead of `{}` (see
+    // writeSaveData's own null-vs-`{}` handling).
+    expect(normalizeSaveData({})).toEqual({ ...DEFAULT_SAVE_DATA, onboardingSeen: COMPLETED_ONBOARDING_SEEN });
   });
 });

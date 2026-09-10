@@ -28,3 +28,20 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
 export function nextOnboardingStep(levelsCompleted: number, seen: OnboardingSeen): OnboardingStep | null {
     return ONBOARDING_STEPS.find(step => step.unlockAfterLevels <= levelsCompleted && !seen.dismissed[step.id]) ?? null;
 }
+
+/**
+ * Defends against a save whose onboardingSeen is present but malformed (the
+ * wrong shape, or missing/wrong-typed dismissed entries) -- callers like
+ * `Object.values(seen.dismissed)` would throw on a missing/non-object
+ * `dismissed`, silently crashing rather than just replaying onboarding.
+ */
+export function normalizeOnboardingSeen(raw: unknown): OnboardingSeen {
+    if (!raw || typeof raw !== "object") return DEFAULT_ONBOARDING_SEEN;
+    const candidate = raw as Partial<OnboardingSeen>;
+    const rawDismissed = candidate.dismissed && typeof candidate.dismissed === "object" ? candidate.dismissed : {};
+    const dismissed = Object.fromEntries(
+        ONBOARDING_STEP_IDS.map(id => [id, Boolean((rawDismissed as Record<string, unknown>)[id])]),
+    ) as Record<OnboardingStepId, boolean>;
+    const version = typeof candidate.version === "number" ? candidate.version : ONBOARDING_VERSION;
+    return { version, dismissed };
+}
