@@ -675,16 +675,18 @@ export default function App() {
                                         <div className="ws-level-goal-card__progress">
                                             <div className="bioluminescent-line" style={{ width: `${Math.min(100, (foundCount / (wordsToFind.length || 1)) * 100)}%` }} />
                                         </div>
-                                        {bonusGoalCount > 0 && (
-                                            <div className="ws-level-goal-card__bonus-goal" data-onboarding-anchor="bonus">
-                                                <div className="ws-level-goal-card__bonus-copy">
-                                                    <span aria-hidden="true">✨</span>
-                                                    <span className="ws-level-goal-card__goal-label">Bonus Goal</span>
-                                                    <strong>Plus, try to find the {bonusGoalCount} hidden bonus {bonusGoalCount === 1 ? "word" : "words"}, if you can.</strong>
-                                                </div>
-                                                <span className="ws-level-goal-card__bonus-count">{bonusGoalProgress}/{bonusGoalCount}</span>
+                                        <div className="ws-level-goal-card__bonus-goal" data-onboarding-anchor="bonus">
+                                            <div className="ws-level-goal-card__bonus-copy">
+                                                <span aria-hidden="true">✨</span>
+                                                <span className="ws-level-goal-card__goal-label">Bonus Goal</span>
+                                                <strong>
+                                                    {bonusGoalCount > 0
+                                                        ? `Plus, try to find the ${bonusGoalCount} hidden bonus ${bonusGoalCount === 1 ? "word" : "words"}, if you can.`
+                                                        : "No bonus words this level."}
+                                                </strong>
                                             </div>
-                                        )}
+                                            {bonusGoalCount > 0 && <span className="ws-level-goal-card__bonus-count">{bonusGoalProgress}/{bonusGoalCount}</span>}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -701,11 +703,9 @@ export default function App() {
                                         <strong>{category || "Botanical"}</strong>
                                         <div className="ws-mobile-board-header__counts">
                                             <span className="ws-mobile-board-header__count">Found {foundCount}/{wordsToFind.length}</span>
-                                            {bonusGoalCount > 0 && (
-                                                <span className="ws-mobile-board-header__count ws-mobile-board-header__count--bonus" data-onboarding-anchor="bonus">
-                                                    Bonus {bonusGoalProgress}/{bonusGoalCount}
-                                                </span>
-                                            )}
+                                            <span className="ws-mobile-board-header__count ws-mobile-board-header__count--bonus" data-onboarding-anchor="bonus">
+                                                {bonusGoalCount > 0 ? `Bonus ${bonusGoalProgress}/${bonusGoalCount}` : "No bonus this level"}
+                                            </span>
                                         </div>
                                     </div>
                                     <GameCanvas
@@ -732,9 +732,6 @@ export default function App() {
                                         <h3 style={{ margin: 0, fontFamily: "var(--font-headline)", fontSize: "1.25rem", fontWeight: 700, color: "var(--color-primary)" }}>
                                             Found Words
                                         </h3>
-                                        <span style={{ padding: "4px 12px", borderRadius: 4, background: "rgba(236, 177, 255, 0.2)", color: "var(--color-secondary)", border: "1px solid rgba(236, 177, 255, 0.3)", fontSize: "0.85rem", fontWeight: 600 }}>
-                                            {foundCount} / {wordsToFind.length}
-                                        </span>
                                     </div>
                                     <div className="ws-bonus-sprouts ws-bonus-sprouts--summary" aria-label={`${bonusWordsThisLevel.length} bonus words found`}>
                                         ✨ Bonus sprouts: {bonusWordsThisLevel.length ? bonusWordsThisLevel.join(", ") : "Find extra words for Seeds"}
