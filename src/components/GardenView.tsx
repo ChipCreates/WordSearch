@@ -341,7 +341,12 @@ export default function GardenView({
                         const rawStageImage = getStageImage(growth, plant.id);
                         const plantImage = assetUrl(rawStageImage.startsWith("/") ? rawStageImage.slice(1) : rawStageImage);
                         const affliction = afflictions[plant.id];
-                        const sickArtwork = affliction ? getPlantArtwork(growth, plant.id, "sick") : null;
+                        // Critical (severity 3) borrows the dead sprite sheet purely as a
+                        // sharper visual warning -- the plant is still fully recoverable via
+                        // Treat or Compost, exactly like severity 1-2. No game-state change.
+                        const afflictionArtwork = affliction
+                            ? getPlantArtwork(growth, plant.id, affliction.severity === 3 ? "dead" : "sick")
+                            : null;
 
                         return (
                             <div
@@ -373,19 +378,21 @@ export default function GardenView({
                                         overflow: "hidden",
                                     }}
                                 >
-                                    {sickArtwork && sickArtwork.kind === "sprite" ? (
+                                    {afflictionArtwork && afflictionArtwork.kind === "sprite" ? (
                                         <div
-                                            className="ws-plant-art ws-plant-art--sick"
+                                            className={`ws-plant-art ${affliction?.severity === 3 ? "ws-plant-art--critical" : "ws-plant-art--sick"}`}
                                             role="img"
-                                            aria-label={`${plant.name} (sick)`}
+                                            aria-label={`${plant.name} (${affliction?.severity === 3 ? "critical" : "sick"})`}
                                             style={{
                                                 width: 180,
                                                 height: 180,
-                                                backgroundImage: `url(${assetUrl(sickArtwork.src.startsWith("/") ? sickArtwork.src.slice(1) : sickArtwork.src)})`,
-                                                backgroundSize: sickArtwork.backgroundSize,
-                                                backgroundPosition: sickArtwork.backgroundPosition,
+                                                backgroundImage: `url(${assetUrl(afflictionArtwork.src.startsWith("/") ? afflictionArtwork.src.slice(1) : afflictionArtwork.src)})`,
+                                                backgroundSize: afflictionArtwork.backgroundSize,
+                                                backgroundPosition: afflictionArtwork.backgroundPosition,
                                                 backgroundRepeat: "no-repeat",
-                                                filter: "drop-shadow(0 0 20px rgba(255, 107, 107, 0.4)) saturate(0.7)",
+                                                filter: affliction?.severity === 3
+                                                    ? "drop-shadow(0 0 20px rgba(255, 107, 107, 0.55)) saturate(0.4) brightness(0.85)"
+                                                    : "drop-shadow(0 0 20px rgba(255, 107, 107, 0.4)) saturate(0.7)",
                                             }}
                                         />
                                     ) : (

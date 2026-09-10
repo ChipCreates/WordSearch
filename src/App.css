@@ -1196,7 +1196,7 @@ button:disabled { filter: grayscale(.55); opacity: .58; }
 .ws-garden__grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; }
 .ws-garden-card { border: 2px solid #c99e44 !important; background: linear-gradient(180deg, #173d2e 0%, #08241c 100%) !important; box-shadow: inset 0 0 0 2px #6e4c2055, 0 12px 28px #0009 !important; }
 .ws-garden-card > div:first-child { background: radial-gradient(circle at 50% 56%, #2c6a4366, #061710 78%) !important; }
-.ws-garden-card .ws-plant-art { filter: drop-shadow(0 12px 12px #0009) drop-shadow(0 0 12px #d8ff7277) !important; }
+.ws-garden-card .ws-plant-art { filter: drop-shadow(0 12px 12px #0009) drop-shadow(0 0 12px #d8ff7277); }
 .ws-garden-filter { min-height: 38px; padding: 7px 16px !important; border: 2px solid #b8913f !important; border-radius: 999px !important; background: linear-gradient(#16513f, #092f26) !important; color: #fff3d0 !important; box-shadow: inset 0 1px 0 #ffffff55, 0 3px 0 #5e421b, 0 6px 12px #0007; }
 .ws-garden-filter.is-selected { border-color: #e8cf69 !important; background: linear-gradient(#bce95e, #67a934) !important; color: #17351d !important; box-shadow: 0 0 14px #b8f34c99, 0 3px 0 #6b4b1e; }
 .ws-trophies { padding: clamp(12px, 2vw, 24px); border-radius: 28px; background: linear-gradient(#061b13aa, #061b13dd); }
