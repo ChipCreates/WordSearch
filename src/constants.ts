@@ -46,3 +46,10 @@ export const CELEBRATE_FADE_DURATION_MS = 450;
 // closing beat of the celebration.
 export const CELEBRATE_BUTTONS_MOVE_DELAY_MS = CELEBRATE_FADE_DELAY_MS + CELEBRATE_FADE_DURATION_MS;
 export const CELEBRATE_BUTTONS_MOVE_DURATION_MS = 400;
+
+// WSP-1.2: total on-screen lifetime of the bonus-word discovery toast, from
+// the leaf/glow burst through the Seed particles landing to its own fade-out.
+// Kept within the plan's 1.2-1.8s band and shared between the hook (which
+// clears the underlying state) and the toast itself (whose CSS animation
+// timings derive from the same number) so the two can never drift apart.
+export const BONUS_DISCOVERY_DURATION_MS = 1500;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { assetUrl } from "../categoryThemes";
 import { playCelebrationAudio } from "./celebrationAudio";
+import { playBonusChimeAudio } from "./bonusChimeAudio";
 
 const MUSIC_MUTED_STORAGE_KEY = "wordsearch.musicMuted";
 const MUSIC_VOLUME_STORAGE_KEY = "wordsearch.musicVolume";
@@ -116,6 +117,18 @@ export function useAudio() {
         return stop;
     }, []);
 
+    // Distinct from playCelebration (level complete) -- a much shorter,
+    // rising cue for an in-progress bonus-word find, which must never block
+    // or compete with continued play. Doesn't stop an in-flight celebration
+    // (or vice versa); both share the same output node and can overlap
+    // harmlessly if a bonus word is found right as a level completes.
+    const playBonusChime = useCallback(() => {
+        const ctx = celebrationContextRef.current;
+        const output = celebrationOutputRef.current;
+        if (!ctx || !output || ctx.state !== "running" || sfxMutedRef.current) return;
+        playBonusChimeAudio(ctx, output);
+    }, []);
+
     const musicRef = useRef<HTMLAudioElement | null>(null);
     const sfxPoolsRef = useRef<Map<SfxName, HTMLAudioElement[]>>(new Map());
     const sfxCursorRef = useRef<Map<SfxName, number>>(new Map());
@@ -224,6 +237,6 @@ export function useAudio() {
     return {
         musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
         sfxMuted, toggleSfxMuted, sfxVolume, setSfxVolume,
-        playSfx, playCelebration,
+        playSfx, playCelebration, playBonusChime,
     };
 }

@@ -8,6 +8,8 @@ type Props = {
     category: string;
     level: number;
     seeds: number;
+    targetWordCount: number;
+    baseSeeds: number;
     bonusWords: string[];
     bonusSeeds: number;
     promotion?: BotanistPromotion;
@@ -40,7 +42,7 @@ function Seed({ delay }: { delay: number }) {
     );
 }
 
-export default function SuccessScreen({ category, level, seeds, bonusWords, bonusSeeds, promotion, promotionAvatarBackgroundPosition = "0% 0%", onDismissPromotion = () => {}, onNextLevel, onRestart }: Props) {
+export default function SuccessScreen({ category, level, seeds, targetWordCount, baseSeeds, bonusWords, bonusSeeds, promotion, promotionAvatarBackgroundPosition = "0% 0%", onDismissPromotion = () => {}, onNextLevel, onRestart }: Props) {
     const [confirmRestartOpen, setConfirmRestartOpen] = useState(false);
 
     return (
@@ -68,17 +70,22 @@ export default function SuccessScreen({ category, level, seeds, bonusWords, bonu
             </div>
 
             <p style={{ margin: "10px 0 0", fontFamily: "var(--font-headline)", fontSize: "1.2rem", fontWeight: 800, color: "var(--color-primary)", textShadow: "0 0 10px rgba(0,228,121,0.3)" }}>
-                +50 SEEDS EARNED!
+                +{baseSeeds + bonusSeeds} SEEDS EARNED!
             </p>
 
             <p style={{ margin: "4px 0 0", fontSize: "0.85rem", color: "var(--color-on-surface-variant)" }}>
                 Total Balance: {seeds} Seeds 🌱
             </p>
 
-            <div aria-label="Bonus word summary" style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(236, 177, 255, 0.14)", border: "1px solid rgba(236, 177, 255, 0.35)", color: "var(--color-secondary)" }}>
+            <div aria-label="Level completion summary" style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(236, 177, 255, 0.14)", border: "1px solid rgba(236, 177, 255, 0.35)", color: "var(--color-secondary)", textAlign: "left" }}>
+                <div style={{ fontSize: "0.85rem" }}>Target words found: {targetWordCount}</div>
                 <strong>Bonus sprouts: {bonusWords.length}</strong>
                 <div style={{ fontSize: "0.8rem", marginTop: 4 }}>{bonusWords.length ? bonusWords.join(" · ") : "No bonus words this level"}</div>
-                {bonusSeeds > 0 && <div style={{ fontSize: "0.8rem", marginTop: 4 }}>+{bonusSeeds} bonus Seeds</div>}
+                <div style={{ fontSize: "0.8rem", marginTop: 8, borderTop: "1px solid rgba(236, 177, 255, 0.3)", paddingTop: 6 }}>
+                    <div>Base reward: +{baseSeeds} Seeds</div>
+                    <div>Bonus reward: +{bonusSeeds} Seeds</div>
+                    <div style={{ fontWeight: 700, marginTop: 2 }}>Total: +{baseSeeds + bonusSeeds} Seeds</div>
+                </div>
             </div>
 
             {category && (

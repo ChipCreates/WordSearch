@@ -1970,6 +1970,91 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   .ws-bonus-sprouts--summary { margin: 6px 8px; padding: 6px 10px; }
 }
 
+/* ── Bonus-word discovery toast (WSP-1.2) ─────────────────────────────────
+   Non-modal, non-blocking: a localized leaf/glow burst over the board plus
+   Seed particles animating toward the real Seed balance pill. Total
+   on-screen lifetime matches BONUS_DISCOVERY_DURATION_MS (constants.ts). */
+.ws-bonus-toast-layer { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+
+.ws-bonus-toast {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: min(78vw, 300px);
+  text-align: center;
+  animation: bonusToastPop 1.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.ws-bonus-toast__glow {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 228, 121, 0.35), rgba(236, 177, 255, 0.14) 55%, transparent 72%);
+  animation: bonusToastGlow 1.5s ease-out both;
+}
+
+.ws-bonus-toast__burst {
+  font-size: 2rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(0, 228, 121, 0.6));
+}
+
+.ws-bonus-toast__copy {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(8, 29, 20, 0.82);
+  border: 1px solid rgba(0, 228, 121, 0.4);
+  color: var(--color-on-surface, #f2f8d9);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ws-bonus-toast__copy strong { color: var(--color-primary); }
+
+.ws-bonus-toast__particle {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 6px rgba(0, 228, 121, 0.7));
+  animation: bonusParticleFly 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+@keyframes bonusToastPop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  22% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -62%) scale(0.96); }
+}
+
+@keyframes bonusToastGlow {
+  0% { opacity: 0; transform: scale(0.4); }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+
+@keyframes bonusParticleFly {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  82% { opacity: 0.9; }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--bonus-particle-dx)), calc(-50% + var(--bonus-particle-dy))) scale(0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-bonus-toast, .ws-bonus-toast__glow, .ws-bonus-toast__particle { animation: none; }
+  .ws-bonus-toast { opacity: 1; }
+  .ws-bonus-toast__glow { opacity: 0; }
+  .ws-bonus-toast__particle { display: none; }
+}
+
 /* ── Winning Success Overlay & Celebration Animations ────────────────────── */
 .ws-success-overlay {
   position: fixed;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getPuzzleWords, validateWord, CATEGORY_NAMES, type Tier } from "../backend";
-import { HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
+import { BONUS_DISCOVERY_DURATION_MS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
 import { loadSaveDataSync, loadSaveData, writeSaveData, hasLocalSave, isTauri, CURRENT_SCHEMA_VERSION, DEFAULT_SAVE_DATA } from "../persistence";
 import { getRandomFillLetter, findWordPlacement, getResponsiveGridSize, REWARDS, MIN_FAVORITE_CATEGORIES, favoriteCategoryForLevel, classifyWordSelection } from "../gameMechanics";
@@ -59,9 +59,16 @@ export function useWordSearchGame() {
     const [bonusWordsToFind, setBonusWordsToFind] = useState<string[]>([]);
     const [bonusWordsThisLevel, setBonusWordsThisLevel] = useState<string[]>([]);
     const [bonusSeedsThisLevel, setBonusSeedsThisLevel] = useState(0);
+    // Base (target-word) completion reward for the level just finished --
+    // tracked separately from `seeds` (the running total) so the completion
+    // summary (WSP-1.2) can show base/bonus/total as three distinct numbers
+    // instead of just the account balance.
+    const [baseSeedsThisLevel, setBaseSeedsThisLevel] = useState(0);
     const [bonusDiscovery, setBonusDiscovery] = useState<{ word: string; seeds: number } | null>(null);
     const [levelsCompletedWithoutHint, setLevelsCompletedWithoutHint] = useState(initialSave.levelsCompletedWithoutHint);
     const [maxBonusWordsInLevel, setMaxBonusWordsInLevel] = useState(initialSave.maxBonusWordsInLevel);
+    // Lifetime longest bonus word ever found -- local-only stat, see WSP-1.2.
+    const [longestBonusWordFound, setLongestBonusWordFound] = useState(initialSave.longestBonusWordFound);
     const [reverseWordsFound, setReverseWordsFound] = useState(initialSave.reverseWordsFound);
     const [plantsBloomed, setPlantsBloomed] = useState(initialSave.plantsBloomed);
     const [bloomedRarityTiers, setBloomedRarityTiers] = useState(initialSave.bloomedRarityTiers);
@@ -77,7 +84,7 @@ export function useWordSearchGame() {
     }, []);
     useEffect(() => {
         if (!bonusDiscovery) return;
-        const timer = setTimeout(() => setBonusDiscovery(null), 2200);
+        const timer = setTimeout(() => setBonusDiscovery(null), BONUS_DISCOVERY_DURATION_MS);
         return () => clearTimeout(timer);
     }, [bonusDiscovery]);
     // Store-unlocked cosmetics
@@ -136,6 +143,7 @@ export function useWordSearchGame() {
             setPowerupInventory(native.powerupInventory);
             setLevelsCompletedWithoutHint(native.levelsCompletedWithoutHint);
             setMaxBonusWordsInLevel(native.maxBonusWordsInLevel);
+            setLongestBonusWordFound(native.longestBonusWordFound);
             setReverseWordsFound(native.reverseWordsFound);
             setPlantsBloomed(native.plantsBloomed);
             setBloomedRarityTiers(native.bloomedRarityTiers);
@@ -184,6 +192,7 @@ export function useWordSearchGame() {
                 powerupInventory,
                 levelsCompletedWithoutHint,
                 maxBonusWordsInLevel,
+                longestBonusWordFound,
                 reverseWordsFound,
                 plantsBloomed,
                 bloomedRarityTiers,
@@ -218,6 +227,7 @@ export function useWordSearchGame() {
         powerupInventory,
         levelsCompletedWithoutHint,
         maxBonusWordsInLevel,
+        longestBonusWordFound,
         reverseWordsFound,
         plantsBloomed,
         bloomedRarityTiers,
@@ -300,6 +310,7 @@ export function useWordSearchGame() {
         setBonusWordsThisLevel([]);
         setBonusWordsToFind([]);
         setBonusSeedsThisLevel(0);
+        setBaseSeedsThisLevel(0);
         setBonusDiscovery(null);
         setHintUsedThisLevel(false);
         const size = getResponsiveGridSize(playingLevel, difficultyMode === "challenging" ? "hard" : difficultyMode === "easy" ? "easy" : "normal");
@@ -410,6 +421,7 @@ export function useWordSearchGame() {
                 setBonusSeedsThisLevel(total => total + bonusSeeds);
                 recordFieldNoteEvent({ kind: "bonus_word_found" });
                 setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length + 1));
+                setLongestBonusWordFound(longest => matchedWord.length > longest.length ? matchedWord : longest);
                 setBonusDiscovery({ word: matchedWord, seeds: bonusSeeds });
                 // Any gardening-related word earns a Garden Remedy charge, in
                 // ANY category's puzzle -- not just a Gardening-category one.
@@ -437,6 +449,7 @@ export function useWordSearchGame() {
                     const completionReward = completedLevels.includes(playingLevel)
                         ? REWARDS.REPLAY_COMPLETE_SEEDS
                         : REWARDS.LEVEL_COMPLETE_SEEDS;
+                    setBaseSeedsThisLevel(completionReward * rewardMultiplier);
                     setSeeds((s: number) => s + completionReward * rewardMultiplier);
                 }
             }
@@ -484,6 +497,7 @@ export function useWordSearchGame() {
             const completionReward = completedLevels.includes(playingLevel)
                 ? REWARDS.REPLAY_COMPLETE_SEEDS
                 : REWARDS.LEVEL_COMPLETE_SEEDS;
+            setBaseSeedsThisLevel(completionReward * (doubleSeedsActive ? 2 : 1));
             setSeeds((s: number) => s + completionReward * (doubleSeedsActive ? 2 : 1));
         }
         return true;
@@ -562,6 +576,7 @@ export function useWordSearchGame() {
         // retrying the same board must not create another reward opportunity.
         setBonusWordsThisLevel(prev => prev.filter(word => rewardedBonusWordsRef.current.has(word)));
         setBonusSeedsThisLevel(0);
+        setBaseSeedsThisLevel(0);
         setHintUsedThisLevel(false);
         setBonusDiscovery(null);
     };
@@ -877,6 +892,7 @@ export function useWordSearchGame() {
             setCompassDirection(null);
             setBonusWordsThisLevel([]);
             setBonusSeedsThisLevel(0);
+            setBaseSeedsThisLevel(0);
             setBonusDiscovery(null);
             setHintUsedThisLevel(false);
             setStatus(`Debug: loaded a ${generated.gridSize}x${generated.gridSize} board.`);
@@ -915,8 +931,8 @@ export function useWordSearchGame() {
         unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
-        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsToFind, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
-        levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
+        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsToFind, bonusWordsThisLevel, bonusSeedsThisLevel, baseSeedsThisLevel, bonusDiscovery,
+        levelsCompletedWithoutHint, maxBonusWordsInLevel, longestBonusWordFound, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         fieldNotes, claimFieldNote,
         // Botanical Sanctuary state & handlers
         ownedPlants, wateredTimestamps, growthByPlant,

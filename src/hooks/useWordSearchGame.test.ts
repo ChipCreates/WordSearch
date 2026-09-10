@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useWordSearchGame } from "./useWordSearchGame";
-import { findWordPlacement } from "../gameMechanics";
+import { findWordPlacement, REWARDS } from "../gameMechanics";
 import { DEFAULT_SAVE_DATA } from "../persistence";
 
 vi.mock("@tauri-apps/api/core", () => ({
@@ -22,6 +22,15 @@ vi.mock("@tauri-apps/api/core", () => ({
         return Promise.resolve(null);
     }),
 }));
+
+// The real dictionary lookup (src/test/setup.ts mocks fetch to return an
+// empty word list) would reject every bonus candidate as invalid -- WSP-1.2's
+// tests below need bonus discovery to actually resolve, so this file's own
+// tests treat any 3+ letter run as a valid bonus word instead.
+vi.mock("../backend", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../backend")>();
+    return { ...actual, validateWord: vi.fn().mockResolvedValue(true) };
+});
 
 // Locates a word actually on the board and simulates the drag that finds
 // it, using the same search helper the hint/compass/spectrometer power-ups
@@ -329,6 +338,47 @@ describe("useWordSearchGame", () => {
         await waitFor(() => expect(result.current.status).toBe("Puzzle generated. Find the words!"));
         await completeCurrentPuzzle(result);
         expect(result.current.promotionQueue).toEqual([]);
+    });
+
+    // Real puzzle generation only *offers* a bonus word when one happens to
+    // fit the board -- toggling useFavorites regenerates a fresh level-1
+    // puzzle each attempt (goToLevel can't move past the frontier) until one
+    // lands with at least one, rather than hardcoding grid coordinates.
+    async function findLevelWithBonusWords(result: { current: ReturnType<typeof useWordSearchGame> }) {
+        let toggle = false;
+        for (let attempt = 0; attempt < 25 && result.current.bonusWordsToFind.length === 0; attempt++) {
+            toggle = !toggle;
+            act(() => result.current.setUseFavorites(toggle));
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+        }
+    }
+
+    it("tracks the level's base/bonus Seed split and the lifetime longest bonus word (WSP-1.2)", async () => {
+        const { result } = renderHook(() => useWordSearchGame());
+        await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+        await findLevelWithBonusWords(result);
+        expect(result.current.bonusWordsToFind.length).toBeGreaterThan(0);
+        expect(result.current.longestBonusWordFound).toBe("");
+        expect(result.current.baseSeedsThisLevel).toBe(0);
+
+        const bonusWord = result.current.bonusWordsToFind[0];
+        const placement = findWordPlacement(result.current.gridData, result.current.gridSize, bonusWord);
+        if (!placement) throw new Error(`test setup: could not locate bonus word "${bonusWord}" on the generated board`);
+        const { r, c, dr, dc } = placement;
+        const endR = r + (bonusWord.length - 1) * dr;
+        const endC = c + (bonusWord.length - 1) * dc;
+
+        await act(async () => {
+            await result.current.submitSelection({ r, c }, { r: endR, c: endC });
+        });
+
+        expect(result.current.longestBonusWordFound).toBe(bonusWord);
+        expect(result.current.bonusSeedsThisLevel).toBe(REWARDS.BONUS_WORD_SEEDS);
+        // A bonus find must never itself count as the level's base reward.
+        expect(result.current.baseSeedsThisLevel).toBe(0);
+
+        await completeCurrentPuzzle(result);
+        expect(result.current.baseSeedsThisLevel).toBe(REWARDS.LEVEL_COMPLETE_SEEDS);
     });
 
 });

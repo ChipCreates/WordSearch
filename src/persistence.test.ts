@@ -222,6 +222,13 @@ describe("WSP-0.3 fixture library migration coverage", () => {
     // normalizes to a fresh, not-yet-seen state rather than "completed".
     expect(loaded.onboardingSeen).toEqual(DEFAULT_ONBOARDING_SEEN);
     expect(loaded.remedyCharges).toBe(DEFAULT_SAVE_DATA.remedyCharges);
+    // Wrong-typed (a number, not a string) falls back to the default too.
+    expect(loaded.longestBonusWordFound).toBe(DEFAULT_SAVE_DATA.longestBonusWordFound);
+  });
+
+  it("preserves a well-formed longestBonusWordFound (WSP-1.2)", () => {
+    const loaded = normalizeSaveData({ ...DEFAULT_SAVE_DATA, longestBonusWordFound: "PHOTOSYNTHESIS" });
+    expect(loaded.longestBonusWordFound).toBe("PHOTOSYNTHESIS");
   });
 
   for (const [name, fixture] of Object.entries(fixtures)) {

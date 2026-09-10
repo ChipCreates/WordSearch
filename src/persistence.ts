@@ -35,6 +35,8 @@ export type SaveData = {
     powerupInventory: PowerupInventory;
     levelsCompletedWithoutHint: number;
     maxBonusWordsInLevel: number;
+    /** Lifetime longest bonus word ever found, uppercase. Tracked locally only -- see WSP-1.2. */
+    longestBonusWordFound: string;
     reverseWordsFound: number;
     plantsBloomed: number;
     bloomedRarityTiers: number;
@@ -77,6 +79,7 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     powerupInventory: { ...DEFAULT_POWERUP_INVENTORY },
     levelsCompletedWithoutHint: 0,
     maxBonusWordsInLevel: 0,
+    longestBonusWordFound: "",
     reverseWordsFound: 0,
     plantsBloomed: 0,
     bloomedRarityTiers: 0,
@@ -154,6 +157,9 @@ function backfillCategoriesSeen(data: SaveData): SaveData {
 function asStringArray(value: unknown, fallback: string[]): string[] {
     return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : fallback;
 }
+function asString(value: unknown, fallback: string): string {
+    return typeof value === "string" ? value : fallback;
+}
 function asBoolean(value: unknown, fallback: boolean): boolean {
     return typeof value === "boolean" ? value : fallback;
 }
@@ -224,6 +230,7 @@ export function normalizeSaveData(raw: Partial<SaveData> & { stars?: number }): 
         powerupInventory: normalizePowerupInventory(raw.powerupInventory),
         levelsCompletedWithoutHint: asNonNegativeInt(raw.levelsCompletedWithoutHint, DEFAULT_SAVE_DATA.levelsCompletedWithoutHint),
         maxBonusWordsInLevel: asNonNegativeInt(raw.maxBonusWordsInLevel, DEFAULT_SAVE_DATA.maxBonusWordsInLevel),
+        longestBonusWordFound: asString(raw.longestBonusWordFound, DEFAULT_SAVE_DATA.longestBonusWordFound),
         reverseWordsFound: asNonNegativeInt(raw.reverseWordsFound, DEFAULT_SAVE_DATA.reverseWordsFound),
         plantsBloomed: asNonNegativeInt(raw.plantsBloomed, DEFAULT_SAVE_DATA.plantsBloomed),
         bloomedRarityTiers: asNonNegativeInt(raw.bloomedRarityTiers, DEFAULT_SAVE_DATA.bloomedRarityTiers),

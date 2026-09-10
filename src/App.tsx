@@ -13,6 +13,7 @@ import { getLoadIssue, resetSaveAfterLoadIssue } from "./persistence";
 import SaveIssueDialog from "./components/SaveIssueDialog";
 import GameCanvas from "./components/GameCanvas";
 import SuccessScreen from "./components/SuccessScreen";
+import BonusDiscoveryToast from "./components/BonusDiscoveryToast";
 import AchievementBanner from "./components/AchievementBanner";
 import PlayerProfileSheet from "./components/PlayerProfileSheet";
 import ContextSidebar from "./components/sidebar/ContextSidebar";
@@ -59,7 +60,7 @@ export default function App() {
         unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
-        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsToFind, bonusWordsThisLevel, bonusSeedsThisLevel, bonusDiscovery,
+        categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsToFind, bonusWordsThisLevel, bonusSeedsThisLevel, baseSeedsThisLevel, bonusDiscovery,
         fieldNotes, claimFieldNote,
         levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed,
         onboardingSeen, dismissOnboardingStep, replayOnboarding,
@@ -85,8 +86,22 @@ export default function App() {
     const {
         musicMuted, toggleMusicMuted, musicVolume, setMusicVolume,
         sfxMuted, toggleSfxMuted, sfxVolume, setSfxVolume,
-        playSfx, playCelebration,
+        playSfx, playCelebration, playBonusChime,
     } = useAudio();
+
+    // WSP-1.2: the single place a bonus-word find's audio/haptic feedback
+    // fires, independent of whether the toast itself renders/animates --
+    // presentation (BonusDiscoveryToast) can never independently trigger
+    // these, matching the "one resolution point" guarantee for the Seed
+    // reward itself (see submitSelection in useWordSearchGame).
+    useEffect(() => {
+        if (!bonusDiscovery) return;
+        playBonusChime();
+        if (typeof navigator !== "undefined" && navigator.vibrate) {
+            navigator.vibrate([35, 60, 35]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [bonusDiscovery]);
 
     // ── Theme mode (Sprout / Midnight, plus store-unlockable Autumn / Ocean) ──
     const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
@@ -679,9 +694,7 @@ export default function App() {
                                         celebrateStatic={debugStaticCelebration}
                                     />
                                     {bonusDiscovery && (
-                                        <div className="ws-bonus-sprouts" role="status">
-                                            ✨ Bonus sprout! {bonusDiscovery.word} +{bonusDiscovery.seeds} Seeds
-                                        </div>
+                                        <BonusDiscoveryToast key={`${bonusDiscovery.word}-${bonusDiscovery.seeds}`} word={bonusDiscovery.word} seeds={bonusDiscovery.seeds} />
                                     )}
                                 </div>
 
@@ -800,6 +813,8 @@ export default function App() {
                         category={category}
                         level={level}
                         seeds={seeds}
+                        targetWordCount={wordsToFind.length}
+                        baseSeeds={baseSeedsThisLevel}
                         bonusWords={bonusWordsThisLevel}
                         bonusSeeds={bonusSeedsThisLevel}
                         promotion={promotionQueue[0]}

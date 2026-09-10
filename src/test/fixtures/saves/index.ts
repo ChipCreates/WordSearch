@@ -160,4 +160,5 @@ export const malformedRecoverableSave: Record<string, unknown> = {
     sfxVolume: -3,
     onboardingSeen: "done",
     remedyCharges: "three",
+    longestBonusWordFound: 12345,
 };
