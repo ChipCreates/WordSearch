@@ -133,11 +133,23 @@ describe("transition span/center resolution", () => {
     });
 
     it("prefers an override's span/center but floors span at the minimum", () => {
-        expect(resolveTransitionSpan(240, { span: 10, centerOffset: 0 })).toBe(60);
-        expect(resolveTransitionSpan(240, { span: 300, centerOffset: 0 })).toBe(300);
-        expect(resolveTransitionSpan(240)).toBe(240);
-        expect(resolveTransitionCenter(1000, { span: 0, centerOffset: -50 })).toBe(950);
-        expect(resolveTransitionCenter(1000)).toBe(1000);
+        // tileLength 1000 here, so percent and px happen to match 1:1.
+        expect(resolveTransitionSpan(240, 1000, { spanPercent: 1, centerOffsetPercent: 0 })).toBe(60);
+        expect(resolveTransitionSpan(240, 1000, { spanPercent: 30, centerOffsetPercent: 0 })).toBe(300);
+        expect(resolveTransitionSpan(240, 1000)).toBe(240);
+        expect(resolveTransitionCenter(1000, 1000, { spanPercent: 0, centerOffsetPercent: -5 })).toBe(950);
+        expect(resolveTransitionCenter(1000, 1000)).toBe(1000);
+    });
+
+    it("keeps an overridden seam at the same relative position across tile sizes", () => {
+        // A seam nudged by 5% of the tile stays a 5% nudge whether the tile is
+        // a wide desktop tile or a narrow mobile one -- the whole point of
+        // storing the override as a percentage instead of a raw pixel delta.
+        const override: import("../data/trailLayout").TransitionOverride = { centerOffsetPercent: 5, spanPercent: 20 };
+        expect(resolveTransitionCenter(1000, 1000, override)).toBe(1050);
+        expect(resolveTransitionCenter(1000, 400, override)).toBe(1020);
+        expect(resolveTransitionSpan(240, 1000, override)).toBe(200);
+        expect(resolveTransitionSpan(240, 400, override)).toBe(80);
     });
 });
 

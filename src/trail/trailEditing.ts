@@ -137,10 +137,12 @@ export function defaultTransitionSpan(hasPano: boolean, tileLength: number): num
     return hasPano ? Math.min(tileLength * 1.05, 1300) : 240;
 }
 
-export function resolveTransitionSpan(baseSpan: number, override?: TransitionOverride): number {
-    return Math.max(DEFAULT_TRANSITION_SPAN_MIN, override?.span ?? baseSpan);
+export function resolveTransitionSpan(baseSpan: number, tileLength: number, override?: TransitionOverride): number {
+    if (override?.spanPercent === undefined) return baseSpan;
+    return Math.max(DEFAULT_TRANSITION_SPAN_MIN, (override.spanPercent / 100) * tileLength);
 }
 
-export function resolveTransitionCenter(boundary: number, override?: TransitionOverride): number {
-    return boundary + (override?.centerOffset ?? 0);
+export function resolveTransitionCenter(boundary: number, tileLength: number, override?: TransitionOverride): number {
+    if (override?.centerOffsetPercent === undefined) return boundary;
+    return boundary + (override.centerOffsetPercent / 100) * tileLength;
 }

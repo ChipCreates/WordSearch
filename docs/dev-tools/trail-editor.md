@@ -41,7 +41,7 @@ you:
 | A stone (level marker) | Drag it, or arrow keys to nudge (Shift = snap size) | Locked levels are draggable in edit mode even though they're `disabled` for real play |
 | The curve through a point | Drag its two Bezier tangent handles (shown when the point is selected) | Handles start mirrored (drag one, the other follows) for a smooth point. **Alt-drag** breaks the mirror into an independent "corner" handle, same convention as Illustrator/Figma's pen tool |
 | Curve resolution between two stones | Select a stone → **+ Add point after** inserts a path-only waypoint (shapes the curve, isn't a level) → drag it, give it its own handles, or **Remove point** | |
-| A biome-transition seam | Drag its orange center handle to shift it, its green edge handle to resize it, or set its mist color | Both are pixel deltas layered on the seam's geometric midpoint, not absolute positions — they stay registered as the layout reflows with window size |
+| A biome-transition seam | Drag its orange center handle to shift it, its green edge handle to resize it, or set its mist color | Both are stored as percentages of the tile length, layered on the seam's geometric midpoint — same normalization as every stone/path anchor, so an edited seam stays in place across screen sizes instead of drifting |
 
 Everything reuses the same live map players see — there's no separate mock
 canvas, so what you see while editing is exactly what ships.

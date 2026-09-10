@@ -147,9 +147,13 @@ export default function TrailEditorOverlay(props: Props) {
         const baseSpan = defaultTransitionSpan(!!(landscape ? t.imageLandscape : t.imagePortrait), tileLength);
         const override = t[orientationKey];
         if (part === "center") {
-            dragRef.current = { kind: "transition-center", id, startClientX: e.clientX, startClientY: e.clientY, startOffset: override?.centerOffset ?? 0 };
+            // Drag math stays in px for smooth 1:1 mouse tracking (tileLength is
+            // stable for the duration of a single drag); only the committed value
+            // written to state is normalized to percent-of-tileLength.
+            const startOffsetPx = override?.centerOffsetPercent !== undefined ? (override.centerOffsetPercent / 100) * tileLength : 0;
+            dragRef.current = { kind: "transition-center", id, startClientX: e.clientX, startClientY: e.clientY, startOffset: startOffsetPx };
         } else {
-            dragRef.current = { kind: "transition-span", id, edge, startClientX: e.clientX, startClientY: e.clientY, startSpan: resolveTransitionSpan(baseSpan, override) };
+            dragRef.current = { kind: "transition-span", id, edge, startClientX: e.clientX, startClientY: e.clientY, startSpan: resolveTransitionSpan(baseSpan, tileLength, override) };
         }
         setSelection({ type: "transition", id, part });
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
@@ -201,15 +205,18 @@ export default function TrailEditorOverlay(props: Props) {
             setTransitions(prev => prev.map(t => {
                 if (t.id !== drag.id) return t;
                 const baseSpan = defaultTransitionSpan(!!(landscape ? t.imageLandscape : t.imagePortrait), tileLength);
-                return { ...t, [orientationKey]: { span: t[orientationKey]?.span ?? baseSpan, centerOffset: drag.startOffset + deltaPx } };
+                const spanPercent = t[orientationKey]?.spanPercent ?? (baseSpan / tileLength) * 100;
+                const centerOffsetPercent = ((drag.startOffset + deltaPx) / tileLength) * 100;
+                return { ...t, [orientationKey]: { spanPercent, centerOffsetPercent } };
             }));
         } else if (drag.kind === "transition-span") {
             const deltaPx = landscape ? dxPx : dyPx;
             const signed = drag.edge === "end" ? deltaPx : -deltaPx;
             setTransitions(prev => prev.map(t => {
                 if (t.id !== drag.id) return t;
-                const newSpan = Math.max(60, drag.startSpan + signed * 2);
-                return { ...t, [orientationKey]: { centerOffset: t[orientationKey]?.centerOffset ?? 0, span: newSpan } };
+                const newSpanPx = Math.max(60, drag.startSpan + signed * 2);
+                const centerOffsetPercent = t[orientationKey]?.centerOffsetPercent ?? 0;
+                return { ...t, [orientationKey]: { centerOffsetPercent, spanPercent: (newSpanPx / tileLength) * 100 } };
             }));
         }
     };
@@ -302,8 +309,8 @@ export default function TrailEditorOverlay(props: Props) {
     };
 
     const selectedTransition = selection?.type === "transition" ? transitions.find(t => t.id === selection.id) ?? null : null;
-    const selectedTransitionSpan = selectedTransition ? resolveTransitionSpan(defaultTransitionSpan(!!(landscape ? selectedTransition.imageLandscape : selectedTransition.imagePortrait), tileLength), selectedTransition[orientationKey]) : null;
-    const selectedTransitionOffset = selectedTransition ? (selectedTransition[orientationKey]?.centerOffset ?? 0) : null;
+    const selectedTransitionSpan = selectedTransition ? resolveTransitionSpan(defaultTransitionSpan(!!(landscape ? selectedTransition.imageLandscape : selectedTransition.imagePortrait), tileLength), tileLength, selectedTransition[orientationKey]) : null;
+    const selectedTransitionOffset = selectedTransition ? resolveTransitionCenter(0, tileLength, selectedTransition[orientationKey]) : null;
     const selectedStoneCoords = selection?.type === "stone" ? (stones[orientationKey][selection.regionId]?.[selection.index] ?? null) : null;
     const selectedPathCoords = selection?.type === "path"
         ? (() => { const p = pathPointsForRegion(pathPoints[orientationKey], selection.regionId).find(pp => pp.id === selection.id); return p ? [p.x, p.y] as [number, number] : null; })()
@@ -413,8 +420,8 @@ export default function TrailEditorOverlay(props: Props) {
                     if (!transDef) return null;
                     const override = transDef[orientationKey];
                     const baseSpan = defaultTransitionSpan(!!(landscape ? transDef.imageLandscape : transDef.imagePortrait), tileLength);
-                    const span = resolveTransitionSpan(baseSpan, override);
-                    const center = resolveTransitionCenter(seamBoundaries[idx], override);
+                    const span = resolveTransitionSpan(baseSpan, tileLength, override);
+                    const center = resolveTransitionCenter(seamBoundaries[idx], tileLength, override);
                     const centerPos = landscape ? { left: center, top: crossSize / 2 } : { left: crossSize / 2, top: totalLength - center };
                     const spanPos = landscape ? { left: center + span / 2, top: crossSize * 0.25 } : { left: crossSize * 0.25, top: totalLength - center - span / 2 };
                     const isSel = selection?.type === "transition" && selection.id === transDef.id;

@@ -250,8 +250,8 @@ export default function LevelsView({ currentLevel, onSelectLevel }: Props) {
                 const override = transDef[orientationKey];
                 const transitionImage = landscape ? transDef.imageLandscape : transDef.imagePortrait;
                 const baseSpan = defaultTransitionSpan(!!transitionImage, tileLength);
-                const span = resolveTransitionSpan(baseSpan, override);
-                const center = resolveTransitionCenter(seamBoundaries[idx], override);
+                const span = resolveTransitionSpan(baseSpan, tileLength, override);
+                const center = resolveTransitionCenter(seamBoundaries[idx], tileLength, override);
                 const transitionWidth = landscape ? span : crossSize;
                 const transitionHeight = landscape ? crossSize : span;
                 return <div

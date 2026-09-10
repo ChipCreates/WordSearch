@@ -28,11 +28,16 @@ export type PathPoint = {
 };
 export type PathPointMap = Record<string, PathPoint[]>;
 
-// centerOffset/span are pixel deltas layered on top of the geometric seam
-// midpoint LevelsView computes from region layout -- absolute pixel values
-// would drift out of registration as that layout reflows with window size
-// and unlocked-level count, so overrides always stay relative.
-export type TransitionOverride = { centerOffset: number; span: number };
+// centerOffsetPercent/spanPercent are percentages of tileLength layered on
+// top of the geometric seam midpoint LevelsView computes from region layout.
+// They used to be stored as raw pixel deltas, which looked "relative" (added
+// on top of a value that itself reflows with layout) but wasn't actually
+// scale-invariant: a fixed pixel nudge is a much bigger fraction of a small
+// mobile tile than of a wide desktop one, so an edit made on one viewport
+// visibly drifted on another. Storing a percentage of tileLength -- the same
+// normalization every stone/path anchor and handle already uses -- keeps an
+// edited seam in the same relative position at any screen size.
+export type TransitionOverride = { centerOffsetPercent: number; spanPercent: number };
 export type BiomeTransitionLayout = {
     id: string;
     imageLandscape?: string;
