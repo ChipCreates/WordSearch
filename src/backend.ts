@@ -21,10 +21,10 @@ function isTauri(): boolean {
 // array.sort(() => Math.random() - 0.5) is a well-known-biased shuffle;
 // Fisher-Yates is the correct way to get every ordering with equal
 // probability (mirrors the fix already applied to word placement).
-function shuffle<T>(arr: T[]): T[] {
+function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(rng() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
@@ -92,6 +92,12 @@ export type PuzzleRequest = {
     // favorite categories over and over doesn't immediately repeat words,
     // without needing to persist any history for it.
     excludeWords?: string[];
+    // Web path only (the Tauri/native path always uses its own Rust-side
+    // randomness). Lets a caller make word *selection* reproducible from a
+    // seed, not just generatePuzzle's own placement rng -- the puzzle audit
+    // script (scripts/audit-puzzles.ts) needs both to fully reproduce a
+    // reported board from its seed alone.
+    rng?: () => number;
 };
 
 export async function getPuzzleWords(req: PuzzleRequest): Promise<Puzzle> {
@@ -114,7 +120,7 @@ export async function getPuzzleWords(req: PuzzleRequest): Promise<Puzzle> {
     const candidates = category.words.filter(w => w.length <= req.maxLength);
     const fresh = candidates.filter(w => !exclude.has(w));
     const pool = fresh.length >= req.count ? fresh : candidates;
-    const words = shuffle(pool).slice(0, req.count);
+    const words = shuffle(pool, req.rng).slice(0, req.count);
     return { category: category.name, words };
 }
 

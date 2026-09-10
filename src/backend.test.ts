@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import fs from "fs";
 import path from "path";
 import { getPuzzleWords, MAX_TARGET_WORD_LENGTH, type Tier } from "./backend";
+import { createSeededRng } from "./rng";
 
 describe("category word limits", () => {
     it("tracks the longest target so the Found Words panel fits its content", () => {
@@ -44,5 +45,23 @@ describe("backend custom category mode", () => {
         for (const w of second.words) {
             expect(first.words).not.toContain(w);
         }
+    });
+});
+
+describe("backend seeded word selection", () => {
+    // The puzzle audit script (scripts/audit-puzzles.ts) needs word
+    // *selection* to be reproducible from a seed too, not just
+    // generatePuzzle's own placement -- otherwise the same reported seed
+    // could draw different words on every re-run.
+    it("an explicit rng makes word selection reproducible", async () => {
+        const request = { count: 5, maxLength: 10, level: 1, tier: "standard" as const, categoryName: "Mythology" };
+        const first = await getPuzzleWords({ ...request, rng: createSeededRng(42) });
+        const second = await getPuzzleWords({ ...request, rng: createSeededRng(42) });
+        expect(second.words).toEqual(first.words);
+    });
+
+    it("omitting rng still returns a valid, unseeded selection", async () => {
+        const puzzle = await getPuzzleWords({ count: 5, maxLength: 10, level: 1, tier: "standard", categoryName: "Mythology" });
+        expect(puzzle.words).toHaveLength(5);
     });
 });
