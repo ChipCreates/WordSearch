@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from "vite";
+import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import fs from "fs";
 import path from "path";
@@ -78,6 +79,13 @@ export default defineConfig(async () => ({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    // Vitest's default file discovery is recursive from the repo root and
+    // isn't limited by .gitignore -- a nested git worktree under
+    // .claude/worktrees/ (created by an isolated agent run) carries its own
+    // full copy of src/**/*.test.ts, which was silently running alongside
+    // the real suite and roughly doubling every reported test count.
+    // Extends (not replaces) Vitest's own default exclude list.
+    exclude: [...configDefaults.exclude, "**/.claude/worktrees/**"],
   },
   build: {
     rollupOptions: {
