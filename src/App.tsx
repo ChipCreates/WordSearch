@@ -726,7 +726,7 @@ export default function App() {
                                         celebrateStatic={debugStaticCelebration}
                                     />
                                     {bonusDiscovery && (
-                                        <BonusDiscoveryToast key={`${bonusDiscovery.word}-${bonusDiscovery.seeds}`} word={bonusDiscovery.word} seeds={bonusDiscovery.seeds} />
+                                        <BonusDiscoveryToast key={`${bonusDiscovery.word}-${bonusDiscovery.seeds}`} word={bonusDiscovery.word} seeds={bonusDiscovery.seeds} earnedRemedy={bonusDiscovery.earnedRemedy} />
                                     )}
                                 </div>
 

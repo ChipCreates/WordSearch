@@ -27,14 +27,26 @@ export function classifyWordSelection(
 ): WordSelectionResult {
     const word = candidate.toUpperCase();
     const reversed = reversedCandidate.toUpperCase();
-    const target = targetWords.find(value => value === word || value === reversed);
-    if (target) {
-        return foundWords[target] ? { kind: "already-found", word: target } : { kind: "target-found", word: target };
-    }
 
-    const bonus = validBonusCandidates.has(word) ? word : validBonusCandidates.has(reversed) ? reversed : null;
-    if (bonus && bonus.length >= MIN_BONUS_WORD_LENGTH) {
-        return foundWords[bonus] ? { kind: "already-found", word: bonus } : { kind: "bonus-found", word: bonus };
+    // The direction actually dragged takes priority over its reverse. Two
+    // different real words can share the same cells in opposite directions
+    // (LOOP / POOL) -- if the dragged direction itself is a target, or a
+    // distinct word eligible as a bonus, that's the result regardless of
+    // what the reverse happens to spell. Only once neither is true for the
+    // dragged direction do we fall back to the reverse -- the case where a
+    // target's own letters were simply dragged backwards (e.g. CAT found by
+    // dragging TAC, where "TAC" isn't a word in its own right).
+    if (targetWords.includes(word)) {
+        return foundWords[word] ? { kind: "already-found", word } : { kind: "target-found", word };
+    }
+    if (validBonusCandidates.has(word) && word.length >= MIN_BONUS_WORD_LENGTH) {
+        return foundWords[word] ? { kind: "already-found", word } : { kind: "bonus-found", word };
+    }
+    if (targetWords.includes(reversed)) {
+        return foundWords[reversed] ? { kind: "already-found", word: reversed } : { kind: "target-found", word: reversed };
+    }
+    if (reversed !== word && validBonusCandidates.has(reversed) && reversed.length >= MIN_BONUS_WORD_LENGTH) {
+        return foundWords[reversed] ? { kind: "already-found", word: reversed } : { kind: "bonus-found", word: reversed };
     }
     return { kind: "invalid", word };
 }

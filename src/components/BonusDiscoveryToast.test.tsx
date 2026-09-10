@@ -20,4 +20,16 @@ describe("BonusDiscoveryToast", () => {
         render(<BonusDiscoveryToast word="SPARROW" seeds={10} />);
         expect(screen.queryByRole("status")).toBeNull();
     });
+
+    it("mentions the earned Garden Remedy when the bonus word was garden vocabulary", () => {
+        document.body.innerHTML = '<div class="ws-game-board-panel"></div>';
+        render(<BonusDiscoveryToast word="SOIL" seeds={10} earnedRemedy />);
+        expect(screen.getByRole("status").textContent).toContain("Garden Remedy");
+    });
+
+    it("says nothing about a remedy when none was earned", () => {
+        document.body.innerHTML = '<div class="ws-game-board-panel"></div>';
+        render(<BonusDiscoveryToast word="SPARROW" seeds={10} earnedRemedy={false} />);
+        expect(screen.getByRole("status").textContent).not.toContain("Garden Remedy");
+    });
 });

@@ -64,7 +64,7 @@ export function useWordSearchGame() {
     // summary (WSP-1.2) can show base/bonus/total as three distinct numbers
     // instead of just the account balance.
     const [baseSeedsThisLevel, setBaseSeedsThisLevel] = useState(0);
-    const [bonusDiscovery, setBonusDiscovery] = useState<{ word: string; seeds: number } | null>(null);
+    const [bonusDiscovery, setBonusDiscovery] = useState<{ word: string; seeds: number; earnedRemedy: boolean } | null>(null);
     const [levelsCompletedWithoutHint, setLevelsCompletedWithoutHint] = useState(initialSave.levelsCompletedWithoutHint);
     const [maxBonusWordsInLevel, setMaxBonusWordsInLevel] = useState(initialSave.maxBonusWordsInLevel);
     // Lifetime longest bonus word ever found -- local-only stat, see WSP-1.2.
@@ -379,10 +379,17 @@ export function useWordSearchGame() {
 
         const reversedWord = currentWord.split('').reverse().join('');
 
+        // Each direction is judged independently -- a target's own spelling
+        // is never eligible as a bonus (checked per-direction, not "either
+        // direction is a target disqualifies both"), so a genuinely
+        // different real word sharing the same cells as a target in the
+        // opposite direction (LOOP / POOL) still gets its own bonus chance.
         const validBonusCandidates = new Set<string>();
-        if (!wordsToFind.includes(currentWord) && !wordsToFind.includes(reversedWord)) {
-            if (await validateWord(currentWord)) validBonusCandidates.add(currentWord);
-            if (reversedWord !== currentWord && await validateWord(reversedWord)) validBonusCandidates.add(reversedWord);
+        if (!wordsToFind.includes(currentWord) && await validateWord(currentWord)) {
+            validBonusCandidates.add(currentWord);
+        }
+        if (reversedWord !== currentWord && !wordsToFind.includes(reversedWord) && await validateWord(reversedWord)) {
+            validBonusCandidates.add(reversedWord);
         }
         const selection = classifyWordSelection(currentWord, reversedWord, wordsToFind, foundWords, validBonusCandidates);
         if (selection.kind === "already-found" || (selection.kind === "bonus-found" && rewardedBonusWordsRef.current.has(selection.word))) {
@@ -422,7 +429,6 @@ export function useWordSearchGame() {
                 recordFieldNoteEvent({ kind: "bonus_word_found" });
                 setMaxBonusWordsInLevel(max => Math.max(max, bonusWordsThisLevel.length + 1));
                 setLongestBonusWordFound(longest => matchedWord.length > longest.length ? matchedWord : longest);
-                setBonusDiscovery({ word: matchedWord, seeds: bonusSeeds });
                 // Any gardening-related word earns a Garden Remedy charge, in
                 // ANY category's puzzle -- not just a Gardening-category one.
                 // Bonus words are already validated against the full
@@ -431,6 +437,11 @@ export function useWordSearchGame() {
                 // chance of the category cycle landing on Gardening.
                 const earnedRemedy = isGardenVocabulary(matchedWord);
                 if (earnedRemedy) setRemedyCharges(n => n + 1);
+                // Carried on bonusDiscovery (not just the status string) so
+                // the on-board toast can actually tell the player -- the
+                // status string alone only ever reached screen readers via
+                // GameCanvas's aria-live region, never a visible cue.
+                setBonusDiscovery({ word: matchedWord, seeds: bonusSeeds, earnedRemedy });
                 setStatus(`Bonus sprout! ${matchedWord} +${bonusSeeds} Seeds${earnedRemedy ? " · 🌿 +1 Garden Remedy" : ""}`);
             } else {
                 const foundMainCount = wordsToFind.filter(w => nextFoundWords[w]).length;

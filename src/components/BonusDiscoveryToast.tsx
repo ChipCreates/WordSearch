@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { assetUrl } from "../categoryThemes";
 
-type Props = { word: string; seeds: number };
+type Props = { word: string; seeds: number; earnedRemedy?: boolean };
 
 type Point = { x: number; y: number };
 
@@ -26,7 +26,7 @@ const PARTICLE_COUNT = 3;
  * the toast's whole lifetime is under 2s, far shorter than a realistic
  * resize, so it isn't worth tracking live like the longer-lived coachmark.
  */
-export default function BonusDiscoveryToast({ word, seeds }: Props) {
+export default function BonusDiscoveryToast({ word, seeds, earnedRemedy }: Props) {
     const [origin] = useState<Point | null>(() => centerOf(document.querySelector(BOARD_SELECTOR)));
     const [target] = useState<Point | null>(() => centerOf(document.querySelector(SEED_BALANCE_SELECTOR)));
 
@@ -40,8 +40,9 @@ export default function BonusDiscoveryToast({ word, seeds }: Props) {
             <div className="ws-bonus-toast" role="status" aria-live="polite" style={{ top: origin.y, left: origin.x }}>
                 <span className="ws-bonus-toast__glow" />
                 <span className="ws-bonus-toast__burst">🌿✨</span>
-                <div className="ws-bonus-toast__copy">
-                    <strong>Bonus Sprout!</strong> {word} +{seeds} Seeds
+                <div className={`ws-bonus-toast__copy${earnedRemedy ? " ws-bonus-toast__copy--with-remedy" : ""}`}>
+                    <div><strong>Bonus Sprout!</strong> {word} +{seeds} Seeds</div>
+                    {earnedRemedy && <div className="ws-bonus-toast__remedy">🌿 +1 Garden Remedy</div>}
                 </div>
             </div>
             {Array.from({ length: PARTICLE_COUNT }, (_, i) => (

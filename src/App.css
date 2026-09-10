@@ -2014,6 +2014,8 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   white-space: nowrap;
 }
 .ws-bonus-toast__copy strong { color: var(--color-primary); }
+.ws-bonus-toast__copy--with-remedy { border-radius: 14px; white-space: normal; text-align: center; }
+.ws-bonus-toast__remedy { margin-top: 2px; color: var(--color-accent-gold); font-size: 0.78rem; }
 
 .ws-bonus-toast__particle {
   position: fixed;
