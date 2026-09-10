@@ -5,7 +5,7 @@ import EcoLeaf from "./icons/EcoLeaf";
 import { PLANTS_CATALOG, getStageImage, getStageName } from "../plantsCatalog";
 import { getPlantArtwork } from "../plantHealth";
 import { GARDEN_WATERING_COOLDOWN_MS } from "../gameMechanics";
-import { getPlantEconomy } from "../economy";
+import { getPlantEconomy, MIN_FERTILIZER_COST, STARTER_BLOOM_BOUNTY } from "../economy";
 import { AFFLICTION_DEFINITIONS, COMPOST_REFUND_SEEDS, SEVERITY_LABELS, type AfflictionState } from "../plantAffliction";
 
 type Props = {
@@ -161,7 +161,7 @@ export default function GardenView({
 
         // Find plant def for bounty amount
         const plantDef = PLANTS_CATALOG.find(p => p.id === plantId);
-        const bounty = plantDef ? getPlantEconomy(plantDef).bloomBounty : 50;
+        const bounty = plantDef ? getPlantEconomy(plantDef).bloomBounty : STARTER_BLOOM_BOUNTY;
 
         if (newGrowth === 100 && currentGrowth < 100) {
             addSeeds(bounty); // Bloom bounty!
@@ -180,7 +180,7 @@ export default function GardenView({
         }
 
         const plantDef = PLANTS_CATALOG.find(p => p.id === plantId);
-        const fertilizerCost = plantDef ? getPlantEconomy(plantDef).fertilizerCost : 25;
+        const fertilizerCost = plantDef ? getPlantEconomy(plantDef).fertilizerCost : MIN_FERTILIZER_COST;
         const success = spendSeeds(fertilizerCost);
         if (!success) {
             showToast(`Not enough Seeds for Botanical Fertilizer! (Costs ${fertilizerCost} Seeds) 🌱`);
@@ -193,7 +193,7 @@ export default function GardenView({
         updatePlantGrowth(plantId, newGrowth);
 
         // Find plant def for bounty amount
-        const bounty = plantDef ? getPlantEconomy(plantDef).bloomBounty : 50;
+        const bounty = plantDef ? getPlantEconomy(plantDef).bloomBounty : STARTER_BLOOM_BOUNTY;
 
         if (newGrowth === 100) {
             addSeeds(bounty); // Bloom bounty!

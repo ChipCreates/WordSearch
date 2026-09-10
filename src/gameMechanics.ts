@@ -8,7 +8,6 @@ export const REWARDS = {
     BONUS_WORD_SEEDS: 10,
     LEVEL_COMPLETE_SEEDS: 50,
     REPLAY_COMPLETE_SEEDS: 10,
-    GARDEN_HARVEST_SEEDS: 150,
 } as const;
 
 export const MIN_BONUS_WORD_LENGTH = 3;

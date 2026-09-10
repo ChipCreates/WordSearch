@@ -6,7 +6,7 @@ import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import { PLANTS_CATALOG, getStageImage } from "../plantsCatalog";
 import { assetUrl } from "../categoryThemes";
 import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../powerups";
-import { getPlantEconomy } from "../economy";
+import { COSMETIC_DEFINITIONS, getPlantEconomy } from "../economy";
 
 type Props = {
     onBack: () => void;
@@ -114,13 +114,13 @@ export default function SeedStoreDialog({
         },
         {
             id: "autumn-theme",
-            title: "Autumn Canopy Theme",
+            title: COSMETIC_DEFINITIONS["autumn-theme"].title,
             description: "Unlock a cozy, amber-colored forest canopy theme",
-            cost: 800,
+            cost: COSMETIC_DEFINITIONS["autumn-theme"].cost,
             badge: "🍁",
             owned: autumnUnlocked,
             action: () => {
-                handleRedeem(800, () => {
+                handleRedeem(COSMETIC_DEFINITIONS["autumn-theme"].cost, () => {
                     onUnlockTheme("autumn");
                     showToast("Autumn Canopy Theme unlocked! Apply it from Settings. 🍂");
                 });
@@ -128,13 +128,13 @@ export default function SeedStoreDialog({
         },
         {
             id: "ocean-theme",
-            title: "Ocean Trench Theme",
+            title: COSMETIC_DEFINITIONS["ocean-theme"].title,
             description: "Unlock a mysterious deep-sea ocean trench theme",
-            cost: 800,
+            cost: COSMETIC_DEFINITIONS["ocean-theme"].cost,
             badge: "🌊",
             owned: oceanUnlocked,
             action: () => {
-                handleRedeem(800, () => {
+                handleRedeem(COSMETIC_DEFINITIONS["ocean-theme"].cost, () => {
                     onUnlockTheme("ocean");
                     showToast("Ocean Trench Theme unlocked! Apply it from Settings. 🐳");
                 });
@@ -142,13 +142,13 @@ export default function SeedStoreDialog({
         },
         {
             id: "sprout-badge",
-            title: "Golden Sprout Crest",
+            title: COSMETIC_DEFINITIONS["golden-crest"].title,
             description: "Exclusive glowing Sprout Master profile badge",
-            cost: 1500,
+            cost: COSMETIC_DEFINITIONS["golden-crest"].cost,
             badge: "🏆",
             owned: hasGoldenCrest,
             action: () => {
-                handleRedeem(1500, () => {
+                handleRedeem(COSMETIC_DEFINITIONS["golden-crest"].cost, () => {
                     onUnlockGoldenCrest();
                     showToast("Golden Sprout Crest unlocked! Equipped to your botanist profile. 🎖️");
                 });

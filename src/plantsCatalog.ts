@@ -6,7 +6,6 @@ export type PlantDef = {
     icon: string;
     bloomImage: string;
     seedCost: number;
-    bloomBounty: number;
     description: string;
 };
 
@@ -25,7 +24,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌱",
         bloomImage: "/plants/moss-sprout.png",
         seedCost: 100,
-        bloomBounty: 250,
         description: "Soft glowing moss that drinks in the mist beneath the glass.",
     },
     {
@@ -36,7 +34,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌿",
         bloomImage: "/plants/emerald-fern.png",
         seedCost: 250,
-        bloomBounty: 500,
         description: "Bright green fronds glowing inside an old brass frame.",
     },
     {
@@ -47,7 +44,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌸",
         bloomImage: "/plants/succulent-rosette.png",
         seedCost: 400,
-        bloomBounty: 800,
         description: "A compact, fleshy rosette that thrives in arid greenhouse conditions.",
     },
     {
@@ -58,7 +54,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🪷",
         bloomImage: "/plants/midnight-lotus.png",
         seedCost: 600,
-        bloomBounty: 1200,
         description: "Opens beneath the moon and floats in a quiet pool.",
     },
     {
@@ -69,7 +64,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌻",
         bloomImage: "/plants/golden-sunflower.png",
         seedCost: 850,
-        bloomBounty: 1700,
         description: "Catches the sun and fills the room with warm golden light.",
     },
     {
@@ -80,7 +74,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🪴",
         bloomImage: "/plants/bonsai-bloom.png",
         seedCost: 1200,
-        bloomBounty: 2400,
         description: "Miniature ancient tree sculpted over decades of bioluminescent cultivation.",
     },
     {
@@ -91,7 +84,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "💎",
         bloomImage: "/plants/crystal-succulent.png",
         seedCost: 1600,
-        bloomBounty: 3200,
         description: "Its leaf tips catch the light like tiny crystals.",
     },
     {
@@ -102,7 +94,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌿",
         bloomImage: "/plants/solar-vine.png",
         seedCost: 2000,
-        bloomBounty: 4000,
         description: "Climbs vertical trellises, illuminating structural conservatory arches.",
     },
     {
@@ -113,7 +104,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "✨",
         bloomImage: "/plants/starlight-dahlia.png",
         seedCost: 2500,
-        bloomBounty: 5000,
         description: "Radiant silver-white petals glowing with concentrated starlight brilliance.",
     },
     {
@@ -124,7 +114,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌌",
         bloomImage: "/plants/monstera-deliciosa.png",
         seedCost: 3000,
-        bloomBounty: 6000,
         description: "A classic large-leafed beauty with iconic fenestrations, bringing jungle vibes indoors.",
     },
     {
@@ -135,7 +124,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "❄️",
         bloomImage: "/plants/starlight-dahlia.png",
         seedCost: 3600,
-        bloomBounty: 7200,
         description: "Crystalline icy blue petals shimmering with sub-zero bioluminescent aura.",
     },
     {
@@ -146,7 +134,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🎋",
         bloomImage: "/plants/emerald-fern.png",
         seedCost: 4200,
-        bloomBounty: 8400,
         description: "Tall green bamboo with lantern-bright joints.",
     },
     {
@@ -157,7 +144,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🪴",
         bloomImage: "/plants/golden-sunflower.png",
         seedCost: 5000,
-        bloomBounty: 10000,
         description: "Golden pitcher leaves that curl toward every little spark.",
     },
     {
@@ -168,7 +154,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌷",
         bloomImage: "/plants/calathea-orbifolia.png",
         seedCost: 6000,
-        bloomBounty: 12000,
         description: "A broad-leafed plant with beautiful silver striping that thrives in the humid greenhouse air.",
     },
     {
@@ -179,7 +164,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌸",
         bloomImage: "/plants/bonsai-bloom.png",
         seedCost: 7200,
-        bloomBounty: 14400,
         description: "A cherry branch dusted with drifting pink light.",
     },
     {
@@ -190,7 +174,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌵",
         bloomImage: "/plants/crystal-succulent.png",
         seedCost: 8500,
-        bloomBounty: 17000,
         description: "A crystal cactus that scatters rainbows across the shelves.",
     },
     {
@@ -201,7 +184,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🔮",
         bloomImage: "/plants/nebula-pitcher.png",
         seedCost: 10000,
-        bloomBounty: 20000,
         description: "A violet thistle that shines brightest after dark.",
     },
     {
@@ -212,7 +194,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌺",
         bloomImage: "/plants/pothos-trailing.png",
         seedCost: 12500,
-        bloomBounty: 25000,
         description: "A resilient vine that cascades beautifully over shelves and hanging baskets.",
     },
     {
@@ -223,7 +204,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🍀",
         bloomImage: "/plants/solar-vine.png",
         seedCost: 15000,
-        bloomBounty: 30000,
         description: "Ultra-rare four-leaf emerald clover glowing with celestial aurora ribbons.",
     },
     {
@@ -234,7 +214,6 @@ export const PLANTS_CATALOG: PlantDef[] = [
         icon: "🌳",
         bloomImage: "/plants/ficus-lyrata.png",
         seedCost: 20000,
-        bloomBounty: 50000,
         description: "An elegant, tall indoor tree with violin-shaped leaves that command the room.",
     },
 ];
