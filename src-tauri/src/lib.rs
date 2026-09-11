@@ -134,6 +134,25 @@ mod tests {
         }
     }
 
+    // WSP-2.7 -- beyond-level-100 certification. Word Sprout's real
+    // production call site (useWordSearchGame.ts's initGame, the only puzzle-
+    // generation path actually reachable from play today) does not currently
+    // pass a region_id at all -- see this issue's findings doc. This test
+    // certifies exactly that unbiased path (region_id: None, matching real
+    // production calls) keeps working well past level 100, independent of
+    // test_get_puzzle_words_with_region_bias_never_panics below, which only
+    // covers the region_id-biased path.
+    #[test]
+    fn test_get_puzzle_words_without_region_bias_never_panics_past_level_100() {
+        for level in [101, 110, 125, 137, 150, 500, 100_000] {
+            for tier in ["easy", "standard", "challenging"] {
+                let puzzle = get_puzzle_words(5, 10, level, tier.to_string(), None, vec![], None);
+                assert!(!puzzle.category.is_empty(), "tier={tier} level={level}");
+                assert!(!puzzle.words.is_empty(), "tier={tier} level={level}");
+            }
+        }
+    }
+
     #[test]
     fn test_get_puzzle_words_with_region_bias_never_panics() {
         // Every region against every tier and a healthy level spread,

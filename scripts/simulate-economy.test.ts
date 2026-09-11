@@ -8,14 +8,40 @@ import {
 } from "./simulate-economy";
 
 describe("economy simulation (WSP-1.3)", () => {
-    it("runs every profile across the 7-day, 30-day, and 100-level horizons and prints the report", () => {
+    it("runs every profile across the 7-day, 30-day, 100-level, and 150-level horizons and prints the report", () => {
         const results = runFullSimulation();
         console.log(formatSimulationReport(results));
 
-        expect(results.length).toBe(PLAYER_PROFILES.length * 3);
+        expect(results.length).toBe(PLAYER_PROFILES.length * 4);
         for (const result of results) {
             expect(result.seedsEarned).toBeGreaterThan(0);
             expect(Number.isFinite(result.netSeeds)).toBe(true);
+        }
+    });
+
+    // WSP-2.7 -- beyond-level-100 certification: Seeds must keep
+    // accumulating past level 100 at the same per-level rate, with no cap or
+    // silent reset, for a forward-progressing player.
+    it("Seeds keep accumulating past level 100 at the same per-level rate -- no cap, no silent reset", () => {
+        for (const profile of PLAYER_PROFILES) {
+            const at100 = simulateToLevel(profile, 100);
+            const at150 = simulateToLevel(profile, 150);
+
+            expect(at150.levelsCompleted).toBe(150);
+            // Strictly more Seeds earned after 50 more levels of forward
+            // progress -- an actual cap or reset would show up here as
+            // seedsEarned staying flat or dropping.
+            expect(at150.seedsEarned).toBeGreaterThan(at100.seedsEarned);
+
+            // The per-level earn rate for a forward-progressing player is
+            // constant (completionSeeds depends only on the player's own
+            // profile, never on the level number) -- so the two horizons'
+            // seeds-earned-per-level should match exactly, not just "both be
+            // positive". This is the direct check that nothing degrades or
+            // throttles income once level 100 is behind the player.
+            const rateAt100 = at100.seedsEarned / at100.levelsCompleted;
+            const rateAt150 = at150.seedsEarned / at150.levelsCompleted;
+            expect(rateAt150).toBeCloseTo(rateAt100, 10);
         }
     });
 

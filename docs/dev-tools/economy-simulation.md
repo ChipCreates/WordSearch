@@ -14,7 +14,10 @@ npm run simulate:economy
 
 Runs in under a second and prints the full report (casual, regular,
 enthusiast, optimizer, and hint-heavy profiles, each across a 7-day window,
-a 30-day window, and a 100-level campaign horizon).
+a 30-day window, a 100-level campaign horizon, and a 150-level
+beyond-campaign horizon -- the last one added for WSP-2.7's beyond-level-100
+certification, confirming Seeds keep accumulating at the same per-level rate
+past level 100 with no cap or silent reset).
 
 ## What's consolidated where
 

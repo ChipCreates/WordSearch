@@ -36,6 +36,16 @@ export const PLAYER_PROFILES: PlayerProfile[] = [
 ];
 
 const CAMPAIGN_LENGTH = 100;
+// WSP-2.7's beyond-level-100 certification horizon: the campaign keeps
+// generating fresh levels indefinitely past 100 (see completionSeeds'
+// own doc comment below), so a second, longer horizon is run alongside the
+// original 100-level one specifically to confirm Seeds keep accumulating at
+// the same rate with no cap or slowdown once a player crosses that line --
+// not just that level 100 itself is reachable. 150 matches the convention
+// already established on the puzzle-generation side (see
+// src-tauri/src/lib.rs's and src/regionTuning.test.ts's own beyond-100 test
+// levels).
+const BEYOND_CAMPAIGN_LENGTH = 150;
 
 // Seeds earned for one puzzle completion by a player who always plays their
 // unlocked frontier level -- the natural default this whole file models.
@@ -193,6 +203,7 @@ export function runFullSimulation(): SimulationResult[] {
         results.push(simulateProfile(profile, 7));
         results.push(simulateProfile(profile, 30));
         results.push(simulateToLevel(profile, CAMPAIGN_LENGTH));
+        results.push(simulateToLevel(profile, BEYOND_CAMPAIGN_LENGTH));
     }
     return results;
 }

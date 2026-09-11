@@ -5,6 +5,7 @@
 // since older/malformed shapes are the entire point. Every fixture here
 // must round-trip through `normalizeSaveData`/`loadSaveData` without
 // throwing and without losing anything a real player would notice missing.
+import { REGIONS, regionRewardClaimKey } from "../../../regions";
 
 /** A save with no version field at all -- the oldest possible shape, predating schema versioning itself. */
 export const legacyV1Save: Record<string, unknown> = {
@@ -71,6 +72,62 @@ export const level100PlayerSave: Record<string, unknown> = {
     reverseWordsFound: 95,
     maxBonusWordsInLevel: 5,
     levelsCompletedWithoutHint: 80,
+};
+
+/**
+ * A long-time player (level 150, past every region boundary) whose save was
+ * already written by a build that has WSP-2.2/2.3/2.5 -- i.e. the CURRENT
+ * schema's shapes, not the pre-Tier-2 ones `level100PlayerSave` above
+ * deliberately still uses. `level100PlayerSave` exists to prove an OLD save
+ * migrates correctly when this tier's schema changes first land; this
+ * fixture exists to prove the opposite direction for WSP-2.7's
+ * certification -- that a save which is ALREADY on the new schema
+ * (bloomedRarityTierIds as a tier-identifier array, claimedRegionRewards
+ * fully populated, current achievement ids) round-trips completely inert:
+ * no further migration double-grants a region reward, re-backfills
+ * something already backfilled, or mangles an already-correct achievement
+ * id. Built from the real region list (src/regions.ts) rather than
+ * hand-typed keys, so it can never silently drift from what
+ * regionRewardClaimKey actually produces.
+ */
+export const level150PlayerSaveCurrentShape: Record<string, unknown> = {
+    version: 5,
+    level: 150,
+    highestUnlockedLevel: 150,
+    completedLevels: Array.from({ length: 149 }, (_, i) => i + 1),
+    totalPuzzleCompletions: 149,
+    seeds: 62_000,
+    unlockedAchievements: [
+        "night-bloomer", "petal-poet", "midnight-sun", "sunlight-harvester", "bloom-herald",
+        "nimble-planter", "word-weaver", "root-master", "solar-scribe", "verdant-voyager",
+        "moss-mystic", "categories-completed-10", "level-clears-10", "level-clears-25",
+        "level-clears-50", "level-clears-100", "bonus-words-25", "bonus-words-100",
+        "categories-30", "hint-free-20", "hint-free-50", "plants-bloomed-5",
+        "plants-bloomed-20", "powerups-used-10", "powerups-used-50", "reverse-words-10",
+        "reverse-words-50",
+    ],
+    levelsCompleted: 149,
+    categoriesSeen: ["Mythology", "Psychology", "Astronomy", "Anatomy", "Geology", "Botany", "Physics", "Nature"],
+    plantsBloomed: 30,
+    // Already the new shape -- a set of distinct tier identifiers actually
+    // bloomed, not the old raw counter.
+    bloomedRarityTierIds: ["Common", "Rare", "Epic", "Mythic"],
+    uniqueCategoriesCompleted: 15,
+    powerupsUsed: 60,
+    reverseWordsFound: 120,
+    maxBonusWordsInLevel: 6,
+    levelsCompletedWithoutHint: 100,
+    ownedPlants: ["moss-sprout", "emerald-fern", "succulent-rosette", "midnight-lotus"],
+    growthByPlant: { "moss-sprout": 100, "emerald-fern": 100, "succulent-rosette": 100, "midnight-lotus": 100 },
+    // Already claimed every region's entry (except Glowing Grove, which has
+    // none) and completion reward, exactly once each -- the real state a
+    // level-150 save should be in.
+    claimedRegionRewards: REGIONS.flatMap(region => [
+        ...(region.entryReward ? [regionRewardClaimKey(region.id, "entry")] : []),
+        regionRewardClaimKey(region.id, "completion"),
+    ]),
+    regionRewardsBackfilled: true,
+    categoriesSeenBackfilled: true,
 };
 
 /** A player who has bought (and is nurturing) a large share of the whole plant catalog. */
