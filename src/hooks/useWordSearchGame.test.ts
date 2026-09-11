@@ -340,6 +340,123 @@ describe("useWordSearchGame", () => {
         expect(result.current.promotionQueue).toEqual([]);
     });
 
+    // WSP-2.2: region entry/completion rewards, exactly-once claim tracking,
+    // and the shared presentation queue. Level 20 is both a region boundary
+    // (Glowing Grove ends there, Sunlit Falls begins at 21) AND a rank
+    // boundary (Glowgarden Warden 17-20 -> Crystal Cultivator 21-25), so
+    // completing it from a fresh frontier is a genuine, real (not
+    // synthetic) multi-event coincidence: one rank promotion plus two
+    // region-transition events from a single puzzle completion.
+    it("grants both the region-completion and next-region-entry reward exactly once, and arbitrates them with the rank promotion via presentationQueue", async () => {
+        localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+            ...DEFAULT_SAVE_DATA,
+            highestUnlockedLevel: 20,
+            level: 20,
+            completedLevels: Array.from({ length: 19 }, (_, index) => index + 1),
+            levelsCompleted: 19,
+            seeds: 0,
+            // Pre-satisfied by the seeded levelsCompleted=19 already -- listed
+            // explicitly so this test's own completion doesn't also surface
+            // them as *newly* unlocked and muddy the presentationQueue
+            // assertion below with achievement events unrelated to what
+            // this test is actually checking (region/rank arbitration).
+            unlockedAchievements: ["night-bloomer", "level-clears-10"],
+        }));
+        const { result } = renderHook(() => useWordSearchGame());
+        await completeCurrentPuzzle(result);
+
+        expect(result.current.highestUnlockedLevel).toBe(21);
+        // Glowing Grove's completion reward (150) + Sunlit Falls' entry
+        // reward (50) + the ordinary level-complete base reward (50).
+        expect(result.current.seeds).toBe(REWARDS.LEVEL_COMPLETE_SEEDS + 150 + 50);
+        expect(Array.from(result.current.claimedRegionRewards).sort()).toEqual([
+            "glowing-grove:completion",
+            "sunlit-falls:entry",
+        ]);
+
+        expect(result.current.milestoneQueue).toHaveLength(2);
+        expect(result.current.milestoneQueue[0]).toMatchObject({ kind: "region-transition", regionId: "glowing-grove", transition: "completion", rewardSeeds: 150 });
+        expect(result.current.milestoneQueue[1]).toMatchObject({ kind: "region-transition", regionId: "sunlit-falls", transition: "entry", rewardSeeds: 50 });
+
+        // The real rank promotion also queued this same completion.
+        expect(result.current.promotionQueue).toHaveLength(1);
+        expect(result.current.promotionQueue[0].to.title).toBe("Crystal Cultivator");
+
+        // The shared presentation queue combines all three, in the defined
+        // order: rank promotion first, then the two region-transition
+        // events (queue order preserved between them). Real puzzle
+        // generation can incidentally also satisfy a diagonal/reverse-find
+        // achievement on this board -- that's fine and expected to appear,
+        // but only ever *after* the rank/region events, never interleaved
+        // ahead of them.
+        const kinds = result.current.presentationQueue.map(e => e.kind);
+        expect(kinds.slice(0, 3)).toEqual(["rank-promotion", "region-transition", "region-transition"]);
+        expect(kinds.slice(3).every(kind => kind === "achievement")).toBe(true);
+
+        act(() => result.current.dismissMilestone());
+        expect(result.current.milestoneQueue).toHaveLength(1);
+        expect(result.current.milestoneQueue[0]).toMatchObject({ regionId: "sunlit-falls", transition: "entry" });
+    });
+
+    it("does not re-grant a region reward when the same completed level is replayed", async () => {
+        localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+            ...DEFAULT_SAVE_DATA,
+            highestUnlockedLevel: 20,
+            level: 20,
+            completedLevels: Array.from({ length: 19 }, (_, index) => index + 1),
+            levelsCompleted: 19,
+            seeds: 0,
+        }));
+        const { result } = renderHook(() => useWordSearchGame());
+        await completeCurrentPuzzle(result);
+
+        const seedsAfterFirstCompletion = result.current.seeds;
+        const claimedAfterFirstCompletion = Array.from(result.current.claimedRegionRewards).sort();
+        expect(claimedAfterFirstCompletion).toEqual(["glowing-grove:completion", "sunlit-falls:entry"]);
+
+        // Replay the same puzzle instance (still level 20 -- the frontier
+        // already moved on to 21, exactly the "replaying an
+        // already-completed level" scenario the exactly-once rule guards).
+        act(() => result.current.retryLevel());
+        await completeCurrentPuzzle(result);
+
+        // Only the ordinary replay reward is granted a second time -- no
+        // additional region Seeds, no new claim, no new milestone event.
+        expect(result.current.seeds).toBe(seedsAfterFirstCompletion + REWARDS.REPLAY_COMPLETE_SEEDS);
+        expect(Array.from(result.current.claimedRegionRewards).sort()).toEqual(claimedAfterFirstCompletion);
+        expect(result.current.milestoneQueue).toHaveLength(2); // still just the original two, none duplicated
+    });
+
+    it("a save already past a region boundary before this feature existed is backfilled with no retroactive Seeds, and doesn't double-claim on its next real completion", async () => {
+        // Simulates a WSP-1.x-era save that had already finished Glowing
+        // Grove and moved into Sunlit Falls before claimedRegionRewards
+        // existed. loadSaveDataSync (the hook's initial, synchronous read)
+        // runs the same one-time backfill as the async loader (see
+        // persistence.ts's applyOneTimeBackfills), so this save's two
+        // already-passed boundaries are marked claimed the moment the hook
+        // reads it -- with no bonus Seeds, per the "no retroactive grants"
+        // policy.
+        localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+            ...DEFAULT_SAVE_DATA,
+            highestUnlockedLevel: 25,
+            level: 25,
+            completedLevels: Array.from({ length: 24 }, (_, index) => index + 1),
+            levelsCompleted: 24,
+            seeds: 500,
+        }));
+        const { result } = renderHook(() => useWordSearchGame());
+        expect(Array.from(result.current.claimedRegionRewards).sort()).toEqual(["glowing-grove:completion", "sunlit-falls:entry"]);
+        expect(result.current.seeds).toBe(500);
+        expect(result.current.milestoneQueue).toEqual([]);
+
+        // Completing level 25 (not a region boundary) afterward must not
+        // touch the already-claimed keys or grant anything extra.
+        await completeCurrentPuzzle(result);
+        expect(result.current.highestUnlockedLevel).toBe(26);
+        expect(result.current.milestoneQueue).toEqual([]);
+        expect(Array.from(result.current.claimedRegionRewards).sort()).toEqual(["glowing-grove:completion", "sunlit-falls:entry"]);
+    });
+
     // Real puzzle generation only *offers* a bonus word when one happens to
     // fit the board -- toggling useFavorites regenerates a fresh level-1
     // puzzle each attempt (goToLevel can't move past the frontier) until one

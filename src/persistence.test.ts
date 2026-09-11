@@ -21,9 +21,9 @@ describe("Persistence Module", () => {
 
   it("should return default save data when no save exists", async () => {
     const data = await loadSaveData();
-    // level 1 -> nothing to backfill, but the one-time backfill pass still
-    // marks itself done so it doesn't re-run on every future load.
-    expect(data).toEqual({ ...DEFAULT_SAVE_DATA, categoriesSeenBackfilled: true });
+    // level 1 -> nothing to backfill, but the one-time backfill passes still
+    // mark themselves done so they don't re-run on every future load.
+    expect(data).toEqual({ ...DEFAULT_SAVE_DATA, categoriesSeenBackfilled: true, regionRewardsBackfilled: true });
   });
 
   it("should write and load save data correctly", async () => {
@@ -35,8 +35,10 @@ describe("Persistence Module", () => {
       difficultyMode: "challenging",
       unlockedAchievements: ["speed-sprouter", "word-weaver"],
       // Already backfilled -- isolates this round-trip test from the
-      // categoriesSeen backfill's own behavior, which has its own test below.
+      // categoriesSeen/region-reward backfills' own behavior, which have
+      // their own tests below.
       categoriesSeenBackfilled: true,
+      regionRewardsBackfilled: true,
     };
 
     await writeSaveData(customData);
@@ -95,7 +97,7 @@ describe("Persistence Module", () => {
 
     const loaded = await loadSaveData();
 
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(CURRENT_SCHEMA_VERSION);
     expect(loaded.seeds).toBe(275);
     expect(loaded.powerupInventory["single-letter-sprout"]).toBe(0);
     expect(loaded.powerupInventory["lumina-cyclone"]).toBe(0);
@@ -121,7 +123,7 @@ describe("Persistence Module", () => {
     }));
 
     const first = await loadSaveData();
-    expect(first.version).toBe(4);
+    expect(first.version).toBe(CURRENT_SCHEMA_VERSION);
     expect(first.highestUnlockedLevel).toBe(10);
     expect(first.completedLevels).toEqual(Array.from({ length: 9 }, (_, index) => index + 1));
     expect(first.level).toBe(10);
@@ -153,9 +155,95 @@ describe("Persistence Module", () => {
       seeds: 765,
     }));
     const loaded = await loadSaveData();
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(CURRENT_SCHEMA_VERSION);
     expect(loaded.seeds).toBe(765);
     expect(loaded.fieldNotes.activeIds).toHaveLength(3);
+  });
+});
+
+describe("WSP-2.2 region reward claims: exactly-once + retroactive-grant policy", () => {
+  it("a save mid-region (past Glowing Grove, inside Sunlit Falls, not yet finished) is backfilled without any retroactive Seeds", async () => {
+    localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      version: 4,
+      level: 25,
+      highestUnlockedLevel: 25,
+      completedLevels: Array.from({ length: 24 }, (_, i) => i + 1),
+      seeds: 1000,
+      regionRewardsBackfilled: false,
+    }));
+
+    const loaded = await loadSaveData();
+
+    expect(loaded.regionRewardsBackfilled).toBe(true);
+    // Glowing Grove (1-20) is fully behind this save -> its completion is
+    // marked claimed. The frontier has also already crossed into Sunlit
+    // Falls (21-30) -> its entry is marked claimed too. Neither Sunlit
+    // Falls' own completion (level 30, not yet reached) nor anything about
+    // Crystal Conservatory should be marked.
+    expect(loaded.claimedRegionRewards.sort()).toEqual([
+      "glowing-grove:completion",
+      "sunlit-falls:entry",
+    ]);
+    // The policy is "no retroactive grants" -- the balance this save
+    // already had is exactly what it has after the migration.
+    expect(loaded.seeds).toBe(1000);
+  });
+
+  it("a save well past every region (level 100+) has every completion and entry marked claimed, still with no retroactive Seeds", async () => {
+    localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      version: 4,
+      level: 137,
+      highestUnlockedLevel: 137,
+      completedLevels: Array.from({ length: 136 }, (_, i) => i + 1),
+      seeds: 48_500,
+      regionRewardsBackfilled: false,
+    }));
+
+    const loaded = await loadSaveData();
+
+    expect(loaded.regionRewardsBackfilled).toBe(true);
+    // All 6 completions + all 5 non-first-region entries (Glowing Grove has
+    // no entry reward -- a new save already starts inside it).
+    expect(loaded.claimedRegionRewards).toHaveLength(11);
+    expect(loaded.claimedRegionRewards.sort()).toEqual([
+      "cloudreach-summit:completion", "cloudreach-summit:entry",
+      "crystal-conservatory:completion", "crystal-conservatory:entry",
+      "glowing-grove:completion",
+      "mosswood-hollows:completion", "mosswood-hollows:entry",
+      "sunlit-falls:completion", "sunlit-falls:entry",
+      "verdant-beyond:completion", "verdant-beyond:entry",
+    ].sort());
+    expect(loaded.seeds).toBe(48_500);
+  });
+
+  it("a brand new save (level 1) has nothing claimed -- every region reward is still available to earn normally", async () => {
+    const loaded = await loadSaveData();
+    expect(loaded.regionRewardsBackfilled).toBe(true);
+    expect(loaded.claimedRegionRewards).toEqual([]);
+  });
+
+  it("the backfill is idempotent -- loading an already-backfilled save a second time changes nothing", async () => {
+    localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      highestUnlockedLevel: 25,
+      completedLevels: Array.from({ length: 24 }, (_, i) => i + 1),
+      seeds: 1000,
+      regionRewardsBackfilled: false,
+    }));
+
+    const first = await loadSaveData();
+    await writeSaveData(first);
+    const second = await loadSaveData();
+
+    expect(second).toEqual(first);
+    expect(second.claimedRegionRewards).toEqual(first.claimedRegionRewards);
+  });
+
+  it("normalizes claimedRegionRewards defensively like every other collection field (non-array falls back to default)", () => {
+    const loaded = normalizeSaveData({ ...DEFAULT_SAVE_DATA, claimedRegionRewards: "not-an-array" as unknown as string[] });
+    expect(loaded.claimedRegionRewards).toEqual(DEFAULT_SAVE_DATA.claimedRegionRewards);
   });
 });
 
@@ -180,6 +268,8 @@ describe("WSP-0.3 fixture library migration coverage", () => {
       expect(Array.isArray(loaded.unlockedAchievements)).toBe(true);
       expect(Array.isArray(loaded.categoriesSeen)).toBe(true);
       expect(Array.isArray(loaded.ownedPlants)).toBe(true);
+      expect(Array.isArray(loaded.claimedRegionRewards)).toBe(true);
+      expect(loaded.regionRewardsBackfilled).toBe(true);
       expect(loaded.ownedPlants.length).toBeGreaterThan(0);
       expect(typeof loaded.wateredTimestamps).toBe("object");
       expect(typeof loaded.growthByPlant).toBe("object");

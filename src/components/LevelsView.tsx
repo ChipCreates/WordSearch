@@ -5,6 +5,7 @@ import LockRounded from "@mui/icons-material/LockRounded";
 import PlayArrowRounded from "@mui/icons-material/PlayArrowRounded";
 import { REWARDS } from "../gameMechanics";
 import { assetUrl } from "../categoryThemes";
+import { REGIONS, regionForLevel, type RegionDefinition } from "../regions";
 import { TRAIL_LAYOUT, type BiomeTransitionLayout, type HandleMap, type PathPointMap, type StoneMap } from "../data/trailLayout";
 import { isTrailEditorRequested } from "../debug/debugMode";
 import {
@@ -23,16 +24,11 @@ import "./LevelsView.css";
 const TrailEditorOverlay = import.meta.env.DEV ? lazy(() => import("./TrailEditorOverlay")) : null;
 
 type Props = { currentLevel: number; onSelectLevel: (level: number) => void };
-type Region = { id: string; start: number; end: number; name: string; tagline: string };
-export const LEVEL_REGIONS: Region[] = [
-    { id: "glowing-grove", start: 1, end: 20, name: "The Glowing Grove", tagline: "Where curiosity takes root." },
-    { id: "sunlit-falls", start: 21, end: 30, name: "Sunlit Falls", tagline: "Let curiosity flow further." },
-    { id: "crystal-conservatory", start: 31, end: 40, name: "The Crystal Conservatory", tagline: "Rare words. Extraordinary growth." },
-    { id: "mosswood-hollows", start: 41, end: 50, name: "Mosswood Hollows", tagline: "Deeper words. Wilder wonders." },
-    { id: "cloudreach-summit", start: 51, end: 70, name: "Cloudreach Summit", tagline: "Higher thinking. Greater horizons." },
-    { id: "verdant-beyond", start: 71, end: 100, name: "The Verdant Beyond", tagline: "A lifetime of words still to grow." },
-];
-export type RegionComputed = Region & { offset: number; length: number; tileCount: number };
+// Region *identity* (id/name/tagline/level range/theme/category bias/reward
+// data) lives in src/regions.ts (WSP-2.2) -- this view only adds the trail's
+// own rendering geometry (offset/length/tileCount) on top of that shared
+// data, so it no longer owns any region design decisions itself.
+export type RegionComputed = RegionDefinition & { offset: number; length: number; tileCount: number };
 export type RenderWaypoint = Waypoint & { key: string; afterLevel: number; isStone: boolean; regionId: string; level?: number; index?: number; id?: string };
 
 const TILE_OVERLAP = 120;
@@ -41,7 +37,6 @@ const highResLevelAsset = (path: string) => path.replace(/(\.[^.]+)$/, "-3x$1");
 export const shouldUseHighResLevelArt = (screenWidth: number, screenHeight: number, devicePixelRatio: number) =>
     Math.max(screenWidth, screenHeight) * devicePixelRatio >= 2800;
 
-export const regionForLevel = (level: number) => LEVEL_REGIONS.find(r => level >= r.start && level <= r.end) ?? LEVEL_REGIONS[LEVEL_REGIONS.length - 1];
 const scrollMap = (element: HTMLDivElement, options: ScrollToOptions) => {
     if (typeof element.scrollTo === "function") element.scrollTo(options);
     else { element.scrollTop = options.top ?? element.scrollTop; element.scrollLeft = options.left ?? element.scrollLeft; }
@@ -73,8 +68,8 @@ export default function LevelsView({ currentLevel, onSelectLevel }: Props) {
 
     const regions = useMemo(() => {
         let offset = 0;
-        return LEVEL_REGIONS.map((base, index) => {
-            const end = index === LEVEL_REGIONS.length - 1 ? Math.max(base.end, maxLevel) : base.end;
+        return REGIONS.map((base, index) => {
+            const end = index === REGIONS.length - 1 ? Math.max(base.end, maxLevel) : base.end;
             const tileCount = Math.ceil((end - base.start + 1) / LEVELS_PER_TILE);
             const rawLength = tileCount * effectiveTileLength + TILE_OVERLAP;
             const regionOffset = index === 0 ? 0 : offset - REGION_OVERLAP;

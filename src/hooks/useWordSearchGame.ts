@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPuzzleWords, validateWord, CATEGORY_NAMES, type Tier } from "../backend";
 import { BONUS_DISCOVERY_DURATION_MS, HIGHLIGHT_COLORS, type Cell, type FoundLine } from "../constants";
 import { ACHIEVEMENTS, evaluateAchievements, type Achievement } from "../achievements";
@@ -18,6 +18,8 @@ import {
     advanceAfflictionsOnPuzzleComplete, AFFLICTION_DEFINITIONS, clearAffliction, COMPOST_REFUND_SEEDS,
     isGardenVocabulary, isNeglected, type AfflictionState, type AfflictionType,
 } from "../plantAffliction";
+import { regionForLevel, regionRewardClaimKey } from "../regions";
+import { buildPresentationQueue, type MilestoneQueueEvent, type PresentationEvent } from "../presentationQueue";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -46,6 +48,17 @@ export function useWordSearchGame() {
     const [foundDiagonal, setFoundDiagonal] = useState(initialSave.foundDiagonal);
     const [justUnlocked, setJustUnlocked] = useState<Achievement[]>([]);
     const [promotionQueue, setPromotionQueue] = useState<BotanistPromotion[]>([]);
+    // WSP-2.2: region-transition events (entry/completion reward moments),
+    // and the future slot WSP-2.4's actual milestone cards will feed into --
+    // see presentationQueue.ts's MilestoneQueueEvent. Arbitrated together
+    // with justUnlocked/promotionQueue by `presentationQueue` below, which
+    // is the one shared ordering policy this issue introduces so no future
+    // event source needs its own ad hoc sequencing timer.
+    const [milestoneQueue, setMilestoneQueue] = useState<MilestoneQueueEvent[]>([]);
+    // WSP-2.2: which region entry/completion rewards this save has already
+    // been granted, ever -- see claimedRegionRewards in persistence.ts for
+    // why this is the single source of truth for "exactly once".
+    const [claimedRegionRewards, setClaimedRegionRewards] = useState<Set<string>>(() => new Set(initialSave.claimedRegionRewards));
 
     // Unified Botanical Sanctuary State
     const [ownedPlants, setOwnedPlants] = useState<string[]>(initialSave.ownedPlants);
@@ -153,6 +166,7 @@ export function useWordSearchGame() {
             setOnboardingSeen(native.onboardingSeen);
             setAfflictions(native.afflictions);
             setRemedyCharges(native.remedyCharges);
+            setClaimedRegionRewards(new Set(native.claimedRegionRewards));
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -202,6 +216,7 @@ export function useWordSearchGame() {
                 onboardingSeen,
                 afflictions,
                 remedyCharges,
+                claimedRegionRewards: Array.from(claimedRegionRewards),
             });
         }, 400);
         return () => {
@@ -237,6 +252,7 @@ export function useWordSearchGame() {
         onboardingSeen,
         afflictions,
         remedyCharges,
+        claimedRegionRewards,
     ]);
 
     // Re-evaluate achievements on stat updates
@@ -267,6 +283,23 @@ export function useWordSearchGame() {
 
     const dismissJustUnlocked = useCallback(() => setJustUnlocked(prev => prev.slice(1)), []);
     const dismissPromotion = useCallback(() => setPromotionQueue(prev => prev.slice(1)), []);
+    const dismissMilestone = useCallback(() => setMilestoneQueue(prev => prev.slice(1)), []);
+
+    // The one shared arbitration point WSP-2.2 introduces: combines whatever
+    // is currently queued across all three independent producers
+    // (promotionQueue, milestoneQueue, justUnlocked) into the single
+    // canonical presentation order defined in presentationQueue.ts, instead
+    // of each producer's queue being consumed with its own separate,
+    // uncoordinated timing. The three underlying queues stay in place (and
+    // App.tsx/existing tests keep reading them directly) so this is additive
+    // -- a correctly-ordered combined view any future consumer (in
+    // particular WSP-2.4's milestone/region-transition presentation) can
+    // read from without re-deriving the ordering policy itself.
+    const presentationQueue = useMemo<PresentationEvent[]>(() => buildPresentationQueue([
+        ...promotionQueue.map((promotion): PresentationEvent => ({ kind: "rank-promotion", promotion })),
+        ...milestoneQueue,
+        ...justUnlocked.map((achievement): PresentationEvent => ({ kind: "achievement", achievement })),
+    ]), [promotionQueue, milestoneQueue, justUnlocked]);
 
     const queueFrontierPromotion = (completedLevel: number) => {
         if (completedLevel !== highestUnlockedLevel) return;
@@ -274,6 +307,47 @@ export function useWordSearchGame() {
         if (promotion) {
             setPromotionQueue(prev => prev.some(item => item.level === promotion.level) ? prev : [...prev, promotion]);
         }
+    };
+
+    // WSP-2.2: grants a region's entry/completion Seed reward exactly once,
+    // ever, per save. Mirrors queueFrontierPromotion's own frontier-only
+    // guard immediately below -- `completedLevel !== highestUnlockedLevel`
+    // means this is either a replay of an already-completed level, or the
+    // Super Root/reveal path re-deriving an already-passed frontier, and
+    // either way the region reward (like the rank promotion) must not fire
+    // again. Beyond that guard, `claimedRegionRewards` itself is the actual
+    // exactly-once source of truth: even a genuine frontier completion is a
+    // no-op here if the relevant key is already claimed (covers a save that
+    // was migrated with the "no retroactive grants, already marked claimed"
+    // backfill in persistence.ts -- see backfillRegionRewardClaims there).
+    const queueRegionRewards = (completedLevel: number) => {
+        if (completedLevel !== highestUnlockedLevel) return;
+        const region = regionForLevel(completedLevel);
+        if (completedLevel !== region.end) return; // not a region boundary -- nothing to do
+        const events: MilestoneQueueEvent[] = [];
+
+        const completionKey = regionRewardClaimKey(region.id, "completion");
+        if (!claimedRegionRewards.has(completionKey)) {
+            setClaimedRegionRewards(prev => new Set(prev).add(completionKey));
+            setSeeds(s => s + region.completionReward.seeds);
+            events.push({ kind: "region-transition", regionId: region.id, transition: "completion", rewardSeeds: region.completionReward.seeds, level: completedLevel });
+        }
+
+        // Regions are contiguous with no gaps, so completing a region's
+        // final level is exactly the moment the frontier crosses into the
+        // next one -- no separate "did the frontier just enter a new
+        // region" check is needed beyond the region.end check above.
+        const nextRegion = regionForLevel(completedLevel + 1);
+        if (nextRegion.id !== region.id && nextRegion.entryReward) {
+            const entryKey = regionRewardClaimKey(nextRegion.id, "entry");
+            if (!claimedRegionRewards.has(entryKey)) {
+                setClaimedRegionRewards(prev => new Set(prev).add(entryKey));
+                setSeeds(s => s + nextRegion.entryReward!.seeds);
+                events.push({ kind: "region-transition", regionId: nextRegion.id, transition: "entry", rewardSeeds: nextRegion.entryReward!.seeds, level: completedLevel });
+            }
+        }
+
+        if (events.length) setMilestoneQueue(prev => [...prev, ...events]);
     };
 
     // Runs once per puzzle completion (never on elapsed real time): escalates
@@ -451,6 +525,7 @@ export function useWordSearchGame() {
                     setLevelsCompleted((n: number) => n + 1);
                     setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
                     queueFrontierPromotion(playingLevel);
+                    queueRegionRewards(playingLevel);
                     setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
                     recordFieldNoteEvent({ kind: "puzzle_completed", isFrontier: playingLevel === highestUnlockedLevel, hintUsed: hintUsedThisLevel, category });
                     if (!hintUsedThisLevel) setLevelsCompletedWithoutHint(count => count + 1);
@@ -502,6 +577,7 @@ export function useWordSearchGame() {
             setLevelsCompleted((n: number) => n + 1);
             setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
             queueFrontierPromotion(playingLevel);
+            queueRegionRewards(playingLevel);
             setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
             recordFieldNoteEvent({ kind: "puzzle_completed", isFrontier: playingLevel === highestUnlockedLevel, hintUsed: true, category });
             advancePuzzleCompletionAfflictions();
@@ -608,6 +684,8 @@ export function useWordSearchGame() {
         setFoundDiagonal(DEFAULT_SAVE_DATA.foundDiagonal);
         setJustUnlocked([]);
         setPromotionQueue([]);
+        setMilestoneQueue([]);
+        setClaimedRegionRewards(new Set(DEFAULT_SAVE_DATA.claimedRegionRewards));
         setFieldNotes(DEFAULT_SAVE_DATA.fieldNotes);
         setOwnedPlants(DEFAULT_SAVE_DATA.ownedPlants);
         setWateredTimestamps(DEFAULT_SAVE_DATA.wateredTimestamps);
@@ -940,6 +1018,7 @@ export function useWordSearchGame() {
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
+        milestoneQueue, dismissMilestone, presentationQueue, claimedRegionRewards,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsToFind, bonusWordsThisLevel, bonusSeedsThisLevel, baseSeedsThisLevel, bonusDiscovery,

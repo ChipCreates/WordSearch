@@ -12,20 +12,11 @@ import {
     type InvariantViolation, type PuzzleGenerationRequest,
 } from "../src/puzzleGenerator";
 import { createSeededRng } from "../src/rng";
-
-// Mirrors LEVEL_REGIONS in src/components/LevelsView.tsx. Duplicated rather
-// than imported so this audit stays decoupled from the presentation layer
-// (LevelsView pulls in React/MUI) -- puzzle generation has no business
-// depending on the trail map's component tree. If the campaign's region
-// boundaries change, update both.
-const REGIONS = [
-    { id: "glowing-grove", start: 1, end: 20 },
-    { id: "sunlit-falls", start: 21, end: 30 },
-    { id: "crystal-conservatory", start: 31, end: 40 },
-    { id: "mosswood-hollows", start: 41, end: 50 },
-    { id: "cloudreach-summit", start: 51, end: 70 },
-    { id: "verdant-beyond", start: 71, end: 100 },
-] as const;
+// WSP-2.2 moved region data out of the view layer into src/regions.ts, a
+// plain data module with no React/MUI dependency -- this audit can now
+// import the real region definitions directly instead of keeping its own
+// hand-duplicated copy of the boundaries in sync by hand.
+import { REGIONS } from "../src/regions";
 
 const MODES: Tier[] = ["easy", "standard", "challenging"];
 const EXPLICIT_GRID_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
