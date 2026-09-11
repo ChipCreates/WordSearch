@@ -6,10 +6,14 @@ import {
 } from "./persistence";
 import {
     legacyV1Save, legacyV2Save, legacyV3Save,
-    advancedPlayerSave, level100PlayerSave, largeGardenSave,
+    advancedPlayerSave, level100PlayerSave, level150PlayerSaveCurrentShape, largeGardenSave,
     unlockedThemesSave, manyAchievementsSave,
     missingOptionalFieldsSave, malformedRecoverableSave,
 } from "./test/fixtures/saves";
+import { REGIONS } from "./regions";
+import { ACHIEVEMENTS, evaluateAchievements, type AchievementStats } from "./achievements";
+import { getBotanistRank } from "./botanistRanks";
+import { CATEGORY_NAMES } from "./backend";
 import { COMPLETED_ONBOARDING_SEEN, DEFAULT_ONBOARDING_SEEN } from "./onboarding";
 
 const PRIMARY_KEY = "word_sprout_save_v1";
@@ -349,7 +353,7 @@ describe("WSP-2.5 bloomedRarityTiers -> bloomedRarityTierIds migration", () => {
 describe("WSP-0.3 fixture library migration coverage", () => {
   const fixtures: Record<string, Record<string, unknown>> = {
     legacyV1Save, legacyV2Save, legacyV3Save,
-    advancedPlayerSave, level100PlayerSave, largeGardenSave,
+    advancedPlayerSave, level100PlayerSave, level150PlayerSaveCurrentShape, largeGardenSave,
     unlockedThemesSave, manyAchievementsSave,
     missingOptionalFieldsSave, malformedRecoverableSave,
   };
@@ -429,6 +433,112 @@ describe("WSP-0.3 fixture library migration coverage", () => {
       expect(second).toEqual(first);
     });
   }
+});
+
+// WSP-2.7 -- beyond-level-100 certification of the level100PlayerSave /
+// level150PlayerSaveCurrentShape fixtures specifically. The generic
+// "migrates without throwing" / "round-trips without drift" loops above
+// already exercise both fixtures structurally; this block asserts the
+// sharper, WSP-2.2/2.3/2.5-specific claims those loops don't check on their
+// own -- that a long-time player's region claims, achievement ids, and rank
+// all come out correct, not just present and well-typed.
+describe("WSP-2.7: beyond-level-100 fixture certification", () => {
+  it("level100PlayerSave (a save predating WSP-2.2/2.3/2.5, still in its pre-Tier-2 shape) migrates to the current schema correctly", async () => {
+    localStorage.setItem(PRIMARY_KEY, JSON.stringify(level100PlayerSave));
+    const loaded = await loadSaveData();
+
+    // bloomedRarityTiers (old raw counter, 6) -> bloomedRarityTierIds (new
+    // shape). This save has no ownedPlants/growthByPlant of its own and
+    // never earned verdant-voyager, so best-effort reconstruction correctly
+    // yields nothing recoverable -- see normalizeBloomedRarityTierIds's
+    // documented policy in persistence.ts. This is intentional, not data
+    // loss: there was never a real record of which tiers were bloomed under
+    // the old counter, and nothing here entitles this save to a fabricated
+    // one.
+    expect(Array.isArray(loaded.bloomedRarityTierIds)).toBe(true);
+    expect(loaded.bloomedRarityTierIds).toEqual([]);
+
+    // Frontier (137) is past every region's end -- backfillRegionRewardClaims
+    // must mark every region's completion (and every entry past
+    // Glowing Grove) claimed, exactly once, with NO retroactive Seeds
+    // (the documented "no retroactive grants" policy) -- i.e. this save's
+    // 48,500 seeds figure from the fixture is untouched by the migration.
+    for (const region of REGIONS) {
+      const key = `${region.id}:completion`;
+      expect(loaded.claimedRegionRewards).toContain(key);
+      if (region.entryReward) expect(loaded.claimedRegionRewards).toContain(`${region.id}:entry`);
+    }
+    expect(loaded.regionRewardsBackfilled).toBe(true);
+    expect(loaded.seeds).toBe(48_500); // unchanged -- no retroactive grant
+
+    // Botanist Rank at level 137 is Cosmic Conservator, same as at level 41
+    // -- this is a read of botanistRanks.ts driven by the loaded frontier,
+    // not a persisted field, but it's exactly the kind of "does this save's
+    // level correctly drive every other system" check this issue exists for.
+    expect(getBotanistRank(loaded.highestUnlockedLevel).title).toBe("Cosmic Conservator");
+
+    // Achievement evaluation over this save's actual lifetime stats must not
+    // throw, and level-clears-100 (100 <= 136) must be satisfied.
+    const stats: AchievementStats = {
+      levelsCompleted: loaded.levelsCompleted,
+      seeds: loaded.seeds,
+      categoriesSeen: loaded.categoriesSeen.length,
+      foundDiagonal: loaded.foundDiagonal,
+      totalCategories: CATEGORY_NAMES.length,
+      bonusWordsFound: loaded.bonusWordsFound,
+      levelsCompletedWithoutHint: loaded.levelsCompletedWithoutHint,
+      maxBonusWordsInLevel: loaded.maxBonusWordsInLevel,
+      reverseWordsFound: loaded.reverseWordsFound,
+      plantsBloomed: loaded.plantsBloomed,
+      bloomedRarityTiers: loaded.bloomedRarityTierIds.length,
+      uniqueCategoriesCompleted: loaded.uniqueCategoriesCompleted,
+      powerupsUsed: loaded.powerupsUsed,
+    };
+    let satisfied: string[] = [];
+    expect(() => { satisfied = evaluateAchievements(stats); }).not.toThrow();
+    expect(satisfied).toContain("level-clears-100");
+    expect(satisfied.every(id => ACHIEVEMENTS.some(a => a.id === id))).toBe(true);
+  });
+
+  it("level150PlayerSaveCurrentShape (already on the current schema) round-trips completely inert -- no double-grant, no re-backfill, no id mangling", async () => {
+    localStorage.setItem(PRIMARY_KEY, JSON.stringify(level150PlayerSaveCurrentShape));
+    const loaded = await loadSaveData();
+
+    // Already-current bloomedRarityTierIds must survive verbatim (as a
+    // deduplicated set), not be reprocessed through the legacy-counter
+    // reconstruction path.
+    expect(new Set(loaded.bloomedRarityTierIds)).toEqual(new Set(["Common", "Rare", "Epic", "Mythic"]));
+
+    // claimedRegionRewards was already fully populated and
+    // regionRewardsBackfilled was already true -- the one-time backfill must
+    // be a true no-op here (same claim set in, same claim set out; no
+    // duplicate keys), and Seeds must be exactly what the fixture says
+    // (62,000), never bumped by a second grant.
+    const expectedClaims = new Set(level150PlayerSaveCurrentShape.claimedRegionRewards as string[]);
+    expect(new Set(loaded.claimedRegionRewards)).toEqual(expectedClaims);
+    expect(loaded.claimedRegionRewards.length).toBe(expectedClaims.size); // no duplicates introduced
+    expect(loaded.seeds).toBe(62_000);
+
+    // Achievement ids already use the current, post-rename scheme -- the
+    // migration map is keyed only by the two legacy ids (daily-dew,
+    // zenith-climber), so a save already using categories-completed-10 /
+    // level-clears-50 must pass through completely unchanged, not be
+    // re-migrated or duplicated.
+    const inputIds = level150PlayerSaveCurrentShape.unlockedAchievements as string[];
+    expect(new Set(loaded.unlockedAchievements)).toEqual(new Set(inputIds));
+    expect(loaded.unlockedAchievements.every(id => ACHIEVEMENTS.some(a => a.id === id))).toBe(true);
+
+    expect(getBotanistRank(loaded.highestUnlockedLevel).title).toBe("Cosmic Conservator");
+
+    // Round-trip stability: saving what was just loaded must produce
+    // byte-for-byte the same normalized shape (the same guarantee the
+    // generic round-trip loop above checks, repeated here so this
+    // WSP-2.7-owned test doesn't depend on that other block for its own
+    // certification claim).
+    await writeSaveData(loaded);
+    const reloaded = await loadSaveData();
+    expect(reloaded).toEqual(loaded);
+  });
 });
 
 describe("WSP-0.3 forward-version and corruption safety", () => {
