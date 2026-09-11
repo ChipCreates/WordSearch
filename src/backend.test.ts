@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { getPuzzleWords, MAX_TARGET_WORD_LENGTH, type Tier } from "./backend";
 import { createSeededRng } from "./rng";
+import type { RegionId } from "./regionTuning";
 
 describe("category word limits", () => {
     it("tracks the longest target so the Found Words panel fits its content", () => {
@@ -30,9 +31,73 @@ describe("backend category parity", () => {
     });
 });
 
+// WSP-2.3's required parity check for the web side: confirms getPuzzleWords'
+// region bias produces the same category, for the same (region, tier,
+// level) inputs, that src-tauri/src/lib.rs's own
+// test_region_category_bias_parity independently asserts for the native
+// path. Both sides compute their own "expected" weighted sequence directly
+// from the same two JSON fixtures -- data/category_order.json (the
+// unbiased tier-pool order) and data/region_category_bias.json (the
+// favored-category lists and weights) -- rather than calling into
+// src/regionTuning.ts's own buildBiasedCategorySequence, so this test would
+// still catch that function itself drifting from the documented weighting
+// rule, not just a stale fixture. Together with lib.rs's equivalent test,
+// this is the "paired tests, one per platform's test infrastructure" WSP-2.3
+// asks for -- there is no single test that can exercise both a TS module
+// and a compiled Rust binary in one run.
+describe("region category bias parity", () => {
+    const orderFixturePath = path.resolve(process.cwd(), "data/category_order.json");
+    const orderFixture: Record<Tier, string[]> = JSON.parse(fs.readFileSync(orderFixturePath, "utf-8"));
+
+    const biasFixturePath = path.resolve(process.cwd(), "data/region_category_bias.json");
+    const biasFixture: Record<RegionId, { favoredCategories: string[]; weight: number }> =
+        JSON.parse(fs.readFileSync(biasFixturePath, "utf-8"));
+
+    function expectedSequence(tier: Tier, regionId: RegionId): string[] {
+        const pool = orderFixture[tier];
+        const { favoredCategories, weight } = biasFixture[regionId];
+        const favored = new Set(favoredCategories);
+        const sequence: string[] = [];
+        for (const name of pool) {
+            const times = favored.has(name) ? Math.max(1, weight) : 1;
+            for (let i = 0; i < times; i++) sequence.push(name);
+        }
+        return sequence;
+    }
+
+    (Object.keys(biasFixture) as RegionId[]).forEach(regionId => {
+        (Object.keys(orderFixture) as Tier[]).forEach(tier => {
+            const sequence = expectedSequence(tier, regionId);
+            it(`region "${regionId}" / tier "${tier}" matches the fixture-derived weighted sequence across a full cycle`, async () => {
+                for (let i = 0; i < sequence.length; i++) {
+                    const level = i + 1;
+                    const puzzle = await getPuzzleWords({ count: 5, maxLength: 10, level, tier, regionId });
+                    expect(puzzle.category).toBe(sequence[i]);
+                }
+            });
+        });
+    });
+
+    it("an unrecognized regionId falls back to the plain unbiased tier-pool cycle rather than throwing", async () => {
+        const unbiased = await getPuzzleWords({ count: 5, maxLength: 10, level: 1, tier: "standard" });
+        const withBogusRegion = await getPuzzleWords({
+            count: 5, maxLength: 10, level: 1, tier: "standard", regionId: "not-a-real-region" as RegionId,
+        });
+        expect(withBogusRegion.category).toBe(unbiased.category);
+    });
+});
+
 describe("backend custom category mode", () => {
     it("categoryName overrides the tier pool entirely", async () => {
         const puzzle = await getPuzzleWords({ count: 5, maxLength: 10, level: 1, tier: "standard", categoryName: "Mythology" });
+        expect(puzzle.category).toBe("Mythology");
+    });
+
+    it("categoryName wins over regionId -- region bias never overrides an explicit favorite category", async () => {
+        const puzzle = await getPuzzleWords({
+            count: 5, maxLength: 10, level: 1, tier: "standard",
+            categoryName: "Mythology", regionId: "glowing-grove",
+        });
         expect(puzzle.category).toBe("Mythology");
     });
 

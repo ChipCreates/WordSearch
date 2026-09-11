@@ -1,5 +1,6 @@
 mod categories;
 mod dictionary;
+mod regions;
 use categories::{Tier, CATEGORIES};
 use dictionary::dictionary;
 use std::fs;
@@ -23,6 +24,7 @@ fn get_puzzle_words(
     tier: String,
     category_name: Option<String>,
     exclude_words: Vec<String>,
+    region_id: Option<String>,
 ) -> PuzzleWords {
     use rand::seq::SliceRandom;
     use rand::thread_rng;
@@ -30,8 +32,11 @@ fn get_puzzle_words(
     let mut rng = thread_rng();
 
     // An explicit category name (custom "favorite categories" mode) wins
-    // over the tier pool -- the caller has already picked which category
-    // to show at this level, from whichever tier it happens to belong to.
+    // over the tier pool -- and over region_id below -- the caller has
+    // already picked which category to show at this level, from whichever
+    // tier it happens to belong to. Region bias (WSP-2.3) only ever
+    // influences which category gets *auto-selected* from the tier pool;
+    // it never overrides a player's explicit favorite.
     let category = if let Some(name) = category_name {
         CATEGORIES.iter().find(|c| c.name == name)
     } else {
@@ -41,7 +46,18 @@ fn get_puzzle_words(
             _ => Tier::Standard,
         };
         let pool: Vec<&categories::Category> = CATEGORIES.iter().filter(|c| c.tier == wanted_tier).collect();
-        if pool.is_empty() { None } else { Some(pool[(level.saturating_sub(1)) % pool.len()]) }
+        if pool.is_empty() {
+            None
+        } else {
+            match region_id.as_deref().and_then(regions::RegionId::from_str) {
+                Some(region) => {
+                    let bias = regions::category_bias(region);
+                    let sequence = regions::build_biased_sequence(&pool, bias.favored, bias.weight);
+                    Some(sequence[(level.saturating_sub(1)) % sequence.len()])
+                }
+                None => Some(pool[(level.saturating_sub(1)) % pool.len()]),
+            }
+        }
     };
 
     let Some(category) = category else {
@@ -112,10 +128,55 @@ mod tests {
     fn test_get_puzzle_words_never_panics() {
         for level in 1..=50 {
             for tier in ["easy", "standard", "challenging"] {
-                let puzzle = get_puzzle_words(5, 10, level, tier.to_string(), None, vec![]);
+                let puzzle = get_puzzle_words(5, 10, level, tier.to_string(), None, vec![], None);
                 assert!(!puzzle.category.is_empty());
             }
         }
+    }
+
+    #[test]
+    fn test_get_puzzle_words_with_region_bias_never_panics() {
+        // Every region against every tier and a healthy level spread,
+        // including well past level 100 (WSP-2.7's "beyond level 100"
+        // concern) -- a region's bias must keep producing a valid category
+        // regardless of how far past its own nominal level range play goes.
+        let region_ids = [
+            "glowing-grove", "sunlit-falls", "crystal-conservatory",
+            "mosswood-hollows", "cloudreach-summit", "verdant-beyond",
+        ];
+        for region_id in region_ids {
+            for tier in ["easy", "standard", "challenging"] {
+                for level in [1, 10, 25, 50, 75, 100, 150] {
+                    let puzzle = get_puzzle_words(
+                        5, 10, level, tier.to_string(), None, vec![], Some(region_id.to_string()),
+                    );
+                    assert!(!puzzle.category.is_empty(), "region={region_id} tier={tier} level={level}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_region_bias_never_overrides_an_explicit_category_name() {
+        // Favorites-mode precedence (WSP-2.3 acceptance criteria): an
+        // explicit category_name must win regardless of region_id.
+        let p = get_puzzle_words(
+            5, 10, 1, "standard".to_string(), Some("Mythology".to_string()), vec![],
+            Some("glowing-grove".to_string()),
+        );
+        assert_eq!(p.category, "Mythology");
+    }
+
+    #[test]
+    fn test_unrecognized_region_id_falls_back_to_the_unbiased_pool() {
+        // An id this native build doesn't recognize (e.g. a future region
+        // added web-side before this binary is updated) must degrade to the
+        // plain tier-pool cycle, not panic or return an empty category.
+        let biased = get_puzzle_words(5, 10, 1, "standard".to_string(), None, vec![], None);
+        let unrecognized = get_puzzle_words(
+            5, 10, 1, "standard".to_string(), None, vec![], Some("not-a-real-region".to_string()),
+        );
+        assert_eq!(biased.category, unrecognized.category);
     }
 
     #[test]
@@ -146,8 +207,81 @@ mod tests {
             assert!(!names.is_empty(), "tier {tier} should list at least one category");
             for (i, expected_name) in names.iter().enumerate() {
                 let level = i + 1;
-                let puzzle = get_puzzle_words(5, 10, level, tier.clone(), None, vec![]);
+                let puzzle = get_puzzle_words(5, 10, level, tier.clone(), None, vec![], None);
                 assert_eq!(&puzzle.category, expected_name, "tier={tier} level={level}");
+            }
+        }
+    }
+
+    // WSP-2.3's required parity check: confirms get_puzzle_words' region
+    // bias (Rust/native) and pickCategoryForLevel/getPuzzleWords' region
+    // bias (TS/web, asserted independently in backend.test.ts's identically
+    // named describe block) produce the same category for the same
+    // (region, tier, level) inputs. Both sides compute their own "expected"
+    // sequence from the exact same two JSON fixtures --
+    // data/category_order.json (the unbiased tier pool order) and
+    // data/region_category_bias.json (the favored-category lists and
+    // weights) -- using the weighting rule documented on
+    // regions::build_biased_sequence / src/regionTuning.ts's
+    // buildBiasedCategorySequence. If get_puzzle_words' hand-maintained
+    // regions::category_bias table (or its weighting logic) ever drifts
+    // from data/region_category_bias.json, or from backend.ts's TS
+    // implementation, this test catches the first and backend.test.ts's
+    // equivalent catches the second -- together they're the "paired tests,
+    // one per platform's test infrastructure" WSP-2.3 asks for.
+    #[test]
+    fn test_region_category_bias_parity() {
+        let manifest_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let order_path = manifest_dir.join("../data/category_order.json");
+        let bias_path = manifest_dir.join("../data/region_category_bias.json");
+
+        let order_raw = std::fs::read_to_string(&order_path)
+            .unwrap_or_else(|e| panic!("failed to read {:?}: {}", order_path, e));
+        let order: std::collections::HashMap<String, Vec<String>> =
+            serde_json::from_str(&order_raw).expect("category_order.json should be valid JSON");
+
+        let bias_raw = std::fs::read_to_string(&bias_path)
+            .unwrap_or_else(|e| panic!("failed to read {:?}: {}", bias_path, e));
+        #[derive(serde::Deserialize)]
+        struct BiasEntry {
+            #[serde(rename = "favoredCategories")]
+            favored_categories: Vec<String>,
+            weight: usize,
+        }
+        let bias: std::collections::HashMap<String, BiasEntry> =
+            serde_json::from_str(&bias_raw).expect("region_category_bias.json should be valid JSON");
+
+        assert!(!order.is_empty());
+        assert!(!bias.is_empty());
+
+        for (region_id, entry) in &bias {
+            let favored: std::collections::HashSet<&str> =
+                entry.favored_categories.iter().map(|s| s.as_str()).collect();
+            for (tier, names) in &order {
+                // Build the same weighted sequence the parity contract
+                // documents, directly from the fixture data -- not by
+                // calling regions::build_biased_sequence, so this test
+                // would still catch that function itself drifting from the
+                // documented rule, not just from the fixture.
+                let mut expected_sequence: Vec<&str> = Vec::new();
+                for name in names {
+                    let times = if favored.contains(name.as_str()) { entry.weight.max(1) } else { 1 };
+                    for _ in 0..times {
+                        expected_sequence.push(name.as_str());
+                    }
+                }
+                assert!(!expected_sequence.is_empty(), "region={region_id} tier={tier}");
+
+                for (i, expected_name) in expected_sequence.iter().enumerate() {
+                    let level = i + 1;
+                    let puzzle = get_puzzle_words(
+                        5, 10, level, tier.clone(), None, vec![], Some(region_id.clone()),
+                    );
+                    assert_eq!(
+                        &puzzle.category, expected_name,
+                        "region={region_id} tier={tier} level={level}",
+                    );
+                }
             }
         }
     }
@@ -169,7 +303,7 @@ mod tests {
 
     #[test]
     fn test_word_length_filtering() {
-        let p = get_puzzle_words(10, 5, 1, "standard".to_string(), None, vec![]);
+        let p = get_puzzle_words(10, 5, 1, "standard".to_string(), None, vec![], None);
         for word in p.words {
             assert!(word.len() <= 5, "Word {} exceeded max length of 5", word);
         }
@@ -178,12 +312,12 @@ mod tests {
     #[test]
     fn test_custom_category_and_exclusion() {
         // Explicit category_name overrides the tier pool entirely.
-        let p = get_puzzle_words(5, 10, 1, "standard".to_string(), Some("Mythology".to_string()), vec![]);
+        let p = get_puzzle_words(5, 10, 1, "standard".to_string(), Some("Mythology".to_string()), vec![], None);
         assert_eq!(p.category, "Mythology");
 
         // Excluded words are avoided as long as enough non-excluded ones exist.
-        let first = get_puzzle_words(10, 10, 1, "standard".to_string(), Some("Mythology".to_string()), vec![]);
-        let p2 = get_puzzle_words(5, 10, 1, "standard".to_string(), Some("Mythology".to_string()), first.words.clone());
+        let first = get_puzzle_words(10, 10, 1, "standard".to_string(), Some("Mythology".to_string()), vec![], None);
+        let p2 = get_puzzle_words(5, 10, 1, "standard".to_string(), Some("Mythology".to_string()), first.words.clone(), None);
         for w in &p2.words {
             assert!(!first.words.contains(w), "word {} should have been excluded", w);
         }

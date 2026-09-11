@@ -1,0 +1,26 @@
+{
+  "glowing-grove": {
+    "favoredCategories": ["Family", "Pets", "Farm Animals", "Gardening", "Nature"],
+    "weight": 2
+  },
+  "sunlit-falls": {
+    "favoredCategories": ["Beach & Summer", "Camping & Outdoors", "Sports", "Action & Adventure"],
+    "weight": 2
+  },
+  "crystal-conservatory": {
+    "favoredCategories": ["Mythology", "Philosophy", "Etymology/Word Roots", "Astrology/Zodiac", "Literary Devices"],
+    "weight": 3
+  },
+  "mosswood-hollows": {
+    "favoredCategories": ["Mystery & Thriller", "Fairy Tales", "Fantasy", "Mythical Creatures", "Forensics"],
+    "weight": 2
+  },
+  "cloudreach-summit": {
+    "favoredCategories": ["Chemistry Elements/Terms", "Physics", "Computer Science", "Medical Terminology", "Legal Terms"],
+    "weight": 3
+  },
+  "verdant-beyond": {
+    "favoredCategories": ["Nature", "History", "Space & Astronomy"],
+    "weight": 2
+  }
+}
