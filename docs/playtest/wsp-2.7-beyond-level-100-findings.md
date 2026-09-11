@@ -25,9 +25,16 @@ number of levels.
 Each entry below separates what was literally observed/verified in the
 code from what it's judged to mean, per the checkpoint's own format.
 
+**Post-certification status:** Finding 1 was resolved by WSP-2.4 Part A
+(`15bb214`). The live `useWordSearchGame` path now passes
+`regionIdForLevel(playingLevel)` to `getPuzzleWords` and a region-biased
+`difficultyOverride` to `generatePuzzle`; the wiring is covered by
+`src/hooks/useWordSearchGame.regionWiring.test.ts`. Section 1 below is
+retained as the historical observation that motivated that follow-up.
+
 ---
 
-## 1. Region tuning and category bias (WSP-2.3) are fully built and tested, but never actually reached from real gameplay — at level 1 as much as at level 101
+## 1. Historical finding — region tuning and category bias were not initially reached from real gameplay
 
 **Observation:** the only puzzle-generation call site reachable from actual
 play is `initGame` in `src/hooks/useWordSearchGame.ts` (lines ~396-428). It
@@ -339,9 +346,8 @@ comment about slower machines); `tsc --noEmit` clean; `cargo test` in
 trustworthy per the Tier 2 issues doc's own warning about that prior
 double-counting bug.
 
-The one real, non-blocking follow-up from this pass is finding #1: region
-difficulty/category tuning is fully built, tested, and correct on both
-platforms, but not yet wired into the actual gameplay loop. It doesn't
-block WSP-2.7's own certification (which is about whether the *systems*
-degrade past level 100, and they don't), but it means none of WSP-2.3's
-region-identity work is live for players yet, at any level.
+The one real, non-blocking follow-up from this pass was finding #1. It has
+since been resolved by WSP-2.4 Part A, with live-loop wiring and dedicated
+regression coverage. The remaining findings in this certification are
+documentation/fixture hygiene only; no Tier 2 functional gap remains from
+this pass.

@@ -62,7 +62,10 @@ export const level100PlayerSave: Record<string, unknown> = {
     completedLevels: Array.from({ length: 136 }, (_, i) => i + 1),
     totalPuzzleCompletions: 136,
     seeds: 48_500,
-    unlockedAchievements: ["speed-sprouter", "night-bloomer", "word-weaver", "root-master", "world-rooted", "flora-atlas"],
+    // Current IDs for the achievements represented by this pre-Tier-2 save.
+    // The fixture retains its old schema shape so migration coverage remains
+    // meaningful, while its earned achievements remain valid current data.
+    unlockedAchievements: ["night-bloomer", "word-weaver", "root-master", "categories-30", "categories-all"],
     levelsCompleted: 136,
     categoriesSeen: ["Mythology", "Psychology", "Astronomy", "Anatomy", "Geology", "Botany"],
     plantsBloomed: 18,

@@ -41,7 +41,7 @@ WSP-2.1 is a real, hard, upfront blocker — not a soft one. The original versio
 
 ### Context
 
-The plan's 2.2 section asks for "a reward-intensity hierarchy (routine → small → medium → major → exceptional)" with presentation scaling to match, and both 2.1 (level-100 milestone weight) and 2.3 (bloom presentation by plant rarity) are written assuming that same hierarchy exists. Today it doesn't, in any form — the closest thing is `AchievementTier` (`src/achievements.ts`): a 4-value type (`bronze`/`silver`/`gold`/`exceptional`) set on only about 15 of 26 achievements, with no defined mapping to presentation (banner duration, scrim, audio) at all.
+The plan's 2.2 section asks for "a reward-intensity hierarchy (routine → small → medium → major → exceptional)" with presentation scaling to match, and both 2.1 (level-100 milestone weight) and 2.3 (bloom presentation by plant rarity) are written assuming that same hierarchy exists. Today it doesn't, in any form — the closest thing is `AchievementTier` (`src/achievements.ts`): a 4-value type (`bronze`/`silver`/`gold`/`exceptional`) set on only about 15 of 28 achievements, with no defined mapping to presentation (banner duration, scrim, audio) at all.
 
 Pulling this out as its own issue, landed before any presentation work starts, is what lets WSP-2.4 (milestones) and WSP-2.6 (bloom) consume one real shared contract instead of each inventing its own and reconciling later.
 
@@ -73,7 +73,7 @@ an implementer building milestone presentation and an implementer building
 bloom presentation, working independently, would produce results that
 feel comparably weighted at the same intensity level.
 
-Map every existing achievement (src/achievements.ts, 26 entries) onto this
+Map every existing achievement (src/achievements.ts, 28 entries) onto this
 scale -- either retire the existing AchievementTier type in favor of this
 one, or keep it and document the 1:1 mapping explicitly. Don't leave any
 achievement unclassified.
@@ -230,7 +230,7 @@ other systems already depend on.
 
 There is currently no milestone/region-transition presentation system of any kind — no title card, no scenery change, nothing at levels 10/20/30/40/50/70/100. The existing `BotanistPromotionCeremony` is a related but separate, much more frequent system (rank promotions happen roughly every 3–4 levels) and is not a substitute for a once-per-region milestone moment — but per WSP-2.2, the two *can* fire from the same level completion and need to be arbitrated by that issue's presentation queue, not built as if they'll never collide.
 
-"Progress indefinitely" past level 100 needs a precise definition, not the plan's looser framing. Botanist Rank (`src/botanistRanks.ts`) has 10 fixed ranks; the highest, Cosmic Conservator, starts at level 41 with `maxLevel: null` — there is no rank beyond it in the current design, so "rank progress" cannot mean *new rank titles* unlocking indefinitely; it already stops, by design, at level 41. Achievements (`src/achievements.ts`) are a finite list of 26 (or however many WSP-2.5 leaves it at) — those don't unlock indefinitely either. What genuinely continues indefinitely today, and should be the actual scope of this acceptance criterion, is: puzzle generation itself, the level/frontier counter, and lifetime statistics (Seeds earned, bonus words found, plants bloomed, etc.).
+"Progress indefinitely" past level 100 needs a precise definition, not the plan's looser framing. Botanist Rank (`src/botanistRanks.ts`) has 10 fixed ranks; the highest, Cosmic Conservator, starts at level 41 with `maxLevel: null` — there is no rank beyond it in the current design, so "rank progress" cannot mean *new rank titles* unlocking indefinitely; it already stops, by design, at level 41. Achievements (`src/achievements.ts`) are a finite list of 28 — those don't unlock indefinitely either. What genuinely continues indefinitely today, and should be the actual scope of this acceptance criterion, is: puzzle generation itself, the level/frontier counter, and lifetime statistics (Seeds earned, bonus words found, plants bloomed, etc.).
 
 ### Acceptance criteria
 

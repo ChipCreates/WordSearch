@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-09T22:44:21.825976+00:00",
+  "generated_at": "2026-09-10T23:18:13.119832+00:00",
   "nodes": {
     "src_achievements": {
       "code_fingerprint": "d8ddac0890128fcbc05b524ed309a920cfdf70acc88ed64bc32b63e04f3a8e2d",
@@ -17,16 +17,21 @@
           "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
         }
       ],
-      "score": 1.886976899,
+      "score": 1.842876956,
       "source_file": "src/achievements.ts",
       "status": "preferred",
       "uses": 2
     },
     "src_app": {
-      "code_fingerprint": "afcd173fbc3bf85233096fa65615478e00947b0dfad8c296cfdb736a4774c560",
+      "code_fingerprint": "430caa23e401177e5009ebf35fbe862191abfce85b3b8581ad5ca37b4026ddab",
       "label": "App.tsx",
-      "last": "2026-09-09T13:01:24.886836+00:00",
+      "last": "2026-09-09T23:25:05.229532+00:00",
       "provenance": [
+        {
+          "date": "2026-09-09T23:25:05.229532+00:00",
+          "outcome": "useful",
+          "q": "Update the How to Play screen and README screenshots; remove the extra Settings header ring and fix screenshots where it appears."
+        },
         {
           "date": "2026-09-09T13:01:24.886836+00:00",
           "outcome": "useful",
@@ -48,10 +53,10 @@
           "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
         }
       ],
-      "score": 3.830749076,
+      "score": 4.718489509,
       "source_file": "src/App.tsx",
       "status": "preferred",
-      "uses": 4
+      "uses": 5
     },
     "src_categorythemes": {
       "code_fingerprint": "71f08e73ba4911888b8bec84a9609f66b50312d3653a8ccf9c30e9236e45aa40",
@@ -64,7 +69,7 @@
           "q": "Write a plan to make all buttons cohesive with the supplied theme, redesign The Garden, make Settings About and Field Kit full-viewport mobile destinations accessible everywhere, add changing level backgrounds, and add the new logo to About and an asset-preloading splash screen."
         }
       ],
-      "score": 0.990690148,
+      "score": 0.967537041,
       "source_file": "src/categoryThemes.ts",
       "status": "tentative",
       "uses": 1
@@ -72,18 +77,23 @@
     "src_components_achievementsview": {
       "code_fingerprint": "87f3ec42132bf5117c0912451a2383b9b5198639fa6e0a4cfa807121233ca9c5",
       "label": "AchievementsView.tsx",
-      "last": "2026-09-07T20:49:24.408332+00:00",
+      "last": "2026-09-09T23:25:05.229532+00:00",
       "provenance": [
+        {
+          "date": "2026-09-09T23:25:05.229532+00:00",
+          "outcome": "useful",
+          "q": "Update the How to Play screen and README screenshots; remove the extra Settings header ring and fix screenshots where it appears."
+        },
         {
           "date": "2026-09-07T20:49:24.408332+00:00",
           "outcome": "useful",
           "q": "I've been working with a few other AI platforms to dial this game in as limits allow. Review this game again to refamiliarize yourself with it again. Then tell me what can be done to improve it even further? I feel that there is more that could be done with the sidebar that's genuinely useful. I just don't know what that is."
         }
       ],
-      "score": 0.953082029,
+      "score": 1.908075512,
       "source_file": "src/components/AchievementsView.tsx",
-      "status": "tentative",
-      "uses": 1
+      "status": "preferred",
+      "uses": 2
     },
     "src_components_gamecanvas": {
       "code_fingerprint": "946d7a4b6c9bfd9eadf1a0157b55f19e69ad41113ebc9979452b6f6897d450ed",
@@ -101,16 +111,21 @@
           "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
         }
       ],
-      "score": 1.886976899,
+      "score": 1.842876956,
       "source_file": "src/components/GameCanvas.tsx",
       "status": "preferred",
       "uses": 2
     },
     "src_components_gardenview": {
-      "code_fingerprint": "996c3ae9727f16d8eec363ae295a78d9b9dd65a55d816cb36b8f604b671fb728",
+      "code_fingerprint": "cfa4bdbfe64c9ac156c0d5e37ee196a848d9ab967cc78c57802fe8e21407cd99",
       "label": "GardenView.tsx",
-      "last": "2026-09-09T22:20:24.692414+00:00",
+      "last": "2026-09-09T23:25:05.229532+00:00",
       "provenance": [
+        {
+          "date": "2026-09-09T23:25:05.229532+00:00",
+          "outcome": "useful",
+          "q": "Update the How to Play screen and README screenshots; remove the extra Settings header ring and fix screenshots where it appears."
+        },
         {
           "date": "2026-09-09T22:20:24.692414+00:00",
           "outcome": "useful",
@@ -130,17 +145,12 @@
           "date": "2026-09-07T10:23:28.703836+00:00",
           "outcome": "useful",
           "q": "write a plan for Luna to execute to resolve these findings. Put it in the project root, but do not commit it to GitHub."
-        },
-        {
-          "date": "2026-09-07T10:14:16.857288+00:00",
-          "outcome": "useful",
-          "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
         }
       ],
-      "score": 4.830364834,
+      "score": 5.694743562,
       "source_file": "src/components/GardenView.tsx",
       "status": "preferred",
-      "uses": 5
+      "uses": 6
     },
     "src_components_greenhousefloorplanpanel": {
       "code_fingerprint": "2c8e931abe9e6549d5f400159fceb9a7fb71512f6d916663ff3d0ad980a9fe4f",
@@ -153,16 +163,21 @@
           "q": "I've been working with a few other AI platforms to dial this game in as limits allow. Review this game again to refamiliarize yourself with it again. Then tell me what can be done to improve it even further? I feel that there is more that could be done with the sidebar that's genuinely useful. I just don't know what that is."
         }
       ],
-      "score": 0.953082029,
+      "score": 0.930807849,
       "source_file": "src/components/GreenhouseFloorplanPanel.tsx",
       "status": "tentative",
       "uses": 1
     },
     "src_components_levelsview": {
-      "code_fingerprint": "adf7062f4dff02904135035c37428a1b31526336018058c2cdb5782d051ab099",
+      "code_fingerprint": "639b7fc56bf9fca0646e59a74f83ef40616f08f521b2c717284f25a9da2c872c",
       "label": "LevelsView.tsx",
-      "last": "2026-09-09T21:26:06.943807+00:00",
+      "last": "2026-09-09T23:25:05.229532+00:00",
       "provenance": [
+        {
+          "date": "2026-09-09T23:25:05.229532+00:00",
+          "outcome": "useful",
+          "q": "Update the How to Play screen and README screenshots; remove the extra Settings header ring and fix screenshots where it appears."
+        },
         {
           "date": "2026-09-09T21:26:06.943807+00:00",
           "outcome": "useful",
@@ -174,13 +189,13 @@
           "q": "Write a plan to make all buttons cohesive with the supplied theme, redesign The Garden, make Settings About and Field Kit full-viewport mobile destinations accessible everywhere, add changing level backgrounds, and add the new logo to About and an asset-preloading splash screen."
         }
       ],
-      "score": 1.98943544,
+      "score": 2.920208634,
       "source_file": "src/components/LevelsView.tsx",
       "status": "preferred",
-      "uses": 2
+      "uses": 3
     },
     "src_components_levelsview_levelsview": {
-      "code_fingerprint": "adf7062f4dff02904135035c37428a1b31526336018058c2cdb5782d051ab099",
+      "code_fingerprint": "639b7fc56bf9fca0646e59a74f83ef40616f08f521b2c717284f25a9da2c872c",
       "label": "LevelsView()",
       "last": "2026-09-09T21:26:06.943807+00:00",
       "provenance": [
@@ -190,13 +205,13 @@
           "q": "I was able to complete the level trails. I actually had Gemini create some transitional tiles to seamlessly transition between the level backgrounds. I also built a trail editor in the debug panel. I can edit the trail and stones as true Bezier curve. One thing I noticed was on my 4k uhd display some of the background images were blurry. Can yuo check the resolution and sizes for all of the background images for the levels? These needs to be sharp and not blurry."
         }
       ],
-      "score": 0.998745292,
+      "score": 0.975403931,
       "source_file": "src/components/LevelsView.tsx",
       "status": "tentative",
       "uses": 1
     },
     "src_components_seedstoredialog": {
-      "code_fingerprint": "b44a7a34e4881084533225a7e9c47ca4763e1f5b1523ac6ccb176605406ac5de",
+      "code_fingerprint": "9b1bd9363f5c3633f9839fff118ae293b419fdf2d66eb38e04fcee8a3b407235",
       "label": "SeedStoreDialog.tsx",
       "last": "2026-09-07T20:49:24.408332+00:00",
       "provenance": [
@@ -216,13 +231,13 @@
           "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
         }
       ],
-      "score": 2.840058928,
+      "score": 2.773684805,
       "source_file": "src/components/SeedStoreDialog.tsx",
       "status": "preferred",
       "uses": 3
     },
     "src_components_settingsdialog": {
-      "code_fingerprint": "17d77b49c03f6575d3119afd991737bef9b5ff1a615d0bb293bc243302e59e77",
+      "code_fingerprint": "7b2dfb07f27d4d4dc64e7797d3060b017881fa1aec0854506307bd2609ef2bc8",
       "label": "SettingsDialog.tsx",
       "last": "2026-09-09T13:01:24.886836+00:00",
       "provenance": [
@@ -232,13 +247,13 @@
           "q": "Write a plan to make all buttons cohesive with the supplied theme, redesign The Garden, make Settings About and Field Kit full-viewport mobile destinations accessible everywhere, add changing level backgrounds, and add the new logo to About and an asset-preloading splash screen."
         }
       ],
-      "score": 0.990690148,
+      "score": 0.967537041,
       "source_file": "src/components/SettingsDialog.tsx",
       "status": "tentative",
       "uses": 1
     },
     "src_gamemechanics": {
-      "code_fingerprint": "152f3351b20efc16d53512caad3a57edb2e13df95a0c65ca91ee8dc65c472984",
+      "code_fingerprint": "f4cb7ab682a5ef9652f56ca9d77c007bc429c99e0236511fded8b189cf9094f4",
       "label": "gameMechanics.ts",
       "last": "2026-09-07T10:23:28.703836+00:00",
       "provenance": [
@@ -253,13 +268,13 @@
           "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
         }
       ],
-      "score": 1.886976899,
+      "score": 1.842876956,
       "source_file": "src/gameMechanics.ts",
       "status": "preferred",
       "uses": 2
     },
     "src_hooks_usewordsearchgame": {
-      "code_fingerprint": "34158c2d7e59ec8a7df351db1fa2bf3161763d78c7b829efff76d07f42402935",
+      "code_fingerprint": "ae0fa5e077393228af700a9054462f61296c00c96406bae5e44f337d1fa16434",
       "label": "useWordSearchGame.ts",
       "last": "2026-09-07T20:49:24.408332+00:00",
       "provenance": [
@@ -279,13 +294,13 @@
           "q": "You are a senior Game Designer and Art Director. Review this game and suggest ways in which I could improve it."
         }
       ],
-      "score": 2.840058928,
+      "score": 2.773684805,
       "source_file": "src/hooks/useWordSearchGame.ts",
       "status": "preferred",
       "uses": 3
     },
     "src_persistence": {
-      "code_fingerprint": "d651ada9701f9d4db0ee9715b5836b6313755c93dc3553d3cb0221d6aff8ad28",
+      "code_fingerprint": "5df241eaffa874a33b55977ff88169e21314c187a69bba827e9553c51dfcf854",
       "label": "persistence.ts",
       "last": "2026-09-07T10:23:28.703836+00:00",
       "provenance": [
@@ -295,13 +310,13 @@
           "q": "write a plan for Luna to execute to resolve these findings. Put it in the project root, but do not commit it to GitHub."
         }
       ],
-      "score": 0.943558067,
+      "score": 0.921506468,
       "source_file": "src/persistence.ts",
       "status": "tentative",
       "uses": 1
     },
     "src_plantscatalog": {
-      "code_fingerprint": "1f4ada8c6f361157d0a372f1e49e94b8e91767901ee4f3a7fbc6d4458802cef2",
+      "code_fingerprint": "749007ff885aa3451da47801cb0c1296bf184c7d1238a772036841be9009faf2",
       "label": "plantsCatalog.ts",
       "last": "2026-09-09T22:20:24.692414+00:00",
       "provenance": [
@@ -311,13 +326,13 @@
           "q": "Create a separate spritesheet containing sick versions of every WordSprout plant and add dormant code support for future plant sickness without implementing gameplay mechanics."
         }
       ],
-      "score": 0.999615759,
+      "score": 0.976254054,
       "source_file": "src/plantsCatalog.ts",
       "status": "tentative",
       "uses": 1
     },
     "src_plantscatalog_getstageimage": {
-      "code_fingerprint": "1f4ada8c6f361157d0a372f1e49e94b8e91767901ee4f3a7fbc6d4458802cef2",
+      "code_fingerprint": "749007ff885aa3451da47801cb0c1296bf184c7d1238a772036841be9009faf2",
       "label": "getStageImage()",
       "last": "2026-09-09T22:20:24.692414+00:00",
       "provenance": [
@@ -327,13 +342,13 @@
           "q": "Create a separate spritesheet containing sick versions of every WordSprout plant and add dormant code support for future plant sickness without implementing gameplay mechanics."
         }
       ],
-      "score": 0.999615759,
+      "score": 0.976254054,
       "source_file": "src/plantsCatalog.ts",
       "status": "tentative",
       "uses": 1
     },
     "src_plantscatalog_plants_catalog": {
-      "code_fingerprint": "1f4ada8c6f361157d0a372f1e49e94b8e91767901ee4f3a7fbc6d4458802cef2",
+      "code_fingerprint": "749007ff885aa3451da47801cb0c1296bf184c7d1238a772036841be9009faf2",
       "label": "PLANTS_CATALOG",
       "last": "2026-09-09T22:20:24.692414+00:00",
       "provenance": [
@@ -343,7 +358,7 @@
           "q": "Create a separate spritesheet containing sick versions of every WordSprout plant and add dormant code support for future plant sickness without implementing gameplay mechanics."
         }
       ],
-      "score": 0.999615759,
+      "score": 0.976254054,
       "source_file": "src/plantsCatalog.ts",
       "status": "tentative",
       "uses": 1

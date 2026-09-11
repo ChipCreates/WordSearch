@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildPresentationQueue, type PresentationEvent } from "./presentationQueue";
+import { buildPresentationQueue, milestoneQueueEventKey, type PresentationEvent } from "./presentationQueue";
 import type { Achievement } from "./achievements";
 import type { BotanistPromotion, BotanistRank } from "./botanistRanks";
 
@@ -10,6 +10,20 @@ const achievement = (id: string): Achievement => ({
 });
 
 describe("buildPresentationQueue (WSP-2.2)", () => {
+    it("gives each milestone queue head a distinct stable identity", () => {
+        expect(milestoneQueueEventKey(null)).toBeNull();
+        expect(milestoneQueueEventKey({ kind: "milestone", level: 20 })).toBe("milestone-20");
+        expect(milestoneQueueEventKey({ kind: "region-transition", regionId: "glowing-grove", transition: "completion", rewardSeeds: 150, level: 20 }))
+            .toBe("region-glowing-grove-completion-20");
+    });
+
+    it("keeps milestone and region identities stable while the queue advances", () => {
+        const first = { kind: "milestone", level: 10 } as const;
+        const second = { kind: "milestone", level: 20 } as const;
+        expect(milestoneQueueEventKey(first)).not.toBe(milestoneQueueEventKey(second));
+        expect(milestoneQueueEventKey(first)).toBe(milestoneQueueEventKey(first));
+    });
+
     it("returns an empty queue for zero coincident events", () => {
         expect(buildPresentationQueue([])).toEqual([]);
     });

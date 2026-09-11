@@ -19,6 +19,7 @@ import AchievementBanner from "./components/AchievementBanner";
 import MilestoneCard from "./components/MilestoneCard";
 import { getMilestoneContent, getRegionTransitionIntensity } from "./milestones";
 import { REWARD_PRESENTATION, type RewardIntensity } from "./rewardIntensity";
+import { milestoneQueueEventKey } from "./presentationQueue";
 import BloomCelebration from "./components/BloomCelebration";
 import { bloomIntensity } from "./bloomEvents";
 import PlayerProfileSheet from "./components/PlayerProfileSheet";
@@ -316,28 +317,28 @@ export default function App() {
     }, [justUnlocked, playSfx]);
 
     // WSP-2.4: milestone/region-transition audio, mirroring the
-    // justUnlocked edge-detection above -- fires once per newly-queued
-    // event, keyed off WSP-2.1's per-intensity audioCue (rewardIntensity.ts)
-    // rather than a single fixed sound, so level 100's "exceptional" moment
-    // sounds bigger than level 10's "small" one. "signature" (the biggest
-    // tier) has no dedicated asset yet -- Tier 3 owns producing the real
-    // motif -- so "cheering" (shipped, currently unused anywhere else) is
-    // the best-effort stand-in until then.
-    const prevMilestoneQueueLengthRef = useRef(milestoneQueue.length);
+    // justUnlocked edge-detection above -- fires once as each event becomes
+    // the visible queue head, keyed off WSP-2.1's per-intensity audioCue
+    // rather than a single fixed sound. "signature" (the biggest tier) has
+    // no dedicated asset yet, so "cheering" is the best-effort stand-in.
+    const currentMilestoneEvent = milestoneQueue[0] ?? null;
+    const milestonePresentationBlocked = !debugRequested && (levelComplete || showSuccessOverlay || promotionQueue.length > 0);
+    const visibleMilestoneEvent = milestonePresentationBlocked ? null : currentMilestoneEvent;
+    const visibleMilestoneEventKey = milestoneQueueEventKey(visibleMilestoneEvent);
+    const prevMilestoneEventKeyRef = useRef<string | null>(null);
     useEffect(() => {
-        if (milestoneQueue.length > prevMilestoneQueueLengthRef.current) {
-            const newest = milestoneQueue[milestoneQueue.length - 1];
-            const intensity: RewardIntensity = newest.kind === "milestone"
-                ? (getMilestoneContent(newest.level)?.intensity ?? "medium")
-                : getRegionTransitionIntensity(newest.transition);
+        if (visibleMilestoneEvent && visibleMilestoneEventKey !== prevMilestoneEventKeyRef.current) {
+            const intensity: RewardIntensity = visibleMilestoneEvent.kind === "milestone"
+                ? (getMilestoneContent(visibleMilestoneEvent.level)?.intensity ?? "medium")
+                : getRegionTransitionIntensity(visibleMilestoneEvent.transition);
             const cue = REWARD_PRESENTATION[intensity].audioCue;
             if (cue === "chime") playBonusChime();
             else if (cue === "award") playSfx("award");
             else if (cue === "fanfare") playSfx("achievement");
             else if (cue === "signature") playSfx("cheering");
         }
-        prevMilestoneQueueLengthRef.current = milestoneQueue.length;
-    }, [milestoneQueue, playSfx, playBonusChime]);
+        prevMilestoneEventKeyRef.current = visibleMilestoneEventKey;
+    }, [visibleMilestoneEvent, visibleMilestoneEventKey, playSfx, playBonusChime]);
 
     // WSP-2.6: plays once per bloom as it becomes the CURRENTLY SHOWN entry
     // (index 0), not once per entry appended -- a bulk "water all ready"
@@ -380,8 +381,7 @@ export default function App() {
     // adds one more: don't show the achievement banner while a milestone
     // card is still queued, so the two full-screen moments never race or
     // overlap -- the milestone card always finishes first.
-    const currentMilestoneEvent = (!debugRequested && levelComplete && !showSuccessOverlay) ? undefined : milestoneQueue[0];
-    const currentToast = (!debugRequested && levelComplete && !showSuccessOverlay) || milestoneQueue.length > 0 ? undefined : justUnlocked[0];
+    const currentToast = milestonePresentationBlocked || milestoneQueue.length > 0 ? undefined : justUnlocked[0];
     const foundCount = wordsToFind.filter(w => foundWords[w]).length;
     // The generator's own placed candidates -- not a hard ceiling. Any real
     // dictionary word not on the target list counts as a bonus find, so a
@@ -974,7 +974,7 @@ export default function App() {
             )}
 
             <MilestoneCard
-                event={currentMilestoneEvent ?? null}
+                event={visibleMilestoneEvent}
                 onDismiss={dismissMilestone}
                 isMobile={isMobile}
             />

@@ -60,6 +60,16 @@ export type PresentationEvent = RankPromotionEvent | RegionTransitionEvent | Mil
  *  issue) or will hold once WSP-2.4 lands (milestone). */
 export type MilestoneQueueEvent = RegionTransitionEvent | MilestoneEvent;
 
+/** Stable identity for a queued milestone/region event. Used by presentation
+ * side effects so appends to an existing queue do not replay the current
+ * event, while advancing the queue can trigger the next event exactly once. */
+export function milestoneQueueEventKey(event: MilestoneQueueEvent | null): string | null {
+    if (!event) return null;
+    return event.kind === "milestone"
+        ? `milestone-${event.level}`
+        : `region-${event.regionId}-${event.transition}-${event.level}`;
+}
+
 // --- Ordering policy --------------------------------------------------
 //
 // Chosen order, low (presented first) to high (presented last):

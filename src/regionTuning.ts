@@ -199,7 +199,7 @@ export const REGION_DIFFICULTY_BIAS: Record<RegionId, RegionDifficultyBias> = {
 };
 
 /**
- * Convenience for callers (e.g. a future useWordSearchGame.ts integration):
+ * Convenience for the live useWordSearchGame.ts integration:
  * computes the player's own mode-based difficulty, then layers the given
  * region's bias on top of it, clamped. Ready to pass straight into
  * generatePuzzle's `difficultyOverride` (see src/puzzleGenerator.ts).
