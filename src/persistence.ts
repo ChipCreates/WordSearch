@@ -4,6 +4,7 @@ import { COMPLETED_ONBOARDING_SEEN, DEFAULT_ONBOARDING_SEEN, normalizeOnboarding
 import { invoke } from "@tauri-apps/api/core";
 import { createFieldNotesState, normalizeFieldNotesState, type FieldNotesState } from "./fieldNotes";
 import { createAfflictionState, normalizeAfflictionState, type AfflictionState } from "./plantAffliction";
+import { REGIONS, regionRewardClaimKey } from "./regions";
 
 export type SaveData = {
     version: number;
@@ -46,9 +47,20 @@ export type SaveData = {
     onboardingSeen: OnboardingSeen;
     afflictions: AfflictionState;
     remedyCharges: number;
+    /** WSP-2.2: keys of the form `${regionId}:entry` / `${regionId}:completion`
+     *  (see regionRewardClaimKey in src/regions.ts) for every region reward
+     *  already granted this save, ever. The one source of truth for
+     *  exactly-once region rewards -- a region's entry/completion Seeds are
+     *  granted iff its key isn't already in here (see queueRegionRewards in
+     *  useWordSearchGame.ts), so neither replaying an already-completed level
+     *  nor reloading the save can re-grant it. */
+    claimedRegionRewards: string[];
+    /** Guards the one-time backfillRegionRewardClaims migration below, the
+     *  same way categoriesSeenBackfilled guards backfillCategoriesSeen. */
+    regionRewardsBackfilled: boolean;
 };
 
-export const CURRENT_SCHEMA_VERSION = 4;
+export const CURRENT_SCHEMA_VERSION = 5;
 
 export const DEFAULT_SAVE_DATA: SaveData = {
     version: CURRENT_SCHEMA_VERSION,
@@ -89,6 +101,8 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     onboardingSeen: DEFAULT_ONBOARDING_SEEN,
     afflictions: createAfflictionState(),
     remedyCharges: 0,
+    claimedRegionRewards: [],
+    regionRewardsBackfilled: false,
 };
 
 const PRIMARY_KEY = "word_sprout_save_v1";
@@ -243,8 +257,57 @@ export function normalizeSaveData(raw: Partial<SaveData> & { stars?: number }): 
         onboardingSeen: raw.onboardingSeen === undefined ? COMPLETED_ONBOARDING_SEEN : normalizeOnboardingSeen(raw.onboardingSeen),
         afflictions: normalizeAfflictionState(raw.afflictions),
         remedyCharges: Math.max(0, Math.floor(Number(raw.remedyCharges) || 0)),
+        claimedRegionRewards: asStringArray(raw.claimedRegionRewards, DEFAULT_SAVE_DATA.claimedRegionRewards),
+        regionRewardsBackfilled: asBoolean(raw.regionRewardsBackfilled, DEFAULT_SAVE_DATA.regionRewardsBackfilled),
         version: CURRENT_SCHEMA_VERSION,
     };
+}
+
+// One-time retroactive migration for WSP-2.2's region entry/completion
+// rewards. Policy: NO retroactive grants -- a save that already has
+// `highestUnlockedLevel` (or an explicit completedLevels entry) past a
+// region boundary when this feature ships has that region's reward(s)
+// marked claimed, but is never paid the Seeds retroactively. This mirrors
+// the precedent already set a few lines above by onboardingSeen's own
+// migration: a returning player is never retroactively given an experience
+// (there, onboarding; here, a reward moment) they didn't actually earn
+// under the new system, and the alternative -- silently crediting every
+// existing save a lump sum of Seeds for regions they may have finished
+// months ago in a WSP-1.x playtest build -- would be an unrequested,
+// unbounded balance change smuggled in by a schema migration rather than a
+// deliberate economy decision. A brand new save is never affected: it starts
+// inside Glowing Grove with nothing yet claimed, and earns every reward the
+// normal way as it actually crosses each boundary.
+//
+// "Already completed"/"already entered" is read defensively, the same way
+// normalizeSaveData's own hasExplicitCompletionLedger handles a legacy
+// completedLevels ledger that might not be trustworthy: either an explicit
+// completedLevels entry for the region's final level, or (as a fallback,
+// since older saves may lack a full completedLevels ledger -- see
+// normalizeSaveData above) a frontier that has already moved past it.
+//
+// Guarded by `regionRewardsBackfilled` so this only ever runs once per save,
+// exactly like backfillCategoriesSeen above.
+function backfillRegionRewardClaims(data: SaveData): SaveData {
+    if (data.regionRewardsBackfilled) return data;
+    const claimed = new Set(data.claimedRegionRewards);
+    for (const region of REGIONS) {
+        if (data.completedLevels.includes(region.end) || data.highestUnlockedLevel > region.end) {
+            claimed.add(regionRewardClaimKey(region.id, "completion"));
+        }
+        if (region.entryReward && data.highestUnlockedLevel >= region.start) {
+            claimed.add(regionRewardClaimKey(region.id, "entry"));
+        }
+    }
+    return { ...data, claimedRegionRewards: Array.from(claimed), regionRewardsBackfilled: true };
+}
+
+// Both one-time backfills always need to run together on any freshly
+// normalized SaveData, in every place a normalized save is produced --
+// factored out so the two migrations can't drift out of sync at one call
+// site while staying in sync at another.
+function applyOneTimeBackfills(data: SaveData): SaveData {
+    return backfillRegionRewardClaims(backfillCategoriesSeen(data));
 }
 
 function parseJson<T>(raw: string | null, fallback: T): T {
@@ -351,7 +414,7 @@ export async function loadSaveData(): Promise<SaveData> {
             const nativeState = await invoke<string | null>("load_game_state");
             if (nativeState) {
                 const parsed = parsePrimarySave(nativeState);
-                if (parsed) return backfillCategoriesSeen(normalizeSaveData(parsed));
+                if (parsed) return applyOneTimeBackfills(normalizeSaveData(parsed));
                 // A load issue was recorded; fall through to the localStorage
                 // mirror below (writeSaveData always keeps both in sync) in
                 // case it isn't affected the same way, exactly like an IPC
@@ -371,7 +434,7 @@ export async function loadSaveData(): Promise<SaveData> {
             if (parsed.wateredDate && !parsed.wateredTimestamps) {
                 parsed.wateredTimestamps = {};
             }
-            return backfillCategoriesSeen(normalizeSaveData(parsed));
+            return applyOneTimeBackfills(normalizeSaveData(parsed));
         }
         // A load issue was detected and preserved (see parsePrimarySave) --
         // a real, modern save already exists at PRIMARY_KEY, so legacy-key
@@ -470,7 +533,7 @@ export async function loadSaveData(): Promise<SaveData> {
         }
     }
 
-    return backfillCategoriesSeen(normalizeSaveData(migratedData));
+    return applyOneTimeBackfills(normalizeSaveData(migratedData));
 }
 
 export function loadSaveDataSync(): SaveData {
@@ -480,7 +543,7 @@ export function loadSaveDataSync(): SaveData {
     const primaryRaw = localStorage.getItem(PRIMARY_KEY);
     if (primaryRaw) {
         const parsed = parsePrimarySave(primaryRaw);
-        if (parsed) return backfillCategoriesSeen(normalizeSaveData(parsed));
+        if (parsed) return applyOneTimeBackfills(normalizeSaveData(parsed));
         return { ...DEFAULT_SAVE_DATA };
     }
 
@@ -506,7 +569,7 @@ export async function writeSaveData(data: Partial<SaveData>): Promise<void> {
     // issue (e.g. another tab/window running a newer build wrote a newer
     // save to the same localStorage since this session's last read).
     if (loadIssue) return;
-    const existing = parsed ? backfillCategoriesSeen(normalizeSaveData(parsed)) : { ...DEFAULT_SAVE_DATA };
+    const existing = parsed ? applyOneTimeBackfills(normalizeSaveData(parsed)) : { ...DEFAULT_SAVE_DATA };
     const merged: SaveData = normalizeSaveData({ ...existing, ...data });
     const serialized = JSON.stringify(merged);
     localStorage.setItem(PRIMARY_KEY, serialized);
