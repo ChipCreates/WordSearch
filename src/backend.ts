@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { pickCategoryForLevel, REGION_CATEGORY_BIAS, type RegionId } from "./regionTuning";
 
 // The Tauri desktop/Android builds get puzzle words and bonus-word
 // validation from Rust (src-tauri/src/categories/, dictionary.rs) over IPC.
@@ -86,7 +87,14 @@ export type PuzzleRequest = {
     tier: Tier;
     // When set, pulls from this exact category (used by the "favorite
     // categories" custom mode) instead of cycling through `tier`'s pool.
+    // Wins unconditionally over regionId below -- an explicit favorite
+    // category is a player choice; region bias only ever influences which
+    // category gets picked automatically from the tier pool.
     categoryName?: string;
+    // WSP-2.3 -- when set (and categoryName is not), biases which category
+    // in `tier`'s pool gets picked via REGION_CATEGORY_BIAS instead of the
+    // plain level-indexed cycle. Ignored entirely when categoryName is set.
+    regionId?: RegionId;
     // Words shown in this category's last puzzle -- excluded from the
     // candidate pool where possible so picking the same small handful of
     // favorite categories over and over doesn't immediately repeat words,
@@ -109,11 +117,12 @@ export async function getPuzzleWords(req: PuzzleRequest): Promise<Puzzle> {
             tier: req.tier,
             categoryName: req.categoryName ?? null,
             excludeWords: req.excludeWords ?? [],
+            regionId: req.regionId ?? null,
         });
     }
     const category = req.categoryName
         ? WEB_CATEGORIES.find(c => c.name === req.categoryName)
-        : webPool(req.tier)[(req.level - 1) % webPool(req.tier).length];
+        : pickCategoryForLevel(webPool(req.tier), req.level, req.regionId ? REGION_CATEGORY_BIAS[req.regionId] : undefined);
     if (!category) return { category: "", words: [] };
 
     const exclude = new Set(req.excludeWords ?? []);

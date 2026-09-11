@@ -59,6 +59,18 @@ export type PuzzleGenerationRequest = {
     mode: PuzzleMode;
     gridSize?: number;
     rng?: () => number;
+    // WSP-2.3 -- a region's difficulty-tuning bias, already layered on top
+    // of getPuzzleDifficulty(level, mode) and clamped (see
+    // src/regionTuning.ts's applyRegionDifficultyBias/getRegionPuzzleDifficulty).
+    // When present, this is used verbatim as the puzzle's difficulty instead
+    // of deriving one from level/mode/gridSize -- it's the caller's job to
+    // build it *from* getPuzzleDifficulty(level, mode) so region tuning stays
+    // a modifier on the player's own mode, never a second difficulty system
+    // this generator would otherwise have to know anything about. Keeping
+    // puzzleGenerator.ts itself free of any import from src/regionTuning.ts
+    // preserves the "pure and isolated" generator architecture WSP-0.2
+    // already established -- this module has no idea regions exist.
+    difficultyOverride?: PuzzleDifficulty;
 };
 
 export type PuzzleGenerationResult = {
@@ -304,7 +316,7 @@ export function validatePuzzleInvariants(
     request: PuzzleGenerationRequest,
 ): InvariantViolation[] {
     const violations = new Set<InvariantViolation>();
-    const difficulty = getPuzzleDifficulty(request.level, request.mode, request.gridSize);
+    const difficulty = request.difficultyOverride ?? getPuzzleDifficulty(request.level, request.mode, request.gridSize);
 
     const seen = new Set<string>();
     for (const word of result.targetWords) {
@@ -366,7 +378,7 @@ function buildResult(
 }
 
 export function generatePuzzle(request: PuzzleGenerationRequest): PuzzleGenerationResult {
-    const difficulty = getPuzzleDifficulty(request.level, request.mode, request.gridSize);
+    const difficulty = request.difficultyOverride ?? getPuzzleDifficulty(request.level, request.mode, request.gridSize);
     const rng = request.rng ?? Math.random;
     // Defensive backstops (see isPlaceableWord/dedupeWords): real category
     // content never trips these, but a generated puzzle must never violate
