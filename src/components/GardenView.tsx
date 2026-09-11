@@ -7,6 +7,9 @@ import { getPlantArtwork } from "../plantHealth";
 import { GARDEN_WATERING_COOLDOWN_MS } from "../gameMechanics";
 import { getPlantEconomy, MIN_FERTILIZER_COST, STARTER_BLOOM_BOUNTY } from "../economy";
 import { AFFLICTION_DEFINITIONS, COMPOST_REFUND_SEEDS, SEVERITY_LABELS, type AfflictionState } from "../plantAffliction";
+import type { BloomEvent, BloomOccurrence } from "../bloomEvents";
+import BloomCelebration from "./BloomCelebration";
+import WateringBeat, { type CareAction } from "./WateringBeat";
 
 type Props = {
     seeds: number;
@@ -20,11 +23,26 @@ type Props = {
     spendSeeds: (cost: number) => boolean;
     updateWateredTimestamp: (plantId: string, timestamp: number) => void;
     updatePlantGrowth: (plantId: string, newGrowth: number) => void;
-    recordPlantBloom: (tier: string) => void;
+    recordPlantBloom: (bloom: BloomOccurrence) => void;
     onTreatPlant: (plantId: string) => boolean;
     onCompostPlant: (plantId: string) => boolean;
     showToast: (message: string) => void;
+    /** WSP-2.6: the shared bloom-presentation queue -- fed by this view's own
+     *  water/fertilize handlers AND (while this view isn't mounted) bulk
+     *  "water all ready" elsewhere in the app. Rendered here via
+     *  BloomCelebration so the two individual-action sources get a
+     *  first-class, directly-testable presentation without waiting on
+     *  App.tsx; App.tsx mounts its own copy only while the Garden tab is NOT
+     *  active, so the two never double-render the same queue at once. */
+    bloomEvents: BloomEvent[];
+    onDismissBloomEvent: () => void;
+    isMobile?: boolean;
 };
+
+// Sub-1.5s per WSP-2.6's acceptance criteria for the watering/fertilizing
+// beat (tap -> animation -> soil/droplet response -> plant reacts -> quiet
+// feedback). Also doubles as a mash-guard window: see triggerCareBeat below.
+const CARE_BEAT_DURATION_MS = 1400;
 
 type FilterTab = "all" | "bloomed" | "seedlings";
 
@@ -40,11 +58,15 @@ function formatCooldown(remainingMs: number): string {
 // Owns its own 1s ticker so only this button re-renders while a cooldown
 // counts down, instead of the whole plant grid re-rendering every second.
 function WaterButton({
-    lastWatered, growth, onWater,
+    lastWatered, growth, onWater, beatActive,
 }: {
     lastWatered: number;
     growth: number;
     onWater: () => void;
+    /** WSP-2.6: true while this plant's watering beat is still playing --
+     *  disables the button as a visible mash-guard, on top of (not instead
+     *  of) handleWaterPlant's own internal guard. */
+    beatActive?: boolean;
 }) {
     const [, setTick] = useState(0);
     const cooldownActiveNow = COOLDOWN_MS - (Date.now() - lastWatered) > 0;
@@ -62,7 +84,7 @@ function WaterButton({
         <button
             className="ws-garden-action ws-garden-action--water"
             onClick={onWater}
-            disabled={cooldownActive || fullyBloomed}
+            disabled={cooldownActive || fullyBloomed || beatActive}
             style={{
                 width: "100%",
                 padding: "10px 16px",
@@ -123,11 +145,38 @@ export default function GardenView({
     onTreatPlant,
     onCompostPlant,
     showToast,
+    bloomEvents,
+    onDismissBloomEvent,
+    isMobile,
 }: Props) {
     const [filter, setFilter] = useState<FilterTab>("all");
+    // WSP-2.6 Part 1: which plant card(s) are currently mid-beat, and which
+    // action triggered it. A map (not a single id) because a player can
+    // legitimately tap Water on one card and Fertilize on another in quick
+    // succession -- each card's beat is independent.
+    const [activeBeats, setActiveBeats] = useState<Record<string, CareAction>>({});
 
     const getPlantGrowth = (plantId: string) => {
         return growthByPlant[plantId] !== undefined ? growthByPlant[plantId] : 0;
+    };
+
+    // Starts a plant card's watering/fertilizing beat and clears it after
+    // CARE_BEAT_DURATION_MS. Also doubles as this view's own mash-guard:
+    // handleWaterPlant/handleFertilizePlant both bail out immediately if a
+    // beat is already active for that plant, so rapidly re-clicking a
+    // button before the parent's cooldown/growth props have re-rendered
+    // can't fire the underlying mutation (updateWateredTimestamp, bounty,
+    // recordPlantBloom, ...) more than once per beat window.
+    const triggerCareBeat = (plantId: string, action: CareAction) => {
+        setActiveBeats(prev => ({ ...prev, [plantId]: action }));
+        setTimeout(() => {
+            setActiveBeats(prev => {
+                if (prev[plantId] !== action) return prev; // a newer beat already took over
+                const next = { ...prev };
+                delete next[plantId];
+                return next;
+            });
+        }, CARE_BEAT_DURATION_MS);
     };
 
     const handleTreatPlant = (plantId: string, plantName: string) => {
@@ -145,6 +194,10 @@ export default function GardenView({
     };
 
     const handleWaterPlant = (plantId: string, plantName: string) => {
+        // Mash-guard (WSP-2.6): while this plant's beat is still playing,
+        // ignore further taps rather than re-running the watering mutation.
+        if (activeBeats[plantId]) return;
+
         const lastWatered = wateredTimestamps[plantId] || 0;
         const now = Date.now();
         if (now - lastWatered < COOLDOWN_MS) {
@@ -158,6 +211,7 @@ export default function GardenView({
         // Save watered timestamp and growth level via centralized updaters
         updateWateredTimestamp(plantId, now);
         updatePlantGrowth(plantId, newGrowth);
+        triggerCareBeat(plantId, "water");
 
         // Find plant def for bounty amount
         const plantDef = PLANTS_CATALOG.find(p => p.id === plantId);
@@ -165,14 +219,18 @@ export default function GardenView({
 
         if (newGrowth === 100 && currentGrowth < 100) {
             addSeeds(bounty); // Bloom bounty!
-            recordPlantBloom(plantDef?.tier ?? "Common");
-            showToast(`🎉 Fantastic! Your ${plantName} has reached full bloom! You've received a bounty of ${bounty} Seeds! 🌸`);
+            // WSP-2.6: BloomCelebration now owns this moment's presentation
+            // entirely -- the old plain "🎉 Fantastic!" toast is gone here,
+            // replaced by the shared, rarity-scaled celebration queued below.
+            recordPlantBloom({ plantId, plantName, tier: plantDef?.tier ?? "Common", bounty });
         } else {
             showToast(`💧 ${plantName} grew 25%. Keep nurturing it toward bloom!`);
         }
     };
 
     const handleFertilizePlant = (plantId: string, plantName: string) => {
+        if (activeBeats[plantId]) return;
+
         const currentGrowth = getPlantGrowth(plantId);
         if (currentGrowth >= 100) {
             showToast("This plant is already fully bloomed!");
@@ -191,14 +249,16 @@ export default function GardenView({
 
         // Save growth state via centralized updater
         updatePlantGrowth(plantId, newGrowth);
+        triggerCareBeat(plantId, "fertilize");
 
         // Find plant def for bounty amount
         const bounty = plantDef ? getPlantEconomy(plantDef).bloomBounty : STARTER_BLOOM_BOUNTY;
 
         if (newGrowth === 100) {
             addSeeds(bounty); // Bloom bounty!
-            recordPlantBloom(plantDef?.tier ?? "Common");
-            showToast(`🎉 Botanical magic! Your ${plantName} has bloomed! You've received a bounty of ${bounty} Seeds! 🌸`);
+            // WSP-2.6: same shared BloomCelebration path as handleWaterPlant
+            // above and waterAllReady's bulk path -- see bloomEvents.ts.
+            recordPlantBloom({ plantId, plantName, tier: plantDef?.tier ?? "Common", bounty });
         } else {
             showToast(`🧪 Fertilized! ${plantName} growth boosted by 25%!`);
         }
@@ -219,6 +279,13 @@ export default function GardenView({
 
     return (
         <div className="ws-garden" style={{ display: "flex", flexDirection: "column", gap: 24, width: "100%" }}>
+            {/* WSP-2.6: the shared bloom-presentation queue, fed by
+                handleWaterPlant/handleFertilizePlant above (App.tsx mounts
+                its own copy for bulk waterAllReady blooms triggered while
+                this view isn't mounted -- see App.tsx's own BloomCelebration
+                for why the two never run at once). */}
+            <BloomCelebration events={bloomEvents} onDismiss={onDismissBloomEvent} isMobile={isMobile} />
+
             {/* Garden summary */}
             <div className="glass-panel ws-garden__summary" style={{ padding: 24, borderRadius: "1.25rem", display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
@@ -278,6 +345,33 @@ export default function GardenView({
                         />
                     </div>
                 </div>
+
+                {/* WSP-2.6 Part 4: Conservatory Shelf -- a deliberately cheap
+                    accumulation visual, NOT a decorating/arrangement system.
+                    One token per owned plant, in acquisition order
+                    (ownedPlants' own order -- no separate layout state), using
+                    each plant's current growth-stage art so a shelf of blooms
+                    visibly reads different from a shelf of seed vessels. As
+                    the collection grows the shelf just gets longer/fuller;
+                    there is nothing here for a player to rearrange. */}
+                {userOwnedPlantDefs.length > 0 && (
+                    <div className="ws-conservatory-shelf" data-testid="conservatory-shelf">
+                        <div className="ws-conservatory-shelf__label">
+                            🪟 Conservatory Shelf · {userOwnedPlantDefs.length} plant{userOwnedPlantDefs.length === 1 ? "" : "s"}
+                        </div>
+                        <div className="ws-conservatory-shelf__row">
+                            {userOwnedPlantDefs.map(plant => (
+                                <img
+                                    key={plant.id}
+                                    className="ws-conservatory-shelf__token"
+                                    src={assetUrl(getStageImage(getPlantGrowth(plant.id), plant.id).replace(/^\//, ""))}
+                                    alt={`${plant.name} (${getStageName(getPlantGrowth(plant.id))})`}
+                                    title={plant.name}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Filter Tabs & Shop Action */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginTop: 4 }}>
@@ -347,6 +441,11 @@ export default function GardenView({
                         const afflictionArtwork = affliction
                             ? getPlantArtwork(growth, plant.id, affliction.severity === 3 ? "dead" : "sick")
                             : null;
+                        // WSP-2.6 Part 1: this card's in-flight watering/
+                        // fertilizing beat, if any -- drives both the
+                        // WateringBeat overlay and the plant art's brief
+                        // "reacting" pulse.
+                        const beatAction = activeBeats[plant.id] ?? null;
 
                         return (
                             <div
@@ -397,7 +496,7 @@ export default function GardenView({
                                         />
                                     ) : (
                                         <img
-                                            className="ws-plant-art"
+                                            className={`ws-plant-art${beatAction ? " ws-plant-art--reacting" : ""}`}
                                             src={plantImage}
                                             alt={plant.name}
                                             style={{
@@ -409,6 +508,11 @@ export default function GardenView({
                                             }}
                                         />
                                     )}
+
+                                    {/* WSP-2.6 Part 1: the watering/fertilizing beat -- purely
+                                        decorative, pointer-events:none, never blocks the
+                                        buttons below it. */}
+                                    <WateringBeat action={beatAction} />
 
                                     {/* Affliction Badge Tag */}
                                     {affliction && (
@@ -553,6 +657,7 @@ export default function GardenView({
                                                 lastWatered={lastWatered}
                                                 growth={growth}
                                                 onWater={() => handleWaterPlant(plant.id, plant.name)}
+                                                beatActive={beatAction === "water"}
                                             />
 
                                             {/* Fertilizer Button */}
@@ -560,6 +665,7 @@ export default function GardenView({
                                                 <button
                                                     className="ws-garden-action ws-garden-action--fertilize"
                                                     onClick={() => handleFertilizePlant(plant.id, plant.name)}
+                                                    disabled={beatAction === "fertilize"}
                                                     style={{
                                                         width: "100%",
                                                         padding: "8px 16px",
@@ -570,12 +676,13 @@ export default function GardenView({
                                                         fontFamily: "var(--font-headline)",
                                                         fontWeight: 700,
                                                         fontSize: "0.85rem",
-                                                        cursor: "pointer",
+                                                        cursor: beatAction === "fertilize" ? "default" : "pointer",
                                                         display: "flex",
                                                         alignItems: "center",
                                                         justifyContent: "center",
                                                         gap: 6,
                                                         transition: "all 0.2s ease",
+                                                        opacity: beatAction === "fertilize" ? 0.6 : 1,
                                                     }}
                                                 >
                                                     <span>🧪 Apply Fertilizer (Costs {getPlantEconomy(plant).fertilizerCost} Seeds)</span>

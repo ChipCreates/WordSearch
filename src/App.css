@@ -1918,6 +1918,239 @@ button:focus-visible:has(.ws-navigation-art) { outline: 2px solid var(--color-pr
   filter: drop-shadow(0 0 10px rgba(var(--color-primary-rgb), 0.55));
 }
 
+/* ── Garden watering beat & bloom celebration (WSP-2.6) ──────────────────── */
+
+/* The plant art's brief "reacting" pulse while a watering/fertilizing beat
+   plays -- layered on top of ws-plant-art's own drop-shadow, not replacing it. */
+.ws-plant-art--reacting {
+  animation: ws-plant-react 1.4s ease-out both;
+}
+@keyframes ws-plant-react {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.06); filter: drop-shadow(0 0 26px rgba(0, 228, 121, 0.75)) brightness(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* Purely decorative overlay for the watering/fertilizing beat -- always
+   pointer-events:none so it never intercepts the Water/Fertilize/Treat/
+   Compost buttons beneath it (non-blocking is a hard requirement, not just
+   a visual nicety). Positioned against the hero frame's own
+   position:relative. */
+.ws-watering-beat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+.ws-watering-beat__droplet {
+  position: relative;
+  font-size: 2.4rem;
+  animation: ws-droplet-fall 1.1s cubic-bezier(0.3, 0.6, 0.35, 1) both;
+  filter: drop-shadow(0 0 10px rgba(120, 200, 255, 0.7));
+}
+.ws-watering-beat--fertilize .ws-watering-beat__droplet {
+  filter: drop-shadow(0 0 10px rgba(244, 201, 93, 0.7));
+}
+.ws-watering-beat__ripple {
+  position: absolute;
+  bottom: 18%;
+  width: 70px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(120, 200, 255, 0.55);
+  animation: ws-ripple-expand 0.9s ease-out 0.55s both;
+}
+.ws-watering-beat--fertilize .ws-watering-beat__ripple { border-color: rgba(244, 201, 93, 0.55); }
+.ws-watering-beat__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 55%, rgba(0, 228, 121, 0.28), transparent 65%);
+  animation: ws-beat-glow 1.4s ease-out both;
+}
+@keyframes ws-droplet-fall {
+  0% { opacity: 0; transform: translateY(-70px) scale(0.7); }
+  35% { opacity: 1; transform: translateY(0) scale(1); }
+  60% { opacity: 1; transform: translateY(4px) scale(0.94); }
+  100% { opacity: 0; transform: translateY(10px) scale(0.8); }
+}
+@keyframes ws-ripple-expand {
+  0% { opacity: 0.9; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+@keyframes ws-beat-glow {
+  0% { opacity: 0; }
+  35% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* Reduced motion: an instant, static droplet/spark glyph instead of the
+   fall/ripple/glow sequence -- same information, no motion. */
+.ws-watering-beat--reduced .ws-watering-beat__droplet { animation: none; opacity: 1; transform: none; }
+.ws-watering-beat--reduced .ws-watering-beat__ripple,
+.ws-watering-beat--reduced .ws-watering-beat__glow { display: none; }
+
+/* Bloom celebration (WSP-2.6 Part 3). Position/duration/scrim are all
+   already decided per-intensity in src/rewardIntensity.ts -- this file only
+   supplies the visual treatment those parameters select between. */
+.ws-bloom-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1999;
+  background-color: rgba(4, 14, 8, 0.55);
+  backdrop-filter: var(--glass-blur, blur(12px));
+  animation: ws-bloom-scrim-fade 1s ease-in-out both;
+}
+.ws-bloom-scrim--reduced { animation: none; opacity: 1; }
+@keyframes ws-bloom-scrim-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.ws-bloom-celebration {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 1.25rem;
+  max-width: calc(100vw - 24px);
+  background: rgba(8, 29, 20, 0.88);
+  border: 1px solid rgba(0, 228, 121, 0.45);
+  box-shadow: 0 8px 32px rgba(0, 228, 121, 0.25);
+  animation: ws-bloom-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.ws-bloom-celebration__glow {
+  position: absolute;
+  inset: -30%;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(0, 228, 121, 0.35), transparent 70%);
+  animation: ws-bloom-glow-pulse 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.ws-bloom-celebration__particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.ws-bloom-celebration__particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 8px rgba(0, 228, 121, 0.8);
+  animation: ws-bloom-particle-burst 1.4s ease-out calc(var(--ws-particle-i, 0) * 90ms) both;
+}
+.ws-bloom-celebration__art { font-size: 1.8rem; filter: drop-shadow(0 0 10px rgba(0, 228, 121, 0.6)); }
+.ws-bloom-celebration__copy { position: relative; display: flex; flex-direction: column; }
+.ws-bloom-celebration__eyebrow { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-primary); }
+.ws-bloom-celebration__name { font-family: var(--font-headline); font-weight: 800; font-size: 1rem; color: var(--color-on-surface, #f2f8d9); }
+.ws-bloom-celebration__bounty { font-size: 0.85rem; color: var(--color-accent-gold, #f4c95d); font-weight: 700; }
+.ws-bloom-celebration__dismiss {
+  position: relative;
+  margin-left: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ws-bloom-celebration__dismiss:hover, .ws-bloom-celebration__dismiss:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+/* Higher-intensity blooms read as visibly bigger, not just longer-lived. */
+.ws-bloom-celebration--medium { box-shadow: 0 8px 36px rgba(0, 228, 121, 0.35); }
+.ws-bloom-celebration--major,
+.ws-bloom-celebration--exceptional {
+  padding: 18px 26px;
+  box-shadow: 0 10px 44px rgba(0, 228, 121, 0.45);
+  border-width: 2px;
+}
+.ws-bloom-celebration--exceptional .ws-bloom-celebration__art { font-size: 2.4rem; }
+.ws-bloom-celebration--exceptional .ws-bloom-celebration__name { font-size: 1.15rem; }
+
+@keyframes ws-bloom-pop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-16px) scale(0.9); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+@keyframes ws-bloom-glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+@keyframes ws-bloom-particle-burst {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(calc(var(--ws-particle-i, 0) * 45deg)) translateY(0) scale(0.6); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(calc(var(--ws-particle-i, 0) * 45deg)) translateY(-60px) scale(0.4); }
+}
+.ws-bloom-celebration--reduced,
+.ws-bloom-celebration--reduced .ws-bloom-celebration__glow,
+.ws-bloom-celebration--reduced .ws-bloom-celebration__particle {
+  animation: none;
+}
+.ws-bloom-celebration--reduced { opacity: 1; transform: translateX(-50%); }
+.ws-bloom-celebration--reduced .ws-bloom-celebration__glow { opacity: 0.4; }
+.ws-bloom-celebration--reduced .ws-bloom-celebration__particle { display: none; }
+
+/* Conservatory Shelf (WSP-2.6 Part 4) -- a cheap accumulation visual, not a
+   decorating/arrangement system. Plain flex-wrap row; order always follows
+   ownedPlants, nothing here is draggable or persisted separately. */
+.ws-conservatory-shelf {
+  padding: 12px 14px;
+  border-radius: 1rem;
+  background: rgba(0, 228, 121, 0.05);
+  border: 1px solid rgba(0, 228, 121, 0.18);
+}
+.ws-conservatory-shelf__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 8px;
+}
+.ws-conservatory-shelf__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 108px;
+  overflow-y: auto;
+}
+.ws-conservatory-shelf__token {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  padding: 4px;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  filter: drop-shadow(0 0 4px rgba(0, 228, 121, 0.35));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-plant-art--reacting { animation: none; }
+  .ws-watering-beat__droplet, .ws-watering-beat__ripple, .ws-watering-beat__glow { animation: none; }
+  .ws-watering-beat__droplet { opacity: 1; transform: none; }
+  .ws-watering-beat__ripple, .ws-watering-beat__glow { display: none; }
+  .ws-bloom-scrim { animation: none; opacity: 1; }
+  .ws-bloom-celebration, .ws-bloom-celebration__glow, .ws-bloom-celebration__particle { animation: none; }
+  .ws-bloom-celebration { opacity: 1; transform: translateX(-50%); }
+  .ws-bloom-celebration__glow { opacity: 0.4; }
+  .ws-bloom-celebration__particle { display: none; }
+}
+
 .ws-sr-only {
   position: absolute;
   width: 1px;

@@ -503,15 +503,26 @@ describe("useWordSearchGame", () => {
     // three Common-tier blooms satisfied "Bloom plants from 3 rarity tiers"
     // (verdant-voyager). It's fixed to actually use its tier argument and
     // track the set of *distinct* tiers bloomed.
+    //
+    // WSP-2.6 note: recordPlantBloom's public signature changed from a bare
+    // tier string to a full BloomOccurrence ({plantId, plantName, tier,
+    // bounty}) so the Garden's bloom-celebration presentation can name the
+    // specific plant, not just its tier -- the calls below were updated to
+    // match. The distinct-tier accounting these tests exercise is otherwise
+    // untouched: registerBlooms still only ever sees `bloom.tier`.
+    function bloom(tier: string, plantId = `${tier.toLowerCase()}-test-plant`): Parameters<ReturnType<typeof useWordSearchGame>["recordPlantBloom"]>[0] {
+        return { plantId, plantName: `Test ${tier} Plant`, tier: tier as never, bounty: 10 };
+    }
+
     describe("verdant-voyager rarity-tier tracking (WSP-2.5)", () => {
         it("does NOT unlock verdant-voyager from three blooms of the same rarity tier", async () => {
             const { result } = renderHook(() => useWordSearchGame());
             await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
 
             act(() => {
-                result.current.recordPlantBloom("Common");
-                result.current.recordPlantBloom("Common");
-                result.current.recordPlantBloom("Common");
+                result.current.recordPlantBloom(bloom("Common", "plant-a"));
+                result.current.recordPlantBloom(bloom("Common", "plant-b"));
+                result.current.recordPlantBloom(bloom("Common", "plant-c"));
             });
 
             expect(result.current.bloomedRarityTiers.size).toBe(1);
@@ -524,9 +535,9 @@ describe("useWordSearchGame", () => {
             await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
 
             act(() => {
-                result.current.recordPlantBloom("Common");
-                result.current.recordPlantBloom("Rare");
-                result.current.recordPlantBloom("Epic");
+                result.current.recordPlantBloom(bloom("Common"));
+                result.current.recordPlantBloom(bloom("Rare"));
+                result.current.recordPlantBloom(bloom("Epic"));
             });
 
             expect(result.current.bloomedRarityTiers.size).toBe(3);
@@ -540,9 +551,9 @@ describe("useWordSearchGame", () => {
             await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
 
             act(() => {
-                result.current.recordPlantBloom("Common");
-                result.current.recordPlantBloom("Common");
-                result.current.recordPlantBloom("Rare");
+                result.current.recordPlantBloom(bloom("Common", "plant-a"));
+                result.current.recordPlantBloom(bloom("Common", "plant-b"));
+                result.current.recordPlantBloom(bloom("Rare", "plant-c"));
             });
 
             expect(result.current.bloomedRarityTiers.size).toBe(2);
@@ -612,6 +623,117 @@ describe("useWordSearchGame", () => {
             expect(bloomResult.bloomed).toBe(2);
             expect(result.current.plantsBloomed).toBe(2);
             expect(result.current.bloomedRarityTiers.size).toBe(1);
+        });
+    });
+
+    // WSP-2.6: all three bloom-triggering sites (recordPlantBloom -- used by
+    // GardenView's individual water/fertilize handlers -- and waterAllReady's
+    // bulk path) must feed the SAME bloomEvents presentation queue with the
+    // SAME {plantId, plantName, tier, bounty} shape, so BloomCelebration
+    // never needs to know or care which of the three produced a given entry.
+    describe("bloomEvents presentation queue (WSP-2.6)", () => {
+        it("recordPlantBloom appends a full occurrence -- not just a tier -- to bloomEvents", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => {
+                result.current.recordPlantBloom({ plantId: "moss-sprout", plantName: "Deep Moss Sprout", tier: "Common", bounty: 42 });
+            });
+
+            expect(result.current.bloomEvents).toHaveLength(1);
+            expect(result.current.bloomEvents[0]).toMatchObject({
+                plantId: "moss-sprout", plantName: "Deep Moss Sprout", tier: "Common", bounty: 42,
+            });
+            // Each queued entry gets its own stable id for a presentation
+            // queue (or a test) to key/track independently.
+            expect(typeof result.current.bloomEvents[0].id).toBe("string");
+        });
+
+        it("waterAllReady's bulk bloom path appends the SAME shape of occurrence, one entry per plant", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => { result.current.addSeeds(5000); });
+            act(() => {
+                result.current.buyPlantSeed("succulent-rosette", 400); // Rare
+                result.current.buyPlantSeed("golden-sunflower", 850); // Epic
+            });
+            act(() => {
+                result.current.updatePlantGrowth("moss-sprout", 75);
+                result.current.updatePlantGrowth("succulent-rosette", 75);
+                result.current.updatePlantGrowth("golden-sunflower", 75);
+                const longAgo = 0;
+                result.current.updateWateredTimestamp("moss-sprout", longAgo);
+                result.current.updateWateredTimestamp("succulent-rosette", longAgo);
+                result.current.updateWateredTimestamp("golden-sunflower", longAgo);
+            });
+
+            act(() => { result.current.waterAllReady(Date.now()); });
+
+            expect(result.current.bloomEvents).toHaveLength(3);
+            const tiers = result.current.bloomEvents.map(e => e.tier).sort();
+            expect(tiers).toEqual(["Common", "Epic", "Rare"]);
+            // Every entry has a distinct plantId and a real bounty, matching
+            // the individual-source shape from the test above exactly --
+            // BloomCelebration reads the same fields regardless of source.
+            const plantIds = new Set(result.current.bloomEvents.map(e => e.plantId));
+            expect(plantIds.size).toBe(3);
+            result.current.bloomEvents.forEach(e => expect(e.bounty).toBeGreaterThan(0));
+        });
+
+        it("a bulk bloom queues behind a still-unpresented individual bloom instead of replacing or dropping it", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => {
+                result.current.recordPlantBloom({ plantId: "moss-sprout", plantName: "Deep Moss Sprout", tier: "Common", bounty: 10 });
+            });
+            expect(result.current.bloomEvents).toHaveLength(1);
+            const firstId = result.current.bloomEvents[0].id;
+
+            act(() => { result.current.addSeeds(5000); });
+            act(() => { result.current.buyPlantSeed("succulent-rosette", 400); });
+            act(() => {
+                result.current.updatePlantGrowth("succulent-rosette", 75);
+                result.current.updateWateredTimestamp("succulent-rosette", 0);
+            });
+            act(() => { result.current.waterAllReady(Date.now()); });
+
+            // The original entry is still first in line; the bulk bloom's
+            // entry was appended after it, not merged or dropped.
+            expect(result.current.bloomEvents).toHaveLength(2);
+            expect(result.current.bloomEvents[0].id).toBe(firstId);
+            expect(result.current.bloomEvents[1].tier).toBe("Rare");
+        });
+
+        it("dismissBloomEvent pops only the currently-shown (first) entry, advancing the queue", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => {
+                result.current.recordPlantBloom({ plantId: "a", plantName: "A", tier: "Common", bounty: 1 });
+                result.current.recordPlantBloom({ plantId: "b", plantName: "B", tier: "Rare", bounty: 2 });
+            });
+            expect(result.current.bloomEvents).toHaveLength(2);
+
+            act(() => { result.current.dismissBloomEvent(); });
+
+            expect(result.current.bloomEvents).toHaveLength(1);
+            expect(result.current.bloomEvents[0].plantId).toBe("b");
+        });
+
+        it("restart() clears any pending bloomEvents", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => {
+                result.current.recordPlantBloom({ plantId: "a", plantName: "A", tier: "Common", bounty: 1 });
+            });
+            expect(result.current.bloomEvents).toHaveLength(1);
+
+            act(() => { result.current.restart(); });
+
+            expect(result.current.bloomEvents).toHaveLength(0);
         });
     });
 });
