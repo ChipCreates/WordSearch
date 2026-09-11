@@ -7,6 +7,8 @@ import { BOTANIST_RANKS, getBotanistRank } from "../botanistRanks";
 import { POWERUP_DEFINITIONS, type PowerupId, type PowerupInventory } from "../powerups";
 import { AFFLICTION_DEFINITIONS, AFFLICTION_TYPES, type AfflictionState } from "../plantAffliction";
 import { ONBOARDING_STEPS, type OnboardingStepId } from "../onboarding";
+import { MILESTONE_LEVELS } from "../milestones";
+import { REGIONS } from "../regions";
 import type { DebugApi } from "../hooks/useWordSearchGame";
 import {
     describeCombo, loadScreenshotHotkey, saveScreenshotHotkey,
@@ -260,6 +262,57 @@ export default function DebugPanel(props: Props) {
                                 </div>
                             );
                         })}
+                    </div>
+                </Section>
+
+                <Section title="Milestones & region transitions (WSP-2.4)">
+                    <p style={{ fontSize: 12, opacity: 0.7, marginTop: 0 }}>
+                        Previews the milestone/region-transition title card without touching real
+                        save data or level progress -- pushes straight into the same queue a real
+                        level completion would.
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                        {MILESTONE_LEVELS.map(level => (
+                            <Button
+                                key={level}
+                                size="small"
+                                variant="outlined"
+                                onClick={() => {
+                                    props.onNavigate("play");
+                                    debugApi.queueMilestonePreview(level);
+                                }}
+                            >
+                                Level {level}
+                            </Button>
+                        ))}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        {REGIONS.map(region => (
+                            <div key={region.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                                <span style={{ minWidth: 190 }}>{region.name}</span>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    disabled={!region.entryReward}
+                                    onClick={() => {
+                                        props.onNavigate("play");
+                                        debugApi.queueRegionTransitionPreview(region.id, "entry");
+                                    }}
+                                >
+                                    Preview entry
+                                </Button>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={() => {
+                                        props.onNavigate("play");
+                                        debugApi.queueRegionTransitionPreview(region.id, "completion");
+                                    }}
+                                >
+                                    Preview completion
+                                </Button>
+                            </div>
+                        ))}
                     </div>
                 </Section>
 

@@ -16,6 +16,9 @@ import GameCanvas from "./components/GameCanvas";
 import SuccessScreen from "./components/SuccessScreen";
 import BonusDiscoveryToast from "./components/BonusDiscoveryToast";
 import AchievementBanner from "./components/AchievementBanner";
+import MilestoneCard from "./components/MilestoneCard";
+import { getMilestoneContent, getRegionTransitionIntensity } from "./milestones";
+import { REWARD_PRESENTATION, type RewardIntensity } from "./rewardIntensity";
 import PlayerProfileSheet from "./components/PlayerProfileSheet";
 import ContextSidebar from "./components/sidebar/ContextSidebar";
 import ResponsiveContextStrip from "./components/sidebar/ResponsiveContextStrip";
@@ -59,6 +62,7 @@ export default function App() {
         gridSize, gridData, wordsToFind, foundWords, foundLines,
         submitSelection, revealAndSolveWord, nextLevel, restart, goToLevel, reshuffle, retryLevel, spendSeeds, addSeeds,
         unlockedAchievements, justUnlocked, dismissJustUnlocked, promotionQueue, dismissPromotion,
+        milestoneQueue, dismissMilestone,
         difficultyMode, setDifficultyMode,
         favoriteCategories, setFavoriteCategories, useFavorites, setUseFavorites,
         categoriesSeen, foundDiagonal, bonusWordsFound, bonusWordsToFind, bonusWordsThisLevel, bonusSeedsThisLevel, baseSeedsThisLevel, bonusDiscovery,
@@ -308,6 +312,30 @@ export default function App() {
         prevJustUnlockedLengthRef.current = justUnlocked.length;
     }, [justUnlocked, playSfx]);
 
+    // WSP-2.4: milestone/region-transition audio, mirroring the
+    // justUnlocked edge-detection above -- fires once per newly-queued
+    // event, keyed off WSP-2.1's per-intensity audioCue (rewardIntensity.ts)
+    // rather than a single fixed sound, so level 100's "exceptional" moment
+    // sounds bigger than level 10's "small" one. "signature" (the biggest
+    // tier) has no dedicated asset yet -- Tier 3 owns producing the real
+    // motif -- so "cheering" (shipped, currently unused anywhere else) is
+    // the best-effort stand-in until then.
+    const prevMilestoneQueueLengthRef = useRef(milestoneQueue.length);
+    useEffect(() => {
+        if (milestoneQueue.length > prevMilestoneQueueLengthRef.current) {
+            const newest = milestoneQueue[milestoneQueue.length - 1];
+            const intensity: RewardIntensity = newest.kind === "milestone"
+                ? (getMilestoneContent(newest.level)?.intensity ?? "medium")
+                : getRegionTransitionIntensity(newest.transition);
+            const cue = REWARD_PRESENTATION[intensity].audioCue;
+            if (cue === "chime") playBonusChime();
+            else if (cue === "award") playSfx("award");
+            else if (cue === "fanfare") playSfx("achievement");
+            else if (cue === "signature") playSfx("cheering");
+        }
+        prevMilestoneQueueLengthRef.current = milestoneQueue.length;
+    }, [milestoneQueue, playSfx, playBonusChime]);
+
     // ── Derived values ────────────────────────────────────────────────────────
     const bgTheme = CATEGORY_THEMES[category] ?? DEFAULT_THEME;
     // Achievement evaluation reacts to stats (seeds, levelsCompleted, ...)
@@ -319,7 +347,17 @@ export default function App() {
     // Nothing is lost by waiting: the entry stays queued in justUnlocked and
     // simply renders once the gate clears. Debug mode bypasses this
     // entirely so the "Preview banner" tool always shows immediately.
-    const currentToast = (!debugRequested && levelComplete && !showSuccessOverlay) ? undefined : justUnlocked[0];
+    // WSP-2.4: a milestone/region-transition card is a bigger, rarer moment
+    // than a routine achievement toast -- presentationQueue.ts's KIND_ORDER
+    // places rank-promotion (already shown inline in SuccessScreen, not
+    // gated here), then region-transition/milestone, then achievement, in
+    // that order. Rather than re-deriving that ordering, this reuses the
+    // same gate currentToast already had (wait for the success overlay) and
+    // adds one more: don't show the achievement banner while a milestone
+    // card is still queued, so the two full-screen moments never race or
+    // overlap -- the milestone card always finishes first.
+    const currentMilestoneEvent = (!debugRequested && levelComplete && !showSuccessOverlay) ? undefined : milestoneQueue[0];
+    const currentToast = (!debugRequested && levelComplete && !showSuccessOverlay) || milestoneQueue.length > 0 ? undefined : justUnlocked[0];
     const foundCount = wordsToFind.filter(w => foundWords[w]).length;
     // The generator's own placed candidates -- not a hard ceiling. Any real
     // dictionary word not on the target list counts as a bonus find, so a
@@ -907,6 +945,12 @@ export default function App() {
                     />
                 </Suspense>
             )}
+
+            <MilestoneCard
+                event={currentMilestoneEvent ?? null}
+                onDismiss={dismissMilestone}
+                isMobile={isMobile}
+            />
 
             <AchievementBanner
                 achievement={currentToast ?? null}

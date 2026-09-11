@@ -18,9 +18,10 @@ import {
     advanceAfflictionsOnPuzzleComplete, AFFLICTION_DEFINITIONS, clearAffliction, COMPOST_REFUND_SEEDS,
     isGardenVocabulary, isNeglected, type AfflictionState, type AfflictionType,
 } from "../plantAffliction";
-import { regionForLevel, regionRewardClaimKey } from "../regions";
+import { regionForLevel, regionRewardClaimKey, getRegionById } from "../regions";
 import { regionIdForLevel, getRegionPuzzleDifficulty } from "../regionTuning";
 import { buildPresentationQueue, type MilestoneQueueEvent, type PresentationEvent } from "../presentationQueue";
+import { MILESTONE_LEVELS } from "../milestones";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -357,6 +358,34 @@ export function useWordSearchGame() {
         if (events.length) setMilestoneQueue(prev => [...prev, ...events]);
     };
 
+    // WSP-2.4: queues the standalone milestone card at levels 10/20/30/40/50/
+    // 70/100. Mirrors queueFrontierPromotion/queueRegionRewards' own
+    // frontier-only guard exactly -- `completedLevel !== highestUnlockedLevel`
+    // means this is a replay (or a re-derivation of an already-passed
+    // frontier), and a milestone, like a rank promotion or a region reward,
+    // must never fire again once its level has actually been cleared once.
+    // Milestone state is intentionally not persisted (like promotionQueue) --
+    // the frontier-only guard is what makes "exactly once" true here, the
+    // same way it already does for rank promotions.
+    //
+    // Pushed into the same milestoneQueue region-transition events use, per
+    // presentationQueue.ts's KIND_ORDER: the two kinds are grouped at the
+    // same presentation step and never combined, only strictly sequenced,
+    // with ties broken by which was queued first. Called before
+    // queueRegionRewards below so that on a level that is both a milestone
+    // and a region boundary (20/30/40/50/70/100), the milestone card --
+    // "you reached level N" -- reads as the headline moment and the
+    // region-transition card(s) follow it, rather than the reverse.
+    const queueMilestone = (completedLevel: number) => {
+        if (completedLevel !== highestUnlockedLevel) return;
+        if (!MILESTONE_LEVELS.includes(completedLevel)) return;
+        setMilestoneQueue(prev =>
+            prev.some(event => event.kind === "milestone" && event.level === completedLevel)
+                ? prev
+                : [...prev, { kind: "milestone", level: completedLevel }],
+        );
+    };
+
     // Runs once per puzzle completion (never on elapsed real time): escalates
     // any already-sick plant and rolls fresh onset for owned, growing,
     // unafflicted plants that have gone unwatered for a while. Shared by both
@@ -545,6 +574,7 @@ export function useWordSearchGame() {
                     setLevelsCompleted((n: number) => n + 1);
                     setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
                     queueFrontierPromotion(playingLevel);
+                    queueMilestone(playingLevel);
                     queueRegionRewards(playingLevel);
                     setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
                     recordFieldNoteEvent({ kind: "puzzle_completed", isFrontier: playingLevel === highestUnlockedLevel, hintUsed: hintUsedThisLevel, category });
@@ -597,6 +627,7 @@ export function useWordSearchGame() {
             setLevelsCompleted((n: number) => n + 1);
             setCompletedLevels(prev => prev.includes(playingLevel) ? prev : [...prev, playingLevel]);
             queueFrontierPromotion(playingLevel);
+            queueMilestone(playingLevel);
             queueRegionRewards(playingLevel);
             setHighestUnlockedLevel(frontier => Math.max(frontier, playingLevel + 1));
             recordFieldNoteEvent({ kind: "puzzle_completed", isFrontier: playingLevel === highestUnlockedLevel, hintUsed: true, category });
@@ -1052,6 +1083,20 @@ export function useWordSearchGame() {
         queueAchievementPreview: (id: string) => {
             const achievement = ACHIEVEMENTS.find(a => a.id === id);
             if (achievement) setJustUnlocked(prev => [...prev, achievement]);
+        },
+        // WSP-2.4: preview-only overlays for the DebugPanel, exactly like
+        // queuePromotionPreview/queueAchievementPreview above -- pushes
+        // straight into milestoneQueue without touching claimedRegionRewards
+        // or any real save data, so it can be previewed on demand instead of
+        // waiting to actually reach level 10/20/.../100 in a real save.
+        queueMilestonePreview: (level: number) => {
+            setMilestoneQueue(prev => [...prev, { kind: "milestone", level }]);
+        },
+        queueRegionTransitionPreview: (regionId: string, transition: "entry" | "completion") => {
+            const region = getRegionById(regionId);
+            if (!region) return;
+            const rewardSeeds = transition === "completion" ? region.completionReward.seeds : (region.entryReward?.seeds ?? 0);
+            setMilestoneQueue(prev => [...prev, { kind: "region-transition", regionId, transition, rewardSeeds, level: region.end }]);
         },
     } : undefined;
 
