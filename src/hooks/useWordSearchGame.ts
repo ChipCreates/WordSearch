@@ -84,7 +84,13 @@ export function useWordSearchGame() {
     const [longestBonusWordFound, setLongestBonusWordFound] = useState(initialSave.longestBonusWordFound);
     const [reverseWordsFound, setReverseWordsFound] = useState(initialSave.reverseWordsFound);
     const [plantsBloomed, setPlantsBloomed] = useState(initialSave.plantsBloomed);
-    const [bloomedRarityTiers, setBloomedRarityTiers] = useState(initialSave.bloomedRarityTiers);
+    // The set of distinct plant rarity tiers ("Common", "Rare", ...) actually
+    // bloomed, ever -- see persistence.ts's bloomedRarityTierIds and the
+    // WSP-2.5 doc comment on AchievementStats.bloomedRarityTiers for why this
+    // replaced a raw event counter. Exposed to consumers (App.tsx, the
+    // achievement-evaluation effect below) as its `.size`, matching
+    // AchievementStats' `bloomedRarityTiers: number` contract.
+    const [bloomedRarityTiers, setBloomedRarityTiers] = useState<Set<string>>(() => new Set(initialSave.bloomedRarityTierIds));
     const [uniqueCategoriesCompleted, setUniqueCategoriesCompleted] = useState(initialSave.uniqueCategoriesCompleted);
     const [powerupsUsed, setPowerupsUsed] = useState(initialSave.powerupsUsed);
     const [fieldNotes, setFieldNotes] = useState<FieldNotesState>(initialSave.fieldNotes);
@@ -159,7 +165,7 @@ export function useWordSearchGame() {
             setLongestBonusWordFound(native.longestBonusWordFound);
             setReverseWordsFound(native.reverseWordsFound);
             setPlantsBloomed(native.plantsBloomed);
-            setBloomedRarityTiers(native.bloomedRarityTiers);
+            setBloomedRarityTiers(new Set(native.bloomedRarityTierIds));
             setUniqueCategoriesCompleted(native.uniqueCategoriesCompleted);
             setPowerupsUsed(native.powerupsUsed);
             setFieldNotes(native.fieldNotes);
@@ -209,7 +215,7 @@ export function useWordSearchGame() {
                 longestBonusWordFound,
                 reverseWordsFound,
                 plantsBloomed,
-                bloomedRarityTiers,
+                bloomedRarityTierIds: Array.from(bloomedRarityTiers),
                 uniqueCategoriesCompleted,
                 powerupsUsed,
                 fieldNotes,
@@ -270,7 +276,7 @@ export function useWordSearchGame() {
             maxBonusWordsInLevel,
             reverseWordsFound,
             plantsBloomed,
-            bloomedRarityTiers,
+            bloomedRarityTiers: bloomedRarityTiers.size,
             uniqueCategoriesCompleted,
             powerupsUsed,
         });
@@ -702,7 +708,7 @@ export function useWordSearchGame() {
         setMaxBonusWordsInLevel(DEFAULT_SAVE_DATA.maxBonusWordsInLevel);
         setReverseWordsFound(DEFAULT_SAVE_DATA.reverseWordsFound);
         setPlantsBloomed(DEFAULT_SAVE_DATA.plantsBloomed);
-        setBloomedRarityTiers(DEFAULT_SAVE_DATA.bloomedRarityTiers);
+        setBloomedRarityTiers(new Set(DEFAULT_SAVE_DATA.bloomedRarityTierIds));
         setUniqueCategoriesCompleted(DEFAULT_SAVE_DATA.uniqueCategoriesCompleted);
         setPowerupsUsed(DEFAULT_SAVE_DATA.powerupsUsed);
         setHintUsedThisLevel(false);
@@ -814,11 +820,35 @@ export function useWordSearchGame() {
         return true;
     }, [afflictions]);
 
-    const recordPlantBloom = useCallback(() => {
-        setPlantsBloomed(count => count + 1);
-        setBloomedRarityTiers(count => Math.min(7, count + 1));
+    // The single implementation of "one or more plants just bloomed, and
+    // here are their rarity tiers" -- every bloom-triggering path
+    // (individual water/fertilize via recordPlantBloom below, and bulk
+    // waterAllReady) goes through this, so there is exactly one place that
+    // increments the lifetime bloom count and tracks which distinct tiers
+    // have actually been bloomed (WSP-2.5: this used to be two separate,
+    // independently-broken raw-counter implementations -- one inline in
+    // each of recordPlantBloom and waterAllReady -- neither of which knew
+    // which tier had bloomed at all).
+    const registerBlooms = useCallback((tiers: string[]) => {
+        if (tiers.length === 0) return;
+        setPlantsBloomed(count => count + tiers.length);
+        setBloomedRarityTiers(previous => {
+            let changed = false;
+            const next = new Set(previous);
+            for (const tier of tiers) {
+                if (!next.has(tier)) {
+                    next.add(tier);
+                    changed = true;
+                }
+            }
+            return changed ? next : previous;
+        });
+    }, []);
+
+    const recordPlantBloom = useCallback((tier: string) => {
+        registerBlooms([tier]);
         recordFieldNoteEvent({ kind: "plant_bloomed" });
-    }, [recordFieldNoteEvent]);
+    }, [registerBlooms, recordFieldNoteEvent]);
 
     const waterAllReady = useCallback((now = Date.now()) => {
         const readyPlants = PLANTS_CATALOG.filter(plant => {
@@ -834,6 +864,7 @@ export function useWordSearchGame() {
         const nextGrowth: Record<string, number> = {};
         let bloomCount = 0;
         let bounty = 0;
+        const bloomedTiers: string[] = [];
         readyPlants.forEach(plant => {
             const currentGrowth = growthByPlant[plant.id] ?? 0;
             const next = Math.min(100, currentGrowth + 25);
@@ -842,19 +873,19 @@ export function useWordSearchGame() {
             if (next === 100 && currentGrowth < 100) {
                 bloomCount += 1;
                 bounty += getPlantEconomy(plant).bloomBounty;
+                bloomedTiers.push(plant.tier);
             }
         });
         setWateredTimestamps(previous => ({ ...previous, ...nextTimestamps }));
         setGrowthByPlant(previous => ({ ...previous, ...nextGrowth }));
         if (bloomCount) {
             setSeeds(previous => previous + bounty);
-            setPlantsBloomed(previous => previous + bloomCount);
-            setBloomedRarityTiers(previous => Math.min(7, previous + bloomCount));
+            registerBlooms(bloomedTiers);
             recordFieldNoteEvent({ kind: "plant_bloomed" });
         }
         setStatus(`Watered ${readyPlants.length} plant${readyPlants.length === 1 ? "" : "s"}${bloomCount ? ` and bloomed ${bloomCount}` : ""}.`);
         return { watered: readyPlants.length, bloomed: bloomCount, seeds: bounty };
-    }, [ownedPlants, growthByPlant, wateredTimestamps, recordFieldNoteEvent]);
+    }, [ownedPlants, growthByPlant, wateredTimestamps, recordFieldNoteEvent, registerBlooms]);
 
     // Store power-ups: Nitrogen Booster, theme unlocks, the profile crest.
     // Seed cost is deducted by the caller (SeedStoreDialog's handleRedeem)

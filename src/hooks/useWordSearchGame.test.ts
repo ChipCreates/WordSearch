@@ -498,4 +498,120 @@ describe("useWordSearchGame", () => {
         expect(result.current.baseSeedsThisLevel).toBe(REWARDS.LEVEL_COMPLETE_SEEDS);
     });
 
+    // WSP-2.5: recordPlantBloom used to take zero parameters and increment a
+    // raw bloom-event counter regardless of which rarity tier bloomed, so
+    // three Common-tier blooms satisfied "Bloom plants from 3 rarity tiers"
+    // (verdant-voyager). It's fixed to actually use its tier argument and
+    // track the set of *distinct* tiers bloomed.
+    describe("verdant-voyager rarity-tier tracking (WSP-2.5)", () => {
+        it("does NOT unlock verdant-voyager from three blooms of the same rarity tier", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => {
+                result.current.recordPlantBloom("Common");
+                result.current.recordPlantBloom("Common");
+                result.current.recordPlantBloom("Common");
+            });
+
+            expect(result.current.bloomedRarityTiers.size).toBe(1);
+            expect(result.current.plantsBloomed).toBe(3);
+            expect(Array.from(result.current.unlockedAchievements)).not.toContain("verdant-voyager");
+        });
+
+        it("unlocks verdant-voyager once 3 DISTINCT rarity tiers have bloomed", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => {
+                result.current.recordPlantBloom("Common");
+                result.current.recordPlantBloom("Rare");
+                result.current.recordPlantBloom("Epic");
+            });
+
+            expect(result.current.bloomedRarityTiers.size).toBe(3);
+            await waitFor(() => {
+                expect(Array.from(result.current.unlockedAchievements)).toContain("verdant-voyager");
+            });
+        });
+
+        it("re-blooming an already-recorded tier does not inflate the distinct-tier count", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => {
+                result.current.recordPlantBloom("Common");
+                result.current.recordPlantBloom("Common");
+                result.current.recordPlantBloom("Rare");
+            });
+
+            expect(result.current.bloomedRarityTiers.size).toBe(2);
+            expect(result.current.plantsBloomed).toBe(3);
+        });
+
+        it("waterAllReady's bulk bloom path goes through the same distinct-tier tracking as recordPlantBloom", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            // Buy three plants spanning three different rarity tiers (moss-sprout
+            // is already owned by default), grow each to just below bloom, and
+            // age their watered timestamps past the cooldown so waterAllReady
+            // treats them as ready.
+            act(() => {
+                result.current.addSeeds(5000);
+            });
+            act(() => {
+                result.current.buyPlantSeed("succulent-rosette", 400); // Rare
+                result.current.buyPlantSeed("golden-sunflower", 850); // Epic
+            });
+            act(() => {
+                result.current.updatePlantGrowth("moss-sprout", 75); // Common
+                result.current.updatePlantGrowth("succulent-rosette", 75); // Rare
+                result.current.updatePlantGrowth("golden-sunflower", 75); // Epic
+                const longAgo = 0;
+                result.current.updateWateredTimestamp("moss-sprout", longAgo);
+                result.current.updateWateredTimestamp("succulent-rosette", longAgo);
+                result.current.updateWateredTimestamp("golden-sunflower", longAgo);
+            });
+
+            let bloomResult!: ReturnType<typeof result.current.waterAllReady>;
+            act(() => {
+                bloomResult = result.current.waterAllReady(Date.now());
+            });
+
+            expect(bloomResult.bloomed).toBe(3);
+            expect(result.current.bloomedRarityTiers.size).toBe(3);
+            await waitFor(() => {
+                expect(Array.from(result.current.unlockedAchievements)).toContain("verdant-voyager");
+            });
+        });
+
+        it("waterAllReady blooming multiple plants of the SAME tier at once still counts as one distinct tier", async () => {
+            const { result } = renderHook(() => useWordSearchGame());
+            await waitFor(() => expect(result.current.wordsToFind.length).toBeGreaterThan(0));
+
+            act(() => {
+                result.current.addSeeds(5000);
+            });
+            act(() => {
+                result.current.buyPlantSeed("emerald-fern", 250); // Common, like moss-sprout
+            });
+            act(() => {
+                result.current.updatePlantGrowth("moss-sprout", 75); // Common
+                result.current.updatePlantGrowth("emerald-fern", 75); // Common
+                const longAgo = 0;
+                result.current.updateWateredTimestamp("moss-sprout", longAgo);
+                result.current.updateWateredTimestamp("emerald-fern", longAgo);
+            });
+
+            let bloomResult!: ReturnType<typeof result.current.waterAllReady>;
+            act(() => {
+                bloomResult = result.current.waterAllReady(Date.now());
+            });
+
+            expect(bloomResult.bloomed).toBe(2);
+            expect(result.current.plantsBloomed).toBe(2);
+            expect(result.current.bloomedRarityTiers.size).toBe(1);
+        });
+    });
 });

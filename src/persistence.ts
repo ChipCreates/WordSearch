@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { createFieldNotesState, normalizeFieldNotesState, type FieldNotesState } from "./fieldNotes";
 import { createAfflictionState, normalizeAfflictionState, type AfflictionState } from "./plantAffliction";
 import { REGIONS, regionRewardClaimKey } from "./regions";
+import { PLANTS_CATALOG } from "./plantsCatalog";
 
 export type SaveData = {
     version: number;
@@ -40,7 +41,16 @@ export type SaveData = {
     longestBonusWordFound: string;
     reverseWordsFound: number;
     plantsBloomed: number;
-    bloomedRarityTiers: number;
+    /**
+     * Distinct plant rarity tier identifiers (e.g. "Common", "Rare", ...)
+     * that have actually been bloomed at least once, ever. Replaced the old
+     * `bloomedRarityTiers: number` raw event counter (WSP-2.5) -- that
+     * counter incremented on every bloom regardless of tier, so three
+     * Common-tier blooms satisfied "3 rarity tiers" for the verdant-voyager
+     * achievement. See normalizeBloomedRarityTierIds below for the
+     * never-revoke migration from the old numeric shape.
+     */
+    bloomedRarityTierIds: string[];
     uniqueCategoriesCompleted: number;
     powerupsUsed: number;
     fieldNotes: FieldNotesState;
@@ -60,6 +70,15 @@ export type SaveData = {
     regionRewardsBackfilled: boolean;
 };
 
+// Bumped to 5 for two Tier 2 issues landing together: WSP-2.2 added
+// claimedRegionRewards/regionRewardsBackfilled, and WSP-2.5 changed
+// bloomedRarityTiers's shape (a raw number -> bloomedRarityTierIds, a
+// string[] of distinct tiers actually bloomed) and made achievement ids
+// migratable on load (see ACHIEVEMENT_ID_MIGRATIONS). None of these are
+// branched on this version number directly -- normalizeSaveData detects
+// each old shape structurally -- but the bump documents that a save's
+// exact shape changed here, consistent with how this field is used
+// elsewhere in this module.
 export const CURRENT_SCHEMA_VERSION = 5;
 
 export const DEFAULT_SAVE_DATA: SaveData = {
@@ -94,7 +113,7 @@ export const DEFAULT_SAVE_DATA: SaveData = {
     longestBonusWordFound: "",
     reverseWordsFound: 0,
     plantsBloomed: 0,
-    bloomedRarityTiers: 0,
+    bloomedRarityTierIds: [],
     uniqueCategoriesCompleted: 0,
     powerupsUsed: 0,
     fieldNotes: createFieldNotesState(),
@@ -200,6 +219,100 @@ function asEnum<T extends string>(value: unknown, allowed: readonly T[], fallbac
     return typeof value === "string" && (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
 }
 
+// --- WSP-2.5: achievement id migrations -------------------------------
+//
+// unlockedAchievements persists ids as bare strings with nothing else
+// tracking "you earned this, under whatever name it had at the time" --
+// so renaming or folding an achievement id without a migration here would
+// silently revoke it for any player who already has the old id in their
+// save. Every rename/fold this issue makes gets an entry so a returning
+// player keeps their unlock under the new id.
+const ACHIEVEMENT_ID_MIGRATIONS: Record<string, string> = {
+    // The id never had anything to do with daily/calendar logic -- it always
+    // checked uniqueCategoriesCompleted. Renamed to describe what it
+    // actually checks.
+    "daily-dew": "categories-completed-10",
+    // Folded into the level-clears family as its new "gold" (50-level) rung
+    // -- it tracked the exact same levelsCompleted stat as that family,
+    // just at an unlabeled threshold between level-clears-25 and
+    // level-clears-100.
+    "zenith-climber": "level-clears-50",
+};
+
+function migrateAchievementIds(ids: string[]): string[] {
+    const migrated = ids.map(id => ACHIEVEMENT_ID_MIGRATIONS[id] ?? id);
+    return Array.from(new Set(migrated));
+}
+
+// --- WSP-2.5: bloomedRarityTiers -> bloomedRarityTierIds migration -----
+//
+// The tier identifiers plantsCatalog.ts's PlantDef.tier can actually take --
+// duplicated as a literal set here rather than importing PlantDef's union
+// type, since this module only needs membership testing, not the type.
+const KNOWN_PLANT_TIERS = new Set(PLANTS_CATALOG.map(plant => plant.tier));
+
+/**
+ * bloomedRarityTiers used to be a raw bloom-event counter (capped at 7):
+ * it incremented on every bloom regardless of which rarity tier, so three
+ * Common-tier blooms satisfied "3 rarity tiers" for verdant-voyager. It's
+ * now bloomedRarityTierIds: a de-duplicated array of the actual tier
+ * identifiers bloomed.
+ *
+ * Migration policy -- never revoke an already-earned achievement:
+ *  - A save that already has the new-shaped `bloomedRarityTierIds` array is
+ *    trusted as-is (the normal case going forward).
+ *  - Otherwise this is an old save with (at most) a numeric
+ *    `bloomedRarityTiers` counter and no record of *which* tiers were ever
+ *    actually bloomed -- that information was never captured, so it can't be
+ *    recovered exactly. Best-effort reconstruction: look at the tiers of
+ *    plants the player currently owns AND currently has fully bloomed
+ *    (`growthByPlant[id] >= 100`). That's a real, verifiable signal for
+ *    "this player has bloomed a plant of this tier", even though it can't
+ *    capture tiers bloomed on plants since composted or otherwise lost.
+ *  - If `verdant-voyager` is already in this save's unlockedAchievements,
+ *    that reconstruction is a *floor*, not the final answer: the player
+ *    provably satisfied "3 distinct tiers" under the old (broken) counter
+ *    at some point, and revoking it now because the old counter didn't
+ *    record which tiers would be a real regression for someone who already
+ *    earned it. Where reconstruction alone falls short of 3, this pads the
+ *    set with synthetic, clearly-not-a-real-tier placeholder identifiers
+ *    (`legacy-unverified-N`) up to the old counter's value -- preserving the
+ *    achievement without fabricating specific real tier names we can't
+ *    verify. These placeholders are inert everywhere else (nothing matches
+ *    against real tier names elsewhere), so they cost nothing except
+ *    honestly admitting the exact history isn't recoverable.
+ *  - If the achievement was never earned, there's nothing to protect --
+ *    the honest reconstruction (however small) is used as-is.
+ */
+function normalizeBloomedRarityTierIds(raw: Partial<SaveData> & { bloomedRarityTiers?: unknown }): string[] {
+    if (Array.isArray(raw.bloomedRarityTierIds)) {
+        return Array.from(new Set(asStringArray(raw.bloomedRarityTierIds, [])));
+    }
+
+    const legacyCount = asNonNegativeInt(raw.bloomedRarityTiers, 0);
+    const ownedPlants = asStringArray(raw.ownedPlants, DEFAULT_SAVE_DATA.ownedPlants);
+    const growth = asNumberRecord(raw.growthByPlant, DEFAULT_SAVE_DATA.growthByPlant);
+    const reconstructed = new Set<string>();
+    for (const plantId of ownedPlants) {
+        if ((growth[plantId] ?? 0) < 100) continue;
+        const plant = PLANTS_CATALOG.find(p => p.id === plantId);
+        if (plant) reconstructed.add(plant.tier);
+    }
+
+    if (legacyCount <= 0) return Array.from(reconstructed);
+
+    const migratedUnlocked = migrateAchievementIds(asStringArray(raw.unlockedAchievements, []));
+    const alreadyUnlocked = migratedUnlocked.includes("verdant-voyager");
+    if (!alreadyUnlocked) return Array.from(reconstructed);
+
+    let paddingIndex = 0;
+    const target = Math.max(3, Math.min(legacyCount, KNOWN_PLANT_TIERS.size));
+    while (reconstructed.size < target) {
+        reconstructed.add(`legacy-unverified-${paddingIndex++}`);
+    }
+    return Array.from(reconstructed);
+}
+
 /** Normalize both fresh and pre-v3 saves into one canonical progression shape. */
 export function normalizeSaveData(raw: Partial<SaveData> & { stars?: number }): SaveData {
     const legacyLevel = Math.max(1, Math.floor(Number(raw.level) || 1));
@@ -222,7 +335,7 @@ export function normalizeSaveData(raw: Partial<SaveData> & { stars?: number }): 
         completedLevels: Array.from(new Set(completedLevels)).sort((a, b) => a - b),
         totalPuzzleCompletions: Math.max(0, Math.floor(Number(raw.totalPuzzleCompletions) || Number(raw.levelsCompleted) || 0)),
         seeds,
-        unlockedAchievements: asStringArray(raw.unlockedAchievements, DEFAULT_SAVE_DATA.unlockedAchievements),
+        unlockedAchievements: migrateAchievementIds(asStringArray(raw.unlockedAchievements, DEFAULT_SAVE_DATA.unlockedAchievements)),
         levelsCompleted: asNonNegativeInt(raw.levelsCompleted, DEFAULT_SAVE_DATA.levelsCompleted),
         categoriesSeen: asStringArray(raw.categoriesSeen, DEFAULT_SAVE_DATA.categoriesSeen),
         foundDiagonal: asBoolean(raw.foundDiagonal, DEFAULT_SAVE_DATA.foundDiagonal),
@@ -247,7 +360,7 @@ export function normalizeSaveData(raw: Partial<SaveData> & { stars?: number }): 
         longestBonusWordFound: asString(raw.longestBonusWordFound, DEFAULT_SAVE_DATA.longestBonusWordFound),
         reverseWordsFound: asNonNegativeInt(raw.reverseWordsFound, DEFAULT_SAVE_DATA.reverseWordsFound),
         plantsBloomed: asNonNegativeInt(raw.plantsBloomed, DEFAULT_SAVE_DATA.plantsBloomed),
-        bloomedRarityTiers: asNonNegativeInt(raw.bloomedRarityTiers, DEFAULT_SAVE_DATA.bloomedRarityTiers),
+        bloomedRarityTierIds: normalizeBloomedRarityTierIds(raw),
         uniqueCategoriesCompleted: asNonNegativeInt(raw.uniqueCategoriesCompleted, DEFAULT_SAVE_DATA.uniqueCategoriesCompleted),
         powerupsUsed: asNonNegativeInt(raw.powerupsUsed, DEFAULT_SAVE_DATA.powerupsUsed),
         fieldNotes: normalizeFieldNotesState(raw.fieldNotes),
