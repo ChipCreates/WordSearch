@@ -22,6 +22,7 @@ import { regionForLevel, regionRewardClaimKey, getRegionById } from "../regions"
 import { regionIdForLevel, getRegionPuzzleDifficulty } from "../regionTuning";
 import { buildPresentationQueue, type MilestoneQueueEvent, type PresentationEvent } from "../presentationQueue";
 import { MILESTONE_LEVELS } from "../milestones";
+import { makeBloomEvents, type BloomEvent, type BloomOccurrence } from "../bloomEvents";
 
 export function useWordSearchGame() {
     // Single load of initial unified save data
@@ -93,6 +94,15 @@ export function useWordSearchGame() {
     // achievement-evaluation effect below) as its `.size`, matching
     // AchievementStats' `bloomedRarityTiers: number` contract.
     const [bloomedRarityTiers, setBloomedRarityTiers] = useState<Set<string>>(() => new Set(initialSave.bloomedRarityTierIds));
+    // WSP-2.6: the shared bloom-PRESENTATION queue -- distinct from, and
+    // never persisted like, bloomedRarityTiers above. That Set answers "has
+    // this rarity tier ever bloomed" for achievements; this array answers
+    // "which specific blooms just happened and haven't been shown yet" for
+    // BloomCelebration. Every bloom-triggering site (recordPlantBloom below,
+    // and waterAllReady's bulk path) appends to it; only index 0 is ever
+    // presented, so multiple simultaneous blooms (bulk watering) queue up
+    // and present one at a time rather than colliding or being dropped.
+    const [bloomEvents, setBloomEvents] = useState<BloomEvent[]>([]);
     const [uniqueCategoriesCompleted, setUniqueCategoriesCompleted] = useState(initialSave.uniqueCategoriesCompleted);
     const [powerupsUsed, setPowerupsUsed] = useState(initialSave.powerupsUsed);
     const [fieldNotes, setFieldNotes] = useState<FieldNotesState>(initialSave.fieldNotes);
@@ -291,6 +301,11 @@ export function useWordSearchGame() {
 
     const dismissJustUnlocked = useCallback(() => setJustUnlocked(prev => prev.slice(1)), []);
     const dismissPromotion = useCallback(() => setPromotionQueue(prev => prev.slice(1)), []);
+    // Pops whichever bloom is currently shown (index 0) -- same "dismiss the
+    // head of the queue" shape as the two callbacks above, so the next
+    // queued bloom (if any) becomes current. Called both by
+    // BloomCelebration's own auto-dismiss timer and its dismiss button.
+    const dismissBloomEvent = useCallback(() => setBloomEvents(prev => prev.slice(1)), []);
     const dismissMilestone = useCallback(() => setMilestoneQueue(prev => prev.slice(1)), []);
 
     // The one shared arbitration point WSP-2.2 introduces: combines whatever
@@ -736,6 +751,7 @@ export function useWordSearchGame() {
         setJustUnlocked([]);
         setPromotionQueue([]);
         setMilestoneQueue([]);
+        setBloomEvents([]);
         setClaimedRegionRewards(new Set(DEFAULT_SAVE_DATA.claimedRegionRewards));
         setFieldNotes(DEFAULT_SAVE_DATA.fieldNotes);
         setOwnedPlants(DEFAULT_SAVE_DATA.ownedPlants);
@@ -890,8 +906,18 @@ export function useWordSearchGame() {
         });
     }, []);
 
-    const recordPlantBloom = useCallback((tier: string) => {
-        registerBlooms([tier]);
+    // WSP-2.6: recordPlantBloom's public signature changed from a bare
+    // `(tier: string)` to a full BloomOccurrence -- GardenView's two
+    // individual bloom sites (handleWaterPlant, handleFertilizePlant)
+    // already compute plantId/plantName/bounty locally for their own toast
+    // text, so handing the whole occurrence over costs those call sites
+    // nothing and is what lets BloomCelebration present a specific plant
+    // instead of just "a Common plant bloomed somewhere." The WSP-2.5
+    // rarity-tracking call into registerBlooms below is unchanged -- still
+    // just the tier, still the same corrected Set-based logic.
+    const recordPlantBloom = useCallback((bloom: BloomOccurrence) => {
+        registerBlooms([bloom.tier]);
+        setBloomEvents(prev => [...prev, ...makeBloomEvents([bloom])]);
         recordFieldNoteEvent({ kind: "plant_bloomed" });
     }, [registerBlooms, recordFieldNoteEvent]);
 
@@ -909,7 +935,13 @@ export function useWordSearchGame() {
         const nextGrowth: Record<string, number> = {};
         let bloomCount = 0;
         let bounty = 0;
-        const bloomedTiers: string[] = [];
+        // WSP-2.6: full occurrences (not just bare tiers) so this, the third
+        // and last bloom-triggering path, feeds BloomCelebration the same
+        // shape the two individual sites do. Multiple plants can bloom in
+        // one bulk-water action -- see registerBlooms/setBloomEvents below
+        // for how that's handled (one distinct-tier accounting update, one
+        // sequential presentation queue append, in bloom order).
+        const bloomedOccurrences: BloomOccurrence[] = [];
         readyPlants.forEach(plant => {
             const currentGrowth = growthByPlant[plant.id] ?? 0;
             const next = Math.min(100, currentGrowth + 25);
@@ -917,15 +949,17 @@ export function useWordSearchGame() {
             nextGrowth[plant.id] = next;
             if (next === 100 && currentGrowth < 100) {
                 bloomCount += 1;
-                bounty += getPlantEconomy(plant).bloomBounty;
-                bloomedTiers.push(plant.tier);
+                const plantBounty = getPlantEconomy(plant).bloomBounty;
+                bounty += plantBounty;
+                bloomedOccurrences.push({ plantId: plant.id, plantName: plant.name, tier: plant.tier, bounty: plantBounty });
             }
         });
         setWateredTimestamps(previous => ({ ...previous, ...nextTimestamps }));
         setGrowthByPlant(previous => ({ ...previous, ...nextGrowth }));
         if (bloomCount) {
             setSeeds(previous => previous + bounty);
-            registerBlooms(bloomedTiers);
+            registerBlooms(bloomedOccurrences.map(occurrence => occurrence.tier));
+            setBloomEvents(prev => [...prev, ...makeBloomEvents(bloomedOccurrences)]);
             recordFieldNoteEvent({ kind: "plant_bloomed" });
         }
         setStatus(`Watered ${readyPlants.length} plant${readyPlants.length === 1 ? "" : "s"}${bloomCount ? ` and bloomed ${bloomCount}` : ""}.`);
@@ -1117,6 +1151,7 @@ export function useWordSearchGame() {
         // Botanical Sanctuary state & handlers
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom, waterAllReady,
+        bloomEvents, dismissBloomEvent,
         afflictions, remedyCharges, treatPlant, compostAfflictedPlant,
         // Store power-ups
         doubleSeedsActive, activateDoubleSeeds, activateSuperRoot, activateCompass, activateSpectrometer,

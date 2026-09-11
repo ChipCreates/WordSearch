@@ -19,6 +19,8 @@ import AchievementBanner from "./components/AchievementBanner";
 import MilestoneCard from "./components/MilestoneCard";
 import { getMilestoneContent, getRegionTransitionIntensity } from "./milestones";
 import { REWARD_PRESENTATION, type RewardIntensity } from "./rewardIntensity";
+import BloomCelebration from "./components/BloomCelebration";
+import { bloomIntensity } from "./bloomEvents";
 import PlayerProfileSheet from "./components/PlayerProfileSheet";
 import ContextSidebar from "./components/sidebar/ContextSidebar";
 import ResponsiveContextStrip from "./components/sidebar/ResponsiveContextStrip";
@@ -71,6 +73,7 @@ export default function App() {
         onboardingSeen, dismissOnboardingStep, replayOnboarding,
         ownedPlants, wateredTimestamps, growthByPlant,
         buyPlantSeed, updateWateredTimestamp, updatePlantGrowth, recordPlantBloom, waterAllReady,
+        bloomEvents, dismissBloomEvent,
         afflictions, remedyCharges, treatPlant, compostAfflictedPlant,
         doubleSeedsActive,
         unlockedThemes, unlockTheme,
@@ -335,6 +338,27 @@ export default function App() {
         }
         prevMilestoneQueueLengthRef.current = milestoneQueue.length;
     }, [milestoneQueue, playSfx, playBonusChime]);
+
+    // WSP-2.6: plays once per bloom as it becomes the CURRENTLY SHOWN entry
+    // (index 0), not once per entry appended -- a bulk "water all ready"
+    // that blooms 3 plants at once queues 3 entries in the same tick, but
+    // should still cue audio 3 times in sequence as each is presented, not
+    // as one burst up front. The cue category itself comes straight from
+    // WSP-2.1's REWARD_PRESENTATION for that plant's tier (see
+    // bloomIntensity in src/bloomEvents.ts); "signature" has no dedicated
+    // asset yet (Tier 3's job), so it falls back to the existing
+    // "achievement" SFX, same as "fanfare".
+    const currentBloomEvent = bloomEvents[0] ?? null;
+    const prevBloomEventIdRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (currentBloomEvent && currentBloomEvent.id !== prevBloomEventIdRef.current) {
+            const cue = REWARD_PRESENTATION[bloomIntensity(currentBloomEvent.tier)].audioCue;
+            if (cue === "chime") playBonusChime();
+            else if (cue === "award") playSfx("award");
+            else if (cue === "fanfare" || cue === "signature") playSfx("achievement");
+        }
+        prevBloomEventIdRef.current = currentBloomEvent?.id ?? null;
+    }, [currentBloomEvent, playSfx, playBonusChime]);
 
     // ── Derived values ────────────────────────────────────────────────────────
     const bgTheme = CATEGORY_THEMES[category] ?? DEFAULT_THEME;
@@ -679,6 +703,9 @@ export default function App() {
                             onTreatPlant={treatPlant}
                             onCompostPlant={compostAfflictedPlant}
                             showToast={showToast}
+                            bloomEvents={bloomEvents}
+                            onDismissBloomEvent={dismissBloomEvent}
+                            isMobile={isMobile}
                             />
                         </Suspense>
                     ) : (
@@ -958,6 +985,19 @@ export default function App() {
                 persist={debugRequested && debugPersistAchievementBanner}
                 isMobile={isMobile}
             />
+
+            {/* WSP-2.6: GardenView mounts its own BloomCelebration fed by the
+                same bloomEvents/dismissBloomEvent (see its own render) so the
+                two individual-action bloom sources get a directly-testable
+                presentation without waiting on this App-level wiring. This
+                copy only exists to cover the third source -- bulk "water all
+                ready", triggerable from the header/sidebar on ANY tab -- so a
+                bloom triggered while the Garden tab isn't even mounted still
+                presents. Gated on activeTab so the two never double-render
+                the same queue at once. */}
+            {activeTab !== "garden" && (
+                <BloomCelebration events={bloomEvents} onDismiss={dismissBloomEvent} isMobile={isMobile} />
+            )}
 
             <OnboardingCoachmark
                 steps={coachmarkSteps}
