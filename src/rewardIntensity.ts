@@ -119,25 +119,33 @@ const TIER_TO_INTENSITY: Record<AchievementTier, RewardIntensity> = {
     exceptional: "exceptional",
 };
 
-// Every achievement that predates the family/tier system (src/achievements.ts's
-// first 13 entries), classified individually since they have no shared tier
-// to fall back on. Kept as an explicit id map, not a heuristic, so a future
-// rename (e.g. WSP-2.5's daily-dew rename) is a one-line update here, not a
-// silent reclassification.
+// Every achievement that predates the family/tier system, classified
+// individually since they have no shared tier to fall back on. Kept as an
+// explicit id map, not a heuristic, so a future rename is a one-line update
+// here, not a silent reclassification.
+//
+// WSP-2.5 update: "zenith-climber" was folded into the level-clears family
+// as its new "gold" tier member (level-clears-50) -- it now gets its
+// intensity from `tier` automatically via TIER_TO_INTENSITY and no longer
+// needs (or has) an entry here. "daily-dew" was renamed to
+// "categories-completed-10" (the id never had anything to do with daily/
+// calendar logic -- it always checked uniqueCategoriesCompleted); the key
+// below was updated to match, per src/persistence.ts's
+// ACHIEVEMENT_ID_MIGRATIONS which keeps a player's earned unlock intact
+// under the new id.
 const LEGACY_ACHIEVEMENT_INTENSITY: Record<string, RewardIntensity> = {
     "night-bloomer": "routine",     // first level completed
-    "zenith-climber": "major",      // 50 levels, standalone (WSP-2.5 may fold into level-clears)
     "petal-poet": "small",          // 8 categories
     "midnight-sun": "routine",      // first diagonal find
     "sunlight-harvester": "small",  // 5 bonus words
-    "bloom-herald": "medium",       // 1,000 Seeds
+    "bloom-herald": "medium",       // reach a 1,000-Seed balance
     "nimble-planter": "small",      // 5 hint-free levels
     "word-weaver": "small",         // 3 bonus words in one level
     "root-master": "routine",       // first reverse find
     "solar-scribe": "routine",      // first bloom
-    "verdant-voyager": "medium",    // 3 distinct rarity tiers bloomed (WSP-2.5 makes this real)
+    "verdant-voyager": "medium",    // 3 distinct rarity tiers bloomed (WSP-2.5 made this real)
     "moss-mystic": "routine",       // first power-up use
-    "daily-dew": "small",           // 10 unique categories (id predates WSP-2.5's rename)
+    "categories-completed-10": "small", // 10 unique categories (formerly "daily-dew")
 };
 
 /**

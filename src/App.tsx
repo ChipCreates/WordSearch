@@ -500,7 +500,7 @@ export default function App() {
                         const result = waterAllReady();
                         if (result.watered) showToast(`💧 Watered ${result.watered} plants${result.bloomed ? ` · ${result.bloomed} bloomed · +${result.seeds} Seeds` : ""}.`);
                     }}
-                    achievementStats={{ levelsCompleted, seeds, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed }}
+                    achievementStats={{ levelsCompleted, seeds, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers: bloomedRarityTiers.size, uniqueCategoriesCompleted, powerupsUsed }}
                     unlockedAchievements={unlockedAchievements}
                     fieldNotes={fieldNotes}
                     onCollectFieldNote={claimFieldNote}
@@ -523,7 +523,7 @@ export default function App() {
                             const result = waterAllReady();
                             if (result.watered) showToast(`💧 Watered ${result.watered} plants${result.bloomed ? ` · ${result.bloomed} bloomed · +${result.seeds} Seeds` : ""}.`);
                         }}
-                        achievementStats={{ levelsCompleted, seeds, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers, uniqueCategoriesCompleted, powerupsUsed }}
+                        achievementStats={{ levelsCompleted, seeds, categoriesSeen: categoriesSeen.size, foundDiagonal, totalCategories: CATEGORY_NAMES.length, bonusWordsFound, levelsCompletedWithoutHint, maxBonusWordsInLevel, reverseWordsFound, plantsBloomed, bloomedRarityTiers: bloomedRarityTiers.size, uniqueCategoriesCompleted, powerupsUsed }}
                         unlockedAchievements={unlockedAchievements}
                         fieldNotes={fieldNotes}
                         onCollectFieldNote={claimFieldNote}
@@ -617,7 +617,7 @@ export default function App() {
                                 maxBonusWordsInLevel,
                                 reverseWordsFound,
                                 plantsBloomed,
-                                bloomedRarityTiers,
+                                bloomedRarityTiers: bloomedRarityTiers.size,
                                 uniqueCategoriesCompleted,
                                 powerupsUsed,
                             }}

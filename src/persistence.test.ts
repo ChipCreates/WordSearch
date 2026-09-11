@@ -95,7 +95,7 @@ describe("Persistence Module", () => {
 
     const loaded = await loadSaveData();
 
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(CURRENT_SCHEMA_VERSION);
     expect(loaded.seeds).toBe(275);
     expect(loaded.powerupInventory["single-letter-sprout"]).toBe(0);
     expect(loaded.powerupInventory["lumina-cyclone"]).toBe(0);
@@ -121,7 +121,7 @@ describe("Persistence Module", () => {
     }));
 
     const first = await loadSaveData();
-    expect(first.version).toBe(4);
+    expect(first.version).toBe(CURRENT_SCHEMA_VERSION);
     expect(first.highestUnlockedLevel).toBe(10);
     expect(first.completedLevels).toEqual(Array.from({ length: 9 }, (_, index) => index + 1));
     expect(first.level).toBe(10);
@@ -153,9 +153,108 @@ describe("Persistence Module", () => {
       seeds: 765,
     }));
     const loaded = await loadSaveData();
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(CURRENT_SCHEMA_VERSION);
     expect(loaded.seeds).toBe(765);
     expect(loaded.fieldNotes.activeIds).toHaveLength(3);
+  });
+});
+
+describe("WSP-2.5 achievement id migrations", () => {
+  it("preserves an already-earned \"daily-dew\" achievement under its renamed id", async () => {
+    localStorage.setItem(PRIMARY_KEY, JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      unlockedAchievements: ["night-bloomer", "daily-dew"],
+    }));
+    const loaded = await loadSaveData();
+    expect(loaded.unlockedAchievements).toContain("categories-completed-10");
+    expect(loaded.unlockedAchievements).not.toContain("daily-dew");
+    expect(loaded.unlockedAchievements).toContain("night-bloomer");
+  });
+
+  it("preserves an already-earned \"zenith-climber\" achievement under its folded level-clears-50 id", async () => {
+    localStorage.setItem(PRIMARY_KEY, JSON.stringify({
+      ...DEFAULT_SAVE_DATA,
+      unlockedAchievements: ["zenith-climber", "level-clears-25"],
+    }));
+    const loaded = await loadSaveData();
+    expect(loaded.unlockedAchievements).toContain("level-clears-50");
+    expect(loaded.unlockedAchievements).not.toContain("zenith-climber");
+    expect(loaded.unlockedAchievements).toContain("level-clears-25");
+  });
+
+  it("de-duplicates if a save somehow already has both the old and new id", () => {
+    const loaded = normalizeSaveData({
+      ...DEFAULT_SAVE_DATA,
+      unlockedAchievements: ["daily-dew", "categories-completed-10", "zenith-climber", "level-clears-50"],
+    });
+    expect(loaded.unlockedAchievements.filter(id => id === "categories-completed-10")).toHaveLength(1);
+    expect(loaded.unlockedAchievements.filter(id => id === "level-clears-50")).toHaveLength(1);
+  });
+
+  it("leaves ids it doesn't recognize as renamed untouched", () => {
+    const loaded = normalizeSaveData({
+      ...DEFAULT_SAVE_DATA,
+      unlockedAchievements: ["night-bloomer", "root-master"],
+    });
+    expect(loaded.unlockedAchievements).toEqual(["night-bloomer", "root-master"]);
+  });
+});
+
+describe("WSP-2.5 bloomedRarityTiers -> bloomedRarityTierIds migration", () => {
+  it("trusts a well-formed bloomedRarityTierIds array as-is", () => {
+    const loaded = normalizeSaveData({
+      ...DEFAULT_SAVE_DATA,
+      bloomedRarityTierIds: ["Common", "Rare", "Common"],
+    });
+    // De-duplicated -- "distinct tiers", not an event log.
+    expect(loaded.bloomedRarityTierIds).toEqual(["Common", "Rare"]);
+  });
+
+  it("reconstructs distinct tiers from currently-owned, fully-bloomed plants when only the legacy counter is present", () => {
+    const loaded = normalizeSaveData({
+      ...DEFAULT_SAVE_DATA,
+      bloomedRarityTierIds: undefined, // simulate a save that predates this field -- only the legacy shape below is present
+      bloomedRarityTiers: 2, // legacy raw counter shape, no unlockedAchievements entry to protect
+      ownedPlants: ["moss-sprout", "emerald-fern", "crystal-succulent"],
+      growthByPlant: { "moss-sprout": 100, "emerald-fern": 100, "crystal-succulent": 40 },
+    } as unknown as Record<string, unknown>);
+    // moss-sprout and emerald-fern are both Common (fully bloomed);
+    // crystal-succulent isn't fully grown, so its tier isn't counted.
+    expect(loaded.bloomedRarityTierIds).toEqual(["Common"]);
+  });
+
+  it("never revokes an already-earned verdant-voyager when the legacy counter can't be exactly reconstructed", () => {
+    const loaded = normalizeSaveData({
+      ...DEFAULT_SAVE_DATA,
+      bloomedRarityTierIds: undefined,
+      bloomedRarityTiers: 3, // legacy counter satisfied the old (broken) predicate
+      unlockedAchievements: ["verdant-voyager"],
+      // No owned/fully-bloomed plants recorded -- exact history is genuinely
+      // unrecoverable, but the achievement must still hold after migration.
+      ownedPlants: ["moss-sprout"],
+      growthByPlant: {},
+    } as unknown as Record<string, unknown>);
+    expect(loaded.bloomedRarityTierIds.length).toBeGreaterThanOrEqual(3);
+    expect(loaded.unlockedAchievements).toContain("verdant-voyager");
+  });
+
+  it("does not fabricate tiers for a save that never earned verdant-voyager, even with a nonzero legacy counter", () => {
+    const loaded = normalizeSaveData({
+      ...DEFAULT_SAVE_DATA,
+      bloomedRarityTierIds: undefined,
+      bloomedRarityTiers: 5,
+      unlockedAchievements: [],
+      ownedPlants: ["moss-sprout"],
+      growthByPlant: {},
+    } as unknown as Record<string, unknown>);
+    // Nothing to protect -- the honest (empty) reconstruction stands, rather
+    // than padding out to the old counter's value.
+    expect(loaded.bloomedRarityTierIds).toEqual([]);
+  });
+
+  it("defaults to an empty set for a save with neither shape present", () => {
+    const loaded = normalizeSaveData({ ...DEFAULT_SAVE_DATA });
+    expect(loaded.bloomedRarityTierIds).toEqual([]);
   });
 });
 

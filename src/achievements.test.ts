@@ -49,8 +49,76 @@ describe("achievements", () => {
 
     it("keeps long-term families ordered by stable tier metadata", () => {
         const levels = ACHIEVEMENTS.filter(achievement => achievement.family === "level-clears");
-        expect(levels.map(achievement => achievement.tier)).toEqual(["bronze", "silver", "exceptional"]);
-        expect(levels.map(achievement => achievement.maxProgress)).toEqual([10, 25, 100]);
+        // WSP-2.5 folded the old standalone "zenith-climber" (50 levels) into
+        // this family as its "gold" rung -- it used to sit unlabeled between
+        // level-clears-25 and level-clears-100, duplicating the same
+        // levelsCompleted predicate this family already tracks.
+        expect(levels.map(achievement => achievement.tier)).toEqual(["bronze", "silver", "gold", "exceptional"]);
+        expect(levels.map(achievement => achievement.maxProgress)).toEqual([10, 25, 50, 100]);
         expect(ACHIEVEMENTS.filter(achievement => achievement.actionableCopy).length).toBeGreaterThan(10);
+    });
+
+    it("never leaves an achievement description implying daily/calendar logic (WSP-2.5)", () => {
+        // AchievementStats has no date/streak field -- any description
+        // implying daily/calendar-based tracking would be describing
+        // behavior the code doesn't actually have.
+        for (const achievement of ACHIEVEMENTS) {
+            expect(achievement.description.toLowerCase()).not.toMatch(/\bdaily\b|\bstreak\b|\bcalendar\b/);
+        }
+    });
+
+    it("has no two achievements checking the same stat at the same effective threshold", () => {
+        // Fuzz across many random stat combinations and compare each
+        // achievement's full progress "fingerprint" (its getProgress output
+        // across every trial). Two achievements that produce an identical
+        // fingerprint AND share the same maxProgress are, for all practical
+        // purposes, tracking the same underlying stat at the same threshold
+        // -- exactly the zenith-climber/level-clears-50 duplication this
+        // issue fixed. Genuinely distinct "first X" achievements
+        // (night-bloomer, root-master, solar-scribe, moss-mystic -- all
+        // maxProgress 1, but keyed off different stats) reliably diverge
+        // across these trials since each only reacts to its own field.
+        const rng = (seed: number) => {
+            let state = seed;
+            return () => {
+                state = (state * 1103515245 + 12345) & 0x7fffffff;
+                return state / 0x7fffffff;
+            };
+        };
+        const next = rng(20260911);
+        const trials: AchievementStats[] = Array.from({ length: 40 }, () => ({
+            levelsCompleted: Math.floor(next() * 140),
+            seeds: Math.floor(next() * 1500),
+            categoriesSeen: Math.floor(next() * 40),
+            foundDiagonal: next() > 0.5,
+            totalCategories: 40,
+            bonusWordsFound: Math.floor(next() * 130),
+            levelsCompletedWithoutHint: Math.floor(next() * 60),
+            maxBonusWordsInLevel: Math.floor(next() * 5),
+            reverseWordsFound: Math.floor(next() * 60),
+            plantsBloomed: Math.floor(next() * 25),
+            bloomedRarityTiers: Math.floor(next() * 7),
+            uniqueCategoriesCompleted: Math.floor(next() * 15),
+            powerupsUsed: Math.floor(next() * 60),
+        }));
+
+        const fingerprints = ACHIEVEMENTS.map(achievement => ({
+            id: achievement.id,
+            maxProgress: achievement.maxProgress,
+            signature: trials.map(stats => achievement.getProgress(stats)).join(","),
+        }));
+
+        for (let i = 0; i < fingerprints.length; i++) {
+            for (let j = i + 1; j < fingerprints.length; j++) {
+                const a = fingerprints[i];
+                const b = fingerprints[j];
+                if (a.maxProgress === b.maxProgress && a.signature === b.signature) {
+                    throw new Error(
+                        `"${a.id}" and "${b.id}" track the same stat at the same threshold `
+                        + `(identical progress across ${trials.length} randomized trials).`,
+                    );
+                }
+            }
+        }
     });
 });
