@@ -2,7 +2,7 @@
 
 ## 0. What 1.0 Means
 
-Word Sprout already has enough mechanical breadth. It doesn't need new systems — it needs the systems it has to feel finished, correct, and coherent. That's the whole job of this release.
+Word Sprout already has enough mechanical breadth. It doesn't need a second game layered on top of it — it needs the systems it has to feel finished, correct, and coherent. The evolving-grid proposal therefore belongs in 1.0 as architectural groundwork plus a deliberately conservative puzzle-surface slice, not as a promise to ship every advanced mechanic.
 
 The test for every task on this list: does it make an existing thing *right*, or does it add something new? If it's the second one, it doesn't belong in 1.0.
 
@@ -150,6 +150,32 @@ The Garden needs to look and feel like evidence of time spent, not a settings sc
 Bloom is the biggest reward moment in the Garden loop — brighten, animate, reveal, soft particles, reward, collection update — and it should scale with rarity; don't spend Legendary-tier presentation on a Common bloom. As the collection grows, the Conservatory itself should visibly look fuller — a shelf, a greenhouse tableau, whatever's cheapest to build that reads as accumulation. This doesn't need to be a decorating system for 1.0.
 
 ---
+
+## TIER 2.5 — Puzzle Surface Evolution
+
+The puzzle surface may grow with the player without making the surrounding application feel like a different game. This tier establishes the data model needed for future geometric and visual progression, then ships only the smallest player-facing slice that can be taught by play and certified as fair. The full implementation spec is [WordSprout_1.0_Tier2.5_Issues.md](WordSprout_1.0_Tier2.5_Issues.md).
+
+### 2.5.1 Architecture before novelty
+
+**Owner:** Engineering agent — gameplay/rendering, with Design review
+
+Represent a board as a shape/mask, cells, explicit neighbor relationships, topology, and ordered word paths. Cells must be able to carry geometry and glyph orientation; words must not be limited to `start + direction + length`. Keep the existing rectangular straight-line generator and interaction behavior working through the new representation. Difficulty metadata must be multidimensional rather than treating grid size as the sole difficulty proxy.
+
+### 2.5.2 Conservative 1.0 surface slice
+
+The first player-facing evolution may use familiar rectangular boards plus a small, playtested set of recognizable masks (for example diamond and triangle), with square/diamond cell treatments and predominantly straight words. Introduce visual novelty independently from mechanical novelty. Do not require winding paths, hex topology, rotated target glyphs, or a complete theme matrix for 1.0; those remain post-1.0 extensions unless playtesting proves a narrower slice belongs here.
+
+### 2.5.3 Composable board themes
+
+**Owner:** Art + Engineering agents
+
+Treat the puzzle surface as composable parts — board treatment, shape, cell material, cell geometry, glyph treatment, selection effect, word-found effect, completion celebration, and ambient effect — rather than monolithic level skins. Material and geometry stay independent, combinations are explicitly allow-listed, and the surrounding navigation, typography, controls, word list, and botanical identity remain stable. Ambient and celebratory effects must be brief, non-blocking, performance-bounded, and subordinate to letter legibility.
+
+### 2.5.4 Accessibility and fairness
+
+**Owner:** Engineering — gameplay/rendering, with QA
+
+Difficulty and accessibility are separate. Provide independent reduction paths for unusual geometry, glyph rotation, winding paths, and selection animation as those mechanics arrive; do not silently reduce vocabulary or progression challenge. Reduced motion and performance settings apply to all puzzle-surface effects. Every new board/path form needs seeded solvability, adjacency, selection, cancellation, and reduced-motion coverage before it is eligible for progression content.
 
 ## TIER 3 — World Presentation
 
@@ -303,7 +329,7 @@ Bump to `1.0.0` in `package.json` and every native manifest only after the relea
 
 ## Post-1.0 Backlog
 
-Real ideas, deliberately not now: additional regions past level 100, seasonal cosmetics, more plants and categories, deeper Conservatory decorating, optional challenge modes, additional accessibility preferences, further campaign chapters. Any of these gets picked up later only if it strengthens an existing pillar — none of them should spawn a new, unrelated progression system.
+The evolving-grid work is tracked in the [Post-1.0 Implementation Plan](WordSprout_Post_1.0_Implementation_Plan.md). Other ideas, deliberately not now, include additional regions past level 100, seasonal cosmetics, more plants and categories, deeper Conservatory decorating, optional challenge modes, and further campaign chapters. Any of these gets picked up later only if it strengthens an existing pillar — none of them should spawn a new, unrelated progression system.
 
 ---
 
