@@ -1,0 +1,1017 @@
+WordSprout — Evolving Grid & Visual Difficulty System
+
+Feature Proposal
+
+Status
+
+Proposed
+
+Purpose
+
+Expand WordSprout's difficulty progression beyond conventional increases in grid size, word count, and distractor density by gradually changing the visual and geometric assumptions of the word-search puzzle itself.
+
+The goal is simple:
+
+«As the player progresses, the puzzle learns new shapes.»
+
+Early WordSprout puzzles should remain immediately recognizable as traditional word searches. Over time, however, board shapes, tile geometry, word paths, and even individual letter orientation can subtly evolve.
+
+The player should rarely feel as though WordSprout has suddenly introduced a new game mode. Instead, the familiar word-search format gradually becomes richer, stranger, and more challenging.
+
+---
+
+1. Design Goals
+
+The system should accomplish five things.
+
+1. Preserve the traditional word-search experience
+
+WordSprout remains fundamentally a word-search game.
+
+Straight-line word discovery should remain an important part of the experience even at higher difficulty levels.
+
+Advanced mechanics augment the core rather than replace it.
+
+2. Create meaningful difficulty progression
+
+Difficulty should not primarily mean:
+
+- larger grids;
+- more words;
+- longer words;
+- more backwards words;
+- denser filler characters.
+
+Instead, progression can gradually challenge different aspects of visual recognition and spatial reasoning.
+
+3. Introduce complexity subtly
+
+New mechanics should generally appear one at a time.
+
+The preferred player reaction is:
+
+«"Oh. That's different."»
+
+rather than:
+
+«"Here's another tutorial for a completely new mechanic."»
+
+Whenever possible, the design itself should teach the mechanic.
+
+4. Keep advanced puzzles fair
+
+Advanced puzzles may become extremely difficult, but they should remain logically readable.
+
+Difficulty should arise from visual recognition and spatial reasoning rather than arbitrary deception.
+
+5. Build the architecture before all the content
+
+Not every proposed mechanic needs to ship in WordSprout 1.0.
+
+However, the puzzle model should avoid architectural assumptions that would make these mechanics expensive to implement later.
+
+In particular, the engine should not assume that:
+
+- every board is rectangular;
+- every cell is square;
+- every word is a straight vector;
+- every glyph is upright.
+
+---
+
+2. The Four Difficulty Dimensions
+
+The proposed system separates puzzle complexity into four largely independent dimensions.
+
+2.1 Board Geometry
+
+The playable area no longer needs to fill a rectangular matrix.
+
+A puzzle can occupy a geometric mask within an underlying coordinate system.
+
+Potential board shapes include:
+
+- square;
+- rectangle;
+- diamond;
+- triangle;
+- circle;
+- oval;
+- heart;
+- hexagon;
+- star;
+- cross;
+- hourglass;
+- crescent;
+- clover;
+- other simple symmetric geometric forms.
+
+The important distinction is that the logical grid and visible board do not need to be identical.
+
+For example, a heart can still internally occupy a rectangular coordinate space while cells outside the heart mask are disabled.
+
+This allows existing grid-generation concepts to survive while permitting much richer presentation.
+
+Design Principle
+
+Board shapes should be recognizable rather than mathematically perfect.
+
+Letter spacing, touch-target size, readability, and puzzle quality take precedence over producing a perfect geometric silhouette.
+
+---
+
+3. Cell Geometry
+
+Individual letter cells can evolve along with the board.
+
+Possible cell presentations include:
+
+- invisible/default grid;
+- square;
+- rounded square;
+- circle;
+- diamond;
+- hexagon;
+- potentially triangular cells for specialized puzzles.
+
+Cell geometry should complement board geometry where appropriate.
+
+Examples:
+
+Rectangle
+→ conventional square cells.
+
+Diamond
+→ diamond-shaped cells.
+
+Circular board
+→ round or hexagonal cells.
+
+Clover
+→ hexagonal or softly rounded cells.
+
+The transition does not need to be announced as a new mode.
+
+The player simply encounters progressively different visual arrangements.
+
+Topology
+
+Cell shape can eventually affect adjacency rather than merely presentation.
+
+A square topology and hexagonal topology do not have identical neighboring relationships.
+
+This creates another potential source of puzzle complexity while preserving the fundamental interaction:
+
+«Drag through adjacent letters to identify a word.»
+
+Internally, cells should therefore be represented as nodes with explicit neighbor relationships rather than assuming adjacency from rectangular row/column mathematics alone.
+
+---
+
+4. Word Geometry
+
+Traditional word searches place words along straight vectors.
+
+WordSprout can gradually relax this assumption.
+
+Stage 1 — Straight Words
+
+Traditional:
+
+- horizontal;
+- vertical;
+- diagonal;
+- forward;
+- backwards.
+
+This remains the foundation of the game.
+
+Stage 2 — Single-Bend Words
+
+A word may change direction once.
+
+For example:
+
+"G → A → R → D ↓ E ↓ N"
+
+The path remains visually obvious enough to discover through normal scanning.
+
+Stage 3 — Multi-Segment Words
+
+Words may contain two or more directional changes.
+
+These should remain smooth, coherent paths rather than arbitrary zigzags.
+
+Stage 4 — Curving / Winding Words
+
+Advanced puzzles may allow words to follow the geometry of the board.
+
+Examples include words following:
+
+- a circular perimeter;
+- a heart lobe;
+- a clover leaf;
+- a spiral;
+- the edge of a diamond;
+- a gentle arc through a hexagonal field.
+
+Critical Constraint
+
+A winding word must still look like a word path.
+
+The generator should avoid chaotic movement such as:
+
+"→ ↓ ↖ → ↑ ↙ ← ↗"
+
+Simply making a path difficult to trace does not make it a good word-search puzzle.
+
+---
+
+5. Path-Based Word Representation
+
+Long term, words should be represented as paths through cells rather than only as:
+
+"start cell + direction + length"
+
+Conceptually:
+
+"Word = [Cell A, Cell B, Cell C, Cell D, ...]"
+
+This allows the same puzzle engine to represent:
+
+- straight words;
+- backwards words;
+- bent words;
+- curved words;
+- hex-grid words;
+- irregular-board words.
+
+Each consecutive cell must satisfy the adjacency rules of the current topology.
+
+A path may also be prohibited from reusing the same cell unless a future puzzle type explicitly allows it.
+
+---
+
+6. Glyph Orientation
+
+At the highest difficulty levels, the letter itself may rotate inside an otherwise stationary tile.
+
+This is deliberately different from rotating the board or tile.
+
+For example, an "E" might appear rotated 90 degrees.
+
+An "I" rotated 90 degrees may visually resemble a horizontal dash.
+
+A "T", "F", "L", "N", and other letters can become substantially harder to recognize at unusual orientations.
+
+Supported orientations should initially be discrete:
+
+- 0°;
+- 90°;
+- 180°;
+- 270°.
+
+Arbitrary-angle rotation is probably unnecessary and may harm readability.
+
+No Mirroring
+
+Glyphs should not be mirrored.
+
+Rotation challenges recognition while preserving the identity of the glyph.
+
+Mirroring is more likely to create genuine ambiguity and frustration.
+
+---
+
+7. Rotated Glyph Progression
+
+Glyph rotation should be introduced particularly slowly.
+
+Stage 1
+
+All target-word glyphs remain upright.
+
+Occasional filler glyphs are rotated.
+
+This lets players encounter the visual concept without affecting solvability.
+
+Stage 2
+
+A target word may contain one rotated glyph.
+
+Stage 3
+
+Several target glyphs may be rotated.
+
+Stage 4
+
+Target and filler glyphs may independently use 0°, 90°, 180°, or 270° orientations.
+
+Master Difficulty
+
+Individual glyph orientations may be extensively randomized throughout the puzzle.
+
+This becomes one of WordSprout's most demanding visual-recognition challenges.
+
+---
+
+8. Selection Normalization
+
+Rotated glyphs create an opportunity for particularly satisfying interaction feedback.
+
+When the player selects a rotated letter as part of a prospective word path, the glyph can smoothly rotate toward its canonical upright orientation.
+
+Thus a visually difficult sequence progressively resolves into:
+
+"G A R D E N"
+
+as the player's finger travels through it.
+
+This accomplishes three things simultaneously:
+
+1. confirms which glyph the player is interpreting;
+2. provides immediate feedback that the selection is plausible;
+3. creates a satisfying visual reward for recognizing a difficult word.
+
+If the selection is cancelled, the glyphs return to their puzzle orientations.
+
+If the word is successfully found, they may remain upright, return to their original orientation, or participate in the normal WordSprout completion animation.
+
+This behavior should be tested during prototyping.
+
+---
+
+9. Difficulty as a Multidimensional System
+
+These systems should not be collapsed into a single "difficulty level."
+
+A puzzle can instead possess a difficulty profile.
+
+Conceptually:
+
+Board Complexity
+Cell Topology
+Word Path Complexity
+Glyph Rotation
+Word Count
+Word Length
+Reverse Frequency
+Distractor Density
+Overlap Density
+
+This gives WordSprout considerably more control over progression.
+
+For example, a puzzle could be:
+
+- small;
+- diamond-shaped;
+- diamond-tiled;
+- mostly straight;
+- with no rotated glyphs.
+
+Another could be:
+
+- small;
+- heart-shaped;
+- hex-tiled;
+- contain two single-bend words;
+- have occasional rotated filler letters.
+
+Another could be:
+
+- clover-shaped;
+- hex-topology;
+- contain winding paths;
+- heavily overlap words;
+- rotate target glyphs.
+
+The physical size of the puzzle therefore stops being the primary proxy for difficulty.
+
+---
+
+10. Path Complexity Scoring
+
+Word paths should eventually receive a measurable complexity score.
+
+Possible inputs include:
+
+- number of direction changes;
+- severity of turns;
+- word length;
+- backwards orientation;
+- number of crossings;
+- number of nearby distractor sequences;
+- similarity of neighboring letters;
+- path proximity to board boundaries;
+- number of rotated glyphs;
+- glyph rotation angles;
+- board topology.
+
+This allows the generator to target an approximate difficulty range instead of relying solely on manually defined rules.
+
+A 9×9 advanced puzzle could consequently be substantially harder than a conventional 18×18 puzzle.
+
+---
+
+11. Proposed Progression
+
+The exact level numbers should be determined through playtesting rather than hard-coded into the design proposal.
+
+However, the conceptual progression should resemble:
+
+Seedling
+
+Conventional square and rectangular word searches.
+
+Upright glyphs.
+
+Straight paths.
+
+Sprouting
+
+Different rectangular proportions.
+
+More diagonals and backwards words.
+
+Very subtle visual cell variation.
+
+Growing
+
+Diamonds, triangles, circles, and other simple board masks begin appearing.
+
+Cell shapes start complementing board geometry.
+
+Words remain predominantly straight.
+
+Blooming
+
+Hearts, stars, clovers, hexagons, and more elaborate geometric boards appear.
+
+Hexagonal topology may be introduced.
+
+Occasional rotated filler glyphs appear.
+
+Flourishing
+
+Single-bend target words appear.
+
+Rotated target glyphs are introduced sparingly.
+
+Straight words remain common.
+
+Expert
+
+Multiple mechanics combine.
+
+Examples:
+
+- heart-shaped boards;
+- hex cells;
+- straight and bent words;
+- occasional rotated target glyphs;
+- greater word overlap.
+
+Master Garden
+
+All established mechanics may be combined.
+
+Potential characteristics:
+
+- unusual geometric board;
+- non-square topology;
+- winding words;
+- backwards paths;
+- overlapping target paths;
+- independently rotated glyphs;
+- dense distractor fields.
+
+Master Garden puzzles should be extremely difficult while remaining fair and logically solvable.
+
+---
+
+12. Subtle Introduction
+
+The progression should avoid excessive modal tutorials.
+
+Whenever possible, mechanics should teach themselves.
+
+For example, the first rotated target glyph could appear in an otherwise easy word.
+
+The player identifies the likely word, selects it, and watches the rotated character animate upright.
+
+That interaction explains the rule better than a paragraph of instructions.
+
+Similarly, the first diamond puzzle does not require:
+
+«"NEW FEATURE: DIAMOND BOARDS!"»
+
+The player can simply encounter one.
+
+Major topology changes may require a minimal visual hint if playtesting shows players do not naturally understand the new adjacency rules.
+
+---
+
+13. Mixing Old and New Mechanics
+
+Advanced levels should not consist exclusively of advanced word paths.
+
+A difficult puzzle might contain:
+
+- eight conventional straight words;
+- three single-bend words;
+- two multi-segment words;
+- one particularly difficult challenge word.
+
+This preserves the visual-recognition satisfaction of traditional word searching.
+
+The advanced mechanics provide peaks of difficulty rather than replacing the genre's fundamental experience.
+
+---
+
+14. Visual Language
+
+Board geometry should complement WordSprout's existing botanical identity without requiring every puzzle to literally depict a plant.
+
+Simple mathematical shapes are preferable because they remain visually clean and immediately understandable.
+
+A progression through:
+
+"▭  □  ◆  ▲  ⬡  ●  ♥  ★  ☘"
+
+could itself become part of WordSprout's visual identity.
+
+The clover is especially appropriate to the botanical theme, but it should exist within a larger geometric vocabulary rather than becoming the entire concept.
+
+---
+
+Puzzle Surface Visual Progression
+
+Mechanical progression should be accompanied by a second, independent form of progression: visual evolution of the puzzle surface.
+
+WordSprout should not present the same board, letter tiles, glyph treatment, and celebration effects throughout the entire game. At the same time, progression should not rely on replacing the complete interface with dramatically different skins.
+
+The surrounding application remains recognizably WordSprout.
+
+The puzzle surface evolves inside it.
+
+This creates visual freshness without sacrificing consistency or making each level group feel like a different game.
+
+---
+
+Design Principle
+
+«Keep the interface familiar while allowing the puzzle surface to change.»
+
+Persistent elements such as navigation, typography, dialogs, controls, word lists, progression systems, and overall botanical art direction should remain relatively stable.
+
+Variation should concentrate primarily on:
+
+- board treatment;
+- tile material;
+- tile geometry;
+- glyph treatment;
+- selection effects;
+- word-found feedback;
+- puzzle-completion celebrations;
+- subtle ambient effects.
+
+These elements collectively form a Board Theme.
+
+A Board Theme is not a complete WordSprout skin. It is a visual vocabulary applied specifically to the puzzle-playing surface.
+
+---
+
+Board Theme Families
+
+Rather than creating a unique appearance for every level, WordSprout should use families of related visual treatments across groups of levels.
+
+A theme family might persist for 10–30 levels before gradually giving way to another.
+
+Possible families include:
+
+Terracotta Garden
+
+- warm clay board;
+- pressed or lightly engraved glyphs;
+- clay, square, diamond, or hexagonal tiles;
+- subtle imperfections around tile edges;
+- leaves or tiny soil particles during word-found feedback;
+- petals and foliage during puzzle completion.
+
+Woodland
+
+- carved or polished wooden tiles;
+- lightly burned or engraved glyphs;
+- moss along selected environmental edges;
+- small leaves accompanying successful words;
+- falling leaves or emerging sprouts during completion.
+
+River Garden
+
+- smooth stone tiles;
+- softly carved glyphs;
+- rounded or hexagonal geometry;
+- subtle wet highlights;
+- tiny droplets or ripples when words are found;
+- water droplets scattering during completion.
+
+Morning Garden
+
+- pale, softly illuminated board;
+- translucent or dewdrop-inspired tiles;
+- crisp glyphs;
+- small glints following successful selections;
+- droplets, pollen, or morning-light particles during completion.
+
+Moon Garden
+
+- darker board treatment;
+- restrained luminous glyph accents;
+- subtle nighttime botanical details;
+- fireflies responding to found words;
+- fireflies rising across the board when the puzzle is completed.
+
+Wildflower Garden
+
+- lighter natural materials;
+- occasional petal details;
+- soft organic glyph treatment;
+- petals appearing around successful words;
+- a larger petal burst or drifting flower animation at completion.
+
+These examples establish an art direction rather than a mandatory theme list.
+
+Additional themes should follow the same principle: change the character of the puzzle surface without replacing the entire WordSprout interface.
+
+---
+
+Tile Material and Tile Geometry Are Independent
+
+The material used to render a letter tile should not determine its geometry.
+
+For example, a terracotta treatment might appear as:
+
+- square clay tiles;
+- diamond clay tiles;
+- hexagonal clay tiles.
+
+Likewise, hexagonal cells might appear as:
+
+- clay;
+- carved wood;
+- river stone;
+- translucent glass;
+- another theme-appropriate material.
+
+This separation allows the visual-theme system to work naturally with the geometric puzzle system.
+
+Conceptually:
+
+"Board Theme × Board Shape × Cell Geometry"
+
+rather than creating a bespoke asset set for every possible combination.
+
+---
+
+Glyph Treatments
+
+Glyphs themselves can participate in visual progression without compromising readability.
+
+Possible treatments include:
+
+- printed;
+- painted;
+- engraved;
+- carved;
+- pressed into clay;
+- embossed;
+- softly illuminated;
+- inset into stone;
+- lightly weathered.
+
+Glyph treatment should remain subordinate to legibility.
+
+A letter must always be identifiable before stylistic detail is considered.
+
+The advanced glyph-rotation mechanic remains independent of these treatments. For example, an engraved "E" can still be rendered at 0°, 90°, 180°, or 270° when the puzzle's difficulty profile permits rotation.
+
+---
+
+Word-Found Feedback
+
+Finding a word should produce a small, localized visual reward.
+
+This feedback should be substantially less dramatic than the puzzle-completion celebration.
+
+Examples include:
+
+- a few leaves fluttering from the selected path;
+- petals briefly appearing;
+- tiny seeds scattering;
+- a ripple passing across stone tiles;
+- a few droplets splashing;
+- a firefly or two emerging;
+- a small sprout appearing briefly;
+- pollen or dust particles following the completed word.
+
+These effects should reinforce the active Board Theme.
+
+They should be short, responsive, and non-blocking so repeated word discoveries remain satisfying rather than disruptive.
+
+---
+
+Puzzle-Completion Celebrations
+
+Completing the entire puzzle earns a larger celebration.
+
+Rather than using the same confetti effect throughout WordSprout, each Board Theme can provide its own celebration family.
+
+Possible effects include:
+
+- leaves cascading across the board;
+- flower petals bursting outward;
+- seeds scattering and drifting;
+- dandelion fluff floating upward;
+- droplets splashing across the puzzle surface;
+- sprouts briefly emerging around the board;
+- pollen sparkling through the scene;
+- fireflies rising into the surrounding environment;
+- flowers blooming around completed sections.
+
+Celebrations should remain relatively brief.
+
+The objective is to provide a satisfying punctuation mark, not prevent the player from continuing.
+
+---
+
+Ambient Effects
+
+Some Board Themes may include restrained ambient animation.
+
+Examples include:
+
+- an occasional drifting leaf;
+- a slowly moving firefly;
+- very subtle water movement;
+- pollen floating through light;
+- a tiny sparkle on a dewdrop;
+- slight vegetation movement.
+
+Ambient animation should never compete with the letters.
+
+If an effect makes word recognition more difficult, it has failed its purpose.
+
+Ambient effects should also respect reduced-motion and performance settings.
+
+---
+
+Mechanical and Visual Progression Should Be Decoupled
+
+New visual treatments do not need to coincide with new puzzle mechanics.
+
+This is important.
+
+If every new visual theme simultaneously introduces a new board shape, cell topology, word-path mechanic, and glyph behavior, progression may become exhausting.
+
+Instead, WordSprout can alternate between mechanical and visual novelty.
+
+For example:
+
+Level Group A
+Establish a familiar puzzle format.
+
+Level Group B
+Introduce a new Board Theme while retaining familiar mechanics.
+
+Level Group C
+Introduce diamond-shaped boards using a now-familiar visual treatment.
+
+Level Group D
+Introduce another tile/material treatment without adding a new mechanic.
+
+Level Group E
+Introduce triangular boards.
+
+Level Group F
+Introduce a new celebration family.
+
+Level Group G
+Introduce hexagonal cells.
+
+The exact sequence should be determined through playtesting, but the principle remains:
+
+«Something can feel new without requiring the player to learn something new.»
+
+Visual progression therefore provides breathing room between mechanical introductions.
+
+---
+
+Composable Theme Architecture
+
+The visual system should ideally be constructed from interchangeable components rather than monolithic level skins.
+
+Conceptually:
+
+Puzzle Surface
+ ├── Environment / Theme
+ ├── Board Treatment
+ ├── Board Shape
+ ├── Cell Material
+ ├── Cell Geometry
+ ├── Glyph Treatment
+ ├── Selection Effect
+ ├── Word-Found Effect
+ ├── Completion Celebration
+ └── Ambient Effect
+
+A resulting puzzle might therefore be:
+
+"Moon Garden + Clover Board + Hex Cells + Carved Stone + Inset Glyphs + Firefly Celebration"
+
+while another might be:
+
+"Terracotta Garden + Diamond Board + Diamond Clay Tiles + Pressed Glyphs + Petal Celebration"
+
+The game can produce considerable visual variety from a relatively modest collection of reusable components.
+
+---
+
+Controlled Combinations
+
+Composability does not mean every combination should be allowed.
+
+Themes should define compatible component sets.
+
+For example, a river-stone treatment may work beautifully with round and hexagonal cells but poorly with sharp triangular cells.
+
+The art direction should therefore permit or exclude combinations rather than relying entirely on random assembly.
+
+This maintains visual coherence while preserving the production advantages of a modular system.
+
+---
+
+Progression Philosophy
+
+The visual system should reinforce the same philosophy as the evolving-grid system:
+
+«WordSprout grows with the player.»
+
+Early puzzles can be visually simple and familiar.
+
+As the player progresses, the puzzle surface becomes richer:
+
+- materials change;
+- board silhouettes become more interesting;
+- tile shapes evolve;
+- glyph treatments vary;
+- selections become more expressive;
+- celebrations become more distinctive.
+
+Meanwhile, the surrounding WordSprout interface remains familiar.
+
+The result should be visible when comparing screenshots from widely separated portions of the game.
+
+A screenshot from an early level and one from a much later level should clearly show that the game has evolved.
+
+Yet both should immediately and unmistakably look like WordSprout.
+
+---
+
+Relationship to Mechanical Progression
+
+Together, the geometric difficulty system and Board Theme system form a broader Puzzle Surface Progression System.
+
+The two halves serve different purposes:
+
+Mechanical progression changes how the puzzle behaves.
+
+Visual progression changes how the puzzle feels.
+
+Because they are independent, WordSprout can continuously provide novelty without continuously increasing cognitive load.
+
+This distinction is central to keeping a long progression engaging without making the game feel overloaded.
+
+The player should not experience WordSprout as a growing collection of bolted-on features.
+
+They should experience a single word-search game that gradually becomes more visually expressive and mechanically sophisticated as they become better at playing it.
+
+---
+
+15. Accessibility
+
+Advanced visual mechanics should be considered separately from general progression.
+
+Players with visual-processing difficulties may enjoy challenging vocabulary and dense puzzles without wanting rotated glyphs.
+
+Potential accessibility settings should therefore allow players to reduce or disable:
+
+- glyph rotation;
+- unusual cell geometry;
+- winding paths;
+- selection animation.
+
+Difficulty and accessibility should not be treated as the same concept.
+
+Disabling rotated glyphs should not necessarily force the player onto an easier vocabulary or smaller board.
+
+---
+
+16. Puzzle Generator Architecture
+
+The puzzle engine should eventually model a board approximately as:
+
+Board
+ ├── Shape / Mask
+ ├── Cells
+ │    ├── Position
+ │    ├── Glyph
+ │    ├── Glyph Orientation
+ │    ├── Cell Geometry
+ │    └── Neighbor IDs
+ │
+ ├── Topology
+ │
+ └── Words
+      └── Ordered Cell Paths
+
+This separates visual presentation from logical puzzle structure.
+
+A cell does not inherently need to know that it belongs to a rectangular matrix.
+
+A word does not inherently need to know that it travels northeast.
+
+It only needs an ordered sequence of valid cells.
+
+That architectural distinction is what enables nearly everything in this proposal.
+
+---
+
+17. Version 1.0 Recommendation
+
+Not all of these features need to ship in WordSprout 1.0.
+
+Attempting to implement every combination before release would unnecessarily expand scope.
+
+However, 1.0 should ideally establish the data model necessary to support them.
+
+Recommended 1.0 architectural groundwork:
+
+- masked/nonrectangular boards;
+- explicit cell geometry;
+- explicit cell adjacency;
+- path-based word representation;
+- glyph orientation property;
+- renderer independent of rectangular assumptions;
+- difficulty metadata capable of describing multiple complexity dimensions.
+
+Initial player-facing 1.0 content could remain much more conservative.
+
+For example:
+
+- rectangles;
+- diamonds;
+- triangles;
+- perhaps circles/hearts/clovers;
+- square and diamond cells;
+- predominantly straight words;
+- little or no glyph rotation.
+
+More exotic combinations can then arrive in later worlds, challenge levels, or post-1.0 updates without requiring a fundamental rewrite of the puzzle engine.
+
+---
+
+18. Design Principle
+
+The central principle behind the entire system is:
+
+«Don't increase difficulty only by making the puzzle bigger. Increase the player's visual vocabulary.»
+
+WordSprout begins with assumptions every word-search player already understands.
+
+Words are straight.
+
+Letters are upright.
+
+Cells form rows.
+
+Boards are rectangular.
+
+Then, one assumption at a time, WordSprout begins changing them.
+
+The board changes shape.
+
+The cells change shape.
+
+Words begin to bend.
+
+Letters begin to rotate.
+
+Eventually these mechanics combine.
+
+The player has not switched to another puzzle game. They have simply become capable of reading a much richer form of word search than the one they started with.
+
+That progression can mirror WordSprout's broader theme:
+
+«The puzzle grows with the player.»
+
+By the time a player reaches WordSprout's most demanding challenges, the simple rectangular grid they encountered at the beginning has effectively blossomed into something much more sophisticated—while remaining recognizably a word search.
