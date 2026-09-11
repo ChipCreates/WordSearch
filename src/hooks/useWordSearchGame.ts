@@ -19,6 +19,7 @@ import {
     isGardenVocabulary, isNeglected, type AfflictionState, type AfflictionType,
 } from "../plantAffliction";
 import { regionForLevel, regionRewardClaimKey } from "../regions";
+import { regionIdForLevel, getRegionPuzzleDifficulty } from "../regionTuning";
 import { buildPresentationQueue, type MilestoneQueueEvent, type PresentationEvent } from "../presentationQueue";
 
 export function useWordSearchGame() {
@@ -401,6 +402,17 @@ export function useWordSearchGame() {
         const categoryName = usingFavorites ? favoriteCategoryForLevel(favoriteCategories, playingLevel) : undefined;
         const excludeWords = categoryName ? recentWordsByCategoryRef.current.get(categoryName) : undefined;
 
+        // WSP-2.4 Part A1: this is the one call site that actually runs every
+        // real puzzle load -- WSP-2.3 added regionId/difficultyOverride
+        // support to getPuzzleWords/generatePuzzle specifically for this, but
+        // nothing ever passed them until now, so every real puzzle ignored
+        // region tuning and category bias entirely. categoryName (favorites
+        // mode) still wins unconditionally over regionId inside
+        // getPuzzleWords -- passing regionId here is always safe, it's a
+        // no-op whenever categoryName is set.
+        const regionId = regionIdForLevel(playingLevel);
+        const difficultyOverride = getRegionPuzzleDifficulty(playingLevel, difficultyMode, regionId, size);
+
         const puzzle = await getPuzzleWords({
             count: count + Math.min(count, 8),
             maxLength: maxWordLength,
@@ -408,6 +420,7 @@ export function useWordSearchGame() {
             tier: difficultyMode,
             categoryName,
             excludeWords,
+            regionId,
         });
         setCategory(puzzle.category);
         setCategoriesSeen(prev => prev.has(puzzle.category) ? prev : new Set(prev).add(puzzle.category));
@@ -425,6 +438,7 @@ export function useWordSearchGame() {
             level: playingLevel,
             mode: difficultyMode,
             gridSize: size,
+            difficultyOverride,
         });
 
         setWordsToFind(generated.targetWords);
