@@ -12,6 +12,24 @@
 // never change once balance/content work depends on them: Glowing Grove
 // 1-20, Sunlit Falls 21-30, Crystal Conservatory 31-40, Mosswood Hollows
 // 41-50, Cloudreach Summit 51-70, Verdant Beyond 71-100.
+//
+// WSP-2.4 wiring note: this module (WSP-2.2) originally hardcoded its own
+// `categoryBias` array per region, built independently and concurrently
+// with WSP-2.3's data/region_category_bias.json -- the two worktrees never
+// saw each other's category lists, and by the time both merged the two
+// arrays had completely different (mostly non-overlapping) category names
+// per region. data/region_category_bias.json is the one actually consumed
+// at runtime (src/backend.ts, src-tauri/src/regions.rs) and validated by
+// parity tests against the real category names in category_order.json;
+// this module's own array was pure unvalidated documentation data that had
+// already drifted from real behavior. Rather than hand-editing this
+// module's array to match a snapshot of the JSON (which would just drift
+// again the next time someone tunes a region's bias in the JSON and
+// forgets this file exists), `categoryBias` below is derived directly from
+// REGION_CATEGORY_BIAS at module load -- there is now exactly one array of
+// favored categories per region, not two, so this can't drift again.
+
+import { REGION_CATEGORY_BIAS } from "./regionTuning";
 
 export type RegionReward = {
     /** Seeds granted exactly once -- see claimedRegionRewards in persistence.ts
@@ -32,12 +50,15 @@ export type RegionDefinition = {
      *  read this key; this issue just reserves the slot. */
     ambientThemeKey: string;
     /** Category names (matching src/categories/*.json's `name` field) this
-     *  region's puzzles should favor. This is the *data* half of "category
-     *  bias" -- WSP-2.3 owns the actual weighting algorithm (and its
-     *  native/web parity between src/backend.ts and src-tauri/src/lib.rs)
-     *  that consumes this list; this module only defines which categories
-     *  each region favors, not how strongly or how it's blended with the
-     *  player's own tier/favorites selection. */
+     *  region's puzzles should favor. Derived directly from
+     *  data/region_category_bias.json (via REGION_CATEGORY_BIAS in
+     *  regionTuning.ts) at module load -- WSP-2.3 owns the actual weighting
+     *  algorithm (and its native/web parity between src/backend.ts and
+     *  src-tauri/src/regions.rs) that consumes the underlying data; this
+     *  field exists on RegionDefinition purely so a consumer that already
+     *  has a RegionDefinition in hand (e.g. LevelsView) can read a region's
+     *  favored categories without a second import, not as a second source
+     *  of truth for them (see the module-level comment above). */
     categoryBias: readonly string[];
     /** Reference key into WSP-2.3's difficulty-tuning profile table. Kept as
      *  its own field (rather than reusing `id` directly) even though it's
@@ -60,7 +81,7 @@ export const REGIONS: readonly RegionDefinition[] = [
     {
         id: "glowing-grove", name: "The Glowing Grove", tagline: "Where curiosity takes root.",
         start: 1, end: 20, ambientThemeKey: "glowing-grove",
-        categoryBias: ["Animals", "Colors", "Fruits", "Gardening"],
+        categoryBias: REGION_CATEGORY_BIAS["glowing-grove"].favoredCategories,
         difficultyProfileRef: "glowing-grove",
         entryReward: null,
         completionReward: { seeds: 150 },
@@ -68,7 +89,7 @@ export const REGIONS: readonly RegionDefinition[] = [
     {
         id: "sunlit-falls", name: "Sunlit Falls", tagline: "Let curiosity flow further.",
         start: 21, end: 30, ambientThemeKey: "sunlit-falls",
-        categoryBias: ["Weather", "Ocean Life", "Beach & Summer", "Camping & Outdoors"],
+        categoryBias: REGION_CATEGORY_BIAS["sunlit-falls"].favoredCategories,
         difficultyProfileRef: "sunlit-falls",
         entryReward: { seeds: 50 },
         completionReward: { seeds: 200 },
@@ -76,7 +97,7 @@ export const REGIONS: readonly RegionDefinition[] = [
     {
         id: "crystal-conservatory", name: "The Crystal Conservatory", tagline: "Rare words. Extraordinary growth.",
         start: 31, end: 40, ambientThemeKey: "crystal-conservatory",
-        categoryBias: ["Astrology/Zodiac", "Geology/Minerals", "Chemistry Elements/Terms", "Anatomy"],
+        categoryBias: REGION_CATEGORY_BIAS["crystal-conservatory"].favoredCategories,
         difficultyProfileRef: "crystal-conservatory",
         entryReward: { seeds: 60 },
         completionReward: { seeds: 250 },
@@ -84,7 +105,7 @@ export const REGIONS: readonly RegionDefinition[] = [
     {
         id: "mosswood-hollows", name: "Mosswood Hollows", tagline: "Deeper words. Wilder wonders.",
         start: 41, end: 50, ambientThemeKey: "mosswood-hollows",
-        categoryBias: ["Mythical Creatures", "Insects", "Mycology (Fungi)", "Horror Themes"],
+        categoryBias: REGION_CATEGORY_BIAS["mosswood-hollows"].favoredCategories,
         difficultyProfileRef: "mosswood-hollows",
         entryReward: { seeds: 75 },
         completionReward: { seeds: 300 },
@@ -92,7 +113,7 @@ export const REGIONS: readonly RegionDefinition[] = [
     {
         id: "cloudreach-summit", name: "Cloudreach Summit", tagline: "Higher thinking. Greater horizons.",
         start: 51, end: 70, ambientThemeKey: "cloudreach-summit",
-        categoryBias: ["Space & Astronomy", "Architecture", "Computer Science", "Business"],
+        categoryBias: REGION_CATEGORY_BIAS["cloudreach-summit"].favoredCategories,
         difficultyProfileRef: "cloudreach-summit",
         entryReward: { seeds: 100 },
         completionReward: { seeds: 400 },
@@ -100,7 +121,7 @@ export const REGIONS: readonly RegionDefinition[] = [
     {
         id: "verdant-beyond", name: "The Verdant Beyond", tagline: "A lifetime of words still to grow.",
         start: 71, end: 100, ambientThemeKey: "verdant-beyond",
-        categoryBias: ["Emotions", "Mythical Creatures", "Space & Astronomy", "Gardening"],
+        categoryBias: REGION_CATEGORY_BIAS["verdant-beyond"].favoredCategories,
         difficultyProfileRef: "verdant-beyond",
         entryReward: { seeds: 125 },
         completionReward: { seeds: 750 },

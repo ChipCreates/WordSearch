@@ -340,14 +340,16 @@ describe("useWordSearchGame", () => {
         expect(result.current.promotionQueue).toEqual([]);
     });
 
-    // WSP-2.2: region entry/completion rewards, exactly-once claim tracking,
-    // and the shared presentation queue. Level 20 is both a region boundary
-    // (Glowing Grove ends there, Sunlit Falls begins at 21) AND a rank
-    // boundary (Glowgarden Warden 17-20 -> Crystal Cultivator 21-25), so
+    // WSP-2.2/2.4: region entry/completion rewards, exactly-once claim
+    // tracking, and the shared presentation queue -- now also exercising
+    // WSP-2.4's real milestone production (level 20 is itself one of the
+    // seven milestone levels). Level 20 is a region boundary (Glowing Grove
+    // ends there, Sunlit Falls begins at 21), a rank boundary (Glowgarden
+    // Warden 17-20 -> Crystal Cultivator 21-25), AND a milestone level, so
     // completing it from a fresh frontier is a genuine, real (not
-    // synthetic) multi-event coincidence: one rank promotion plus two
-    // region-transition events from a single puzzle completion.
-    it("grants both the region-completion and next-region-entry reward exactly once, and arbitrates them with the rank promotion via presentationQueue", async () => {
+    // synthetic) four-event coincidence: one rank promotion, one milestone,
+    // and two region-transition events from a single puzzle completion.
+    it("grants both the region-completion and next-region-entry reward exactly once, and arbitrates them with the rank promotion and milestone via presentationQueue", async () => {
         localStorage.setItem("word_sprout_save_v1", JSON.stringify({
             ...DEFAULT_SAVE_DATA,
             highestUnlockedLevel: 20,
@@ -359,7 +361,7 @@ describe("useWordSearchGame", () => {
             // explicitly so this test's own completion doesn't also surface
             // them as *newly* unlocked and muddy the presentationQueue
             // assertion below with achievement events unrelated to what
-            // this test is actually checking (region/rank arbitration).
+            // this test is actually checking (region/rank/milestone arbitration).
             unlockedAchievements: ["night-bloomer", "level-clears-10"],
         }));
         const { result } = renderHook(() => useWordSearchGame());
@@ -374,28 +376,33 @@ describe("useWordSearchGame", () => {
             "sunlit-falls:entry",
         ]);
 
-        expect(result.current.milestoneQueue).toHaveLength(2);
-        expect(result.current.milestoneQueue[0]).toMatchObject({ kind: "region-transition", regionId: "glowing-grove", transition: "completion", rewardSeeds: 150 });
-        expect(result.current.milestoneQueue[1]).toMatchObject({ kind: "region-transition", regionId: "sunlit-falls", transition: "entry", rewardSeeds: 50 });
+        // queueMilestone runs before queueRegionRewards at the real call
+        // site (useWordSearchGame.ts), so the milestone card is queued
+        // ahead of both region-transition events -- "you reached level 20"
+        // is the headline moment, region-transition detail follows it.
+        expect(result.current.milestoneQueue).toHaveLength(3);
+        expect(result.current.milestoneQueue[0]).toMatchObject({ kind: "milestone", level: 20 });
+        expect(result.current.milestoneQueue[1]).toMatchObject({ kind: "region-transition", regionId: "glowing-grove", transition: "completion", rewardSeeds: 150 });
+        expect(result.current.milestoneQueue[2]).toMatchObject({ kind: "region-transition", regionId: "sunlit-falls", transition: "entry", rewardSeeds: 50 });
 
         // The real rank promotion also queued this same completion.
         expect(result.current.promotionQueue).toHaveLength(1);
         expect(result.current.promotionQueue[0].to.title).toBe("Crystal Cultivator");
 
-        // The shared presentation queue combines all three, in the defined
-        // order: rank promotion first, then the two region-transition
-        // events (queue order preserved between them). Real puzzle
-        // generation can incidentally also satisfy a diagonal/reverse-find
-        // achievement on this board -- that's fine and expected to appear,
-        // but only ever *after* the rank/region events, never interleaved
-        // ahead of them.
+        // The shared presentation queue combines all four, in the defined
+        // order: rank promotion first, then milestone/region-transition
+        // (queue order preserved between them), then any achievements. Real
+        // puzzle generation can incidentally also satisfy a diagonal/
+        // reverse-find achievement on this board -- that's fine and
+        // expected to appear, but only ever *after* the rank/milestone/
+        // region events, never interleaved ahead of them.
         const kinds = result.current.presentationQueue.map(e => e.kind);
-        expect(kinds.slice(0, 3)).toEqual(["rank-promotion", "region-transition", "region-transition"]);
-        expect(kinds.slice(3).every(kind => kind === "achievement")).toBe(true);
+        expect(kinds.slice(0, 4)).toEqual(["rank-promotion", "milestone", "region-transition", "region-transition"]);
+        expect(kinds.slice(4).every(kind => kind === "achievement")).toBe(true);
 
         act(() => result.current.dismissMilestone());
-        expect(result.current.milestoneQueue).toHaveLength(1);
-        expect(result.current.milestoneQueue[0]).toMatchObject({ regionId: "sunlit-falls", transition: "entry" });
+        expect(result.current.milestoneQueue).toHaveLength(2);
+        expect(result.current.milestoneQueue[0]).toMatchObject({ kind: "region-transition", regionId: "glowing-grove", transition: "completion" });
     });
 
     it("does not re-grant a region reward when the same completed level is replayed", async () => {
@@ -421,10 +428,12 @@ describe("useWordSearchGame", () => {
         await completeCurrentPuzzle(result);
 
         // Only the ordinary replay reward is granted a second time -- no
-        // additional region Seeds, no new claim, no new milestone event.
+        // additional region Seeds, no new claim, no new milestone/region
+        // event (level 20 is also a milestone level -- the replay must not
+        // re-queue that either).
         expect(result.current.seeds).toBe(seedsAfterFirstCompletion + REWARDS.REPLAY_COMPLETE_SEEDS);
         expect(Array.from(result.current.claimedRegionRewards).sort()).toEqual(claimedAfterFirstCompletion);
-        expect(result.current.milestoneQueue).toHaveLength(2); // still just the original two, none duplicated
+        expect(result.current.milestoneQueue).toHaveLength(3); // still just the original three (milestone + 2 region events), none duplicated
     });
 
     it("a save already past a region boundary before this feature existed is backfilled with no retroactive Seeds, and doesn't double-claim on its next real completion", async () => {
@@ -455,6 +464,78 @@ describe("useWordSearchGame", () => {
         expect(result.current.highestUnlockedLevel).toBe(26);
         expect(result.current.milestoneQueue).toEqual([]);
         expect(Array.from(result.current.claimedRegionRewards).sort()).toEqual(["glowing-grove:completion", "sunlit-falls:entry"]);
+    });
+
+    // WSP-2.4: standalone milestone production at levels 10/20/30/40/50/70/100,
+    // fed into the same milestoneQueue region-transition events already use.
+    describe("milestone queueing (WSP-2.4)", () => {
+        it("queues a milestone event for level 10, which is a milestone but not a region boundary", async () => {
+            localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+                ...DEFAULT_SAVE_DATA,
+                highestUnlockedLevel: 10,
+                level: 10,
+                completedLevels: Array.from({ length: 9 }, (_, index) => index + 1),
+                levelsCompleted: 9,
+            }));
+            const { result } = renderHook(() => useWordSearchGame());
+            await completeCurrentPuzzle(result);
+
+            expect(result.current.highestUnlockedLevel).toBe(11);
+            // Level 10 sits inside Glowing Grove (1-20) -- not a region
+            // boundary -- so the only milestone-queue entry should be the
+            // milestone card itself, no region-transition event alongside it.
+            expect(result.current.milestoneQueue).toHaveLength(1);
+            expect(result.current.milestoneQueue[0]).toEqual({ kind: "milestone", level: 10 });
+        });
+
+        it("does not queue a milestone for a non-milestone level", async () => {
+            localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+                ...DEFAULT_SAVE_DATA,
+                highestUnlockedLevel: 11,
+                level: 11,
+                completedLevels: Array.from({ length: 10 }, (_, index) => index + 1),
+                levelsCompleted: 10,
+            }));
+            const { result } = renderHook(() => useWordSearchGame());
+            await completeCurrentPuzzle(result);
+
+            expect(result.current.highestUnlockedLevel).toBe(12);
+            expect(result.current.milestoneQueue).toEqual([]);
+        });
+
+        it("never re-queues a milestone when its level is replayed", async () => {
+            localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+                ...DEFAULT_SAVE_DATA,
+                highestUnlockedLevel: 10,
+                level: 10,
+                completedLevels: Array.from({ length: 9 }, (_, index) => index + 1),
+                levelsCompleted: 9,
+            }));
+            const { result } = renderHook(() => useWordSearchGame());
+            await completeCurrentPuzzle(result);
+            expect(result.current.milestoneQueue).toHaveLength(1);
+
+            act(() => result.current.retryLevel());
+            await completeCurrentPuzzle(result);
+
+            expect(result.current.milestoneQueue).toHaveLength(1); // still just the one, not duplicated
+        });
+
+        it("dismissMilestone consumes one event at a time, oldest first", async () => {
+            localStorage.setItem("word_sprout_save_v1", JSON.stringify({
+                ...DEFAULT_SAVE_DATA,
+                highestUnlockedLevel: 10,
+                level: 10,
+                completedLevels: Array.from({ length: 9 }, (_, index) => index + 1),
+                levelsCompleted: 9,
+            }));
+            const { result } = renderHook(() => useWordSearchGame());
+            await completeCurrentPuzzle(result);
+            expect(result.current.milestoneQueue).toHaveLength(1);
+
+            act(() => result.current.dismissMilestone());
+            expect(result.current.milestoneQueue).toEqual([]);
+        });
     });
 
     // Real puzzle generation only *offers* a bonus word when one happens to

@@ -1,4 +1,4 @@
-import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import DebugPanel, { WS_DEBUG_PANEL_MARKER } from "./DebugPanel";
 import type { DebugApi } from "../hooks/useWordSearchGame";
@@ -20,6 +20,8 @@ function makeDebugApi(): DebugApi {
         setHasGoldenCrest: vi.fn(),
         queuePromotionPreview: vi.fn(),
         queueAchievementPreview: vi.fn(),
+        queueMilestonePreview: vi.fn(),
+        queueRegionTransitionPreview: vi.fn(),
     };
 }
 
@@ -148,6 +150,30 @@ describe("DebugPanel", () => {
         fireEvent.click(screen.getByText("Botanist rank"));
         fireEvent.click(screen.getByRole("button", { name: "Preview promotion ceremony" }));
         expect(props.debugApi.queuePromotionPreview).toHaveBeenCalledWith(1, 4); // Moss Tender starts at 4
+    });
+
+    // WSP-2.4: milestone/region-transition preview buttons, mirroring the
+    // achievement/promotion preview tests above.
+    it("previews a milestone card without touching real save data", () => {
+        const props = baseProps();
+        render(<DebugPanel {...props} />);
+        fireEvent.click(screen.getByText("Milestones & region transitions (WSP-2.4)"));
+        fireEvent.click(screen.getByRole("button", { name: "Level 100" }));
+        expect(props.debugApi.queueMilestonePreview).toHaveBeenCalledWith(100);
+        expect(props.onNavigate).toHaveBeenCalledWith("play");
+    });
+
+    it("previews a region-transition entry and completion card per region", () => {
+        const props = baseProps();
+        render(<DebugPanel {...props} />);
+        fireEvent.click(screen.getByText("Milestones & region transitions (WSP-2.4)"));
+        const glowingGroveRow = screen.getByText("The Glowing Grove").closest("div")!;
+        fireEvent.click(within(glowingGroveRow).getByRole("button", { name: "Preview entry" }));
+        // Glowing Grove has no entry reward (it's the first region) -- the
+        // button is disabled rather than firing a bogus preview.
+        expect(props.debugApi.queueRegionTransitionPreview).not.toHaveBeenCalledWith("glowing-grove", "entry");
+        fireEvent.click(within(glowingGroveRow).getByRole("button", { name: "Preview completion" }));
+        expect(props.debugApi.queueRegionTransitionPreview).toHaveBeenCalledWith("glowing-grove", "completion");
     });
 
     it("calls onClose from its close button", () => {
